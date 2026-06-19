@@ -1,6 +1,6 @@
 ---
 name: get-current-forecast
-description: [Description]
+description: Retrieve the most recent forecast for a region and date from the Mountain Weather Information Service (MWIS) website
 version: 0.0.1
 license: MIT
 metadata:
@@ -8,7 +8,7 @@ metadata:
 ---
 
 # Get Current Forecast
-The goal of this skill is to [more detailed description]
+The goal of this skill is to retrieve the most recent forecast for a specific region and date range from the Mountain Weather Information Service (MWIS) website.
 
 ## When to use
  - [Concrete scenario]
