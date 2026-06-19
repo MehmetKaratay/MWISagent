@@ -1,6 +1,6 @@
 ---
 name: forecast-source
-description: [Description]
+description: Retrieves the source URL of a specific forecast area from the Mountain Weather Information Service (MWIS) website.
 version: 0.0.1
 license: MIT
 metadata:
@@ -8,26 +8,24 @@ metadata:
 ---
 
 # Forecast Source
-The goal of this skill is to [more detailed description]
+The goal of this skill is to retrieve the source URL of a specific forecast area from the Mountain Weather Information Service (MWIS) website using a deterministic process. It uses the `forecast_area_to_url.csv` mapping file to find the source URL.
 
 ## When to use
- - [Concrete scenario]
- - [concrete scenario]
+ - You need to retrieve the source URL of a specific forecast area from the Mountain Weather Information Service (MWIS) website.
+ - You have the forecast region name or code and want to get the source URL.
 
 ## When NOT to use
- - [Concrete scenario]
- - [Concrete scenario]
+ - You do not know the forecast region name or code.
+ - You already know the source URL
 
 ## Workflow
- 1. [step]
- 2. [step]
- 3. See `references/advanced.md` for [edge cases].
+ 1. Use the `get_forecast_url.py` script to try to find the source URL.
+ 2. If the script returns a URL, return it.
+ 3. If the script returns an error, use your own logic to inspect `references/mwis-regions.csv` to find the source URL.
 
 ## Examples
- - Input: "..." → Outpur: "..."
-
-## Output format
- - Use `assets/template.md` etc.
+ - Input: "WH" → Output: "https://mwis.org.uk/forecasts/scottish/west-highlands/text"
+ - Input: "West Highlands" → Output: "https://mwis.org.uk/forecasts/scottish/west-highlands/text"
 
 ## Anti-patterns to avoid
- - Don't [...]
+ - Don't give any response that does not point to the MWIS website (https://www.mwis.org.uk)
