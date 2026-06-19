@@ -54,8 +54,8 @@ def pixel_to_gps(px, py):
     return lat, lon
 
 def trace_region_boundary(arr, cx, cy, mask):
-    # Smooth mask using cumulative sum box filter with kernel_size = 35 to fill large gaps (lakes, text)
-    kernel_size = 35
+    # Smooth mask using cumulative sum box filter with kernel_size = 21 to fill large gaps (lakes, text)
+    kernel_size = 21
     smoothed = np.zeros_like(mask, dtype=float)
     cumsum = np.cumsum(np.cumsum(mask.astype(float), axis=0), axis=1)
     k = kernel_size // 2
@@ -65,7 +65,7 @@ def trace_region_boundary(arr, cx, cy, mask):
             total = cumsum[y+k, x+k] - cumsum[y-k-1, x+k] - cumsum[y+k, x-k-1] + cumsum[y-k-1, x-k-1]
             smoothed[y, x] = total / (kernel_size * kernel_size)
             
-    filled_mask = smoothed > 0.05
+    filled_mask = smoothed > 0.1
     
     # Ray-casting in 48 directions to extract a smooth simplified polygon
     polygon = []
@@ -83,9 +83,9 @@ def trace_region_boundary(arr, cx, cy, mask):
             if filled_mask[ry, rx]:
                 farthest_x, farthest_y = rx, ry
             else:
-                # Fill gaps up to 30 pixels
+                # Fill gaps up to 60 pixels
                 re_enter = False
-                for check_r in range(r + 1, r + 30):
+                for check_r in range(r + 1, r + 60):
                     cx_check = int(cx + check_r * dx)
                     cy_check = int(cy + check_r * dy)
                     if 0 <= cx_check < w and 0 <= cy_check < h:
@@ -127,20 +127,22 @@ def main():
     
     y_grid, x_grid = np.mgrid[0:h, 0:w]
     
-    # Custom masks for WH, EH, SH to support overlaps and spatial constraints
+    # Strict masks for WH, EH, SH to prevent bleed and support overlaps
     mask_nw = (H >= 190) & (H <= 235) & (S >= 50) & (S <= 120) & ~is_sea
     mask_eh = ((H >= 130) & (H <= 190) & (S >= 40) & (S <= 120) & ~is_sea)
+    mask_wh_base = (H >= 0) & (H <= 20) & (S >= 40) & (S <= 90) & ~is_sea
+    mask_sh_base = (H >= 115) & (H <= 135) & (S >= 40) & (S <= 110) & ~is_sea
+
+    # Overlaps securely bounded to highlands
+    overlap_wh = (H >= 120) & (H <= 165) & (S >= 40) & (S <= 120) & (x_grid >= 650) & (x_grid <= 800) & (y_grid <= 600) & ~is_sea
+    mask_wh = mask_wh_base | overlap_wh
     
-    # WH: peach, and also includes cyan/blue overlap area up to x <= 820
-    mask_wh = (((H >= 0) & (H <= 20) & (S >= 40) & (S <= 90)) | \
-               ((H >= 120) & (H <= 165) & (S >= 40) & (S <= 120) & (x_grid <= 820))) & ~is_sea
-               
-    # SH: cyan, and also includes overlap area starting from x >= 730
-    mask_sh = (((H >= 115) & (H <= 135) & (S >= 40) & (S <= 110)) | \
-               ((H >= 135) & (H <= 165) & (S >= 40) & (S <= 120) & (x_grid >= 730) & (y_grid >= 400))) & ~is_sea
+    overlap_sh = (H >= 135) & (H <= 165) & (S >= 40) & (S <= 120) & (x_grid >= 780) & (y_grid >= 450) & (y_grid <= 650) & ~is_sea
+    mask_sh = mask_sh_base | overlap_sh
 
     # Other regions:
-    mask_su = (H >= 50) & (H <= 65) & (S >= 70) & (S <= 140) & ~is_sea
+    # Bounded SU below y=730 to avoid Glasgow
+    mask_su = (H >= 50) & (H <= 65) & (S >= 70) & (S <= 140) & (y_grid >= 730) & ~is_sea
     mask_ld = ((H >= 240) | (H <= 10)) & (S >= 70) & (S <= 140) & ~is_sea
     mask_yd = (H >= 15) & (H <= 27) & (S >= 70) & (S <= 140) & ~is_sea
     mask_pd = (H >= 28) & (H <= 42) & (S >= 70) & (S <= 140) & ~is_sea
@@ -193,18 +195,31 @@ def main():
         "Pen y Fan": (51.8839, -3.4294, "BB"),
         "Cairn Gorm": (57.1162, -3.6428, "EH"),
         "Broad Law": (55.4981, -3.3503, "SU"),
-        "Carn Eige": (57.2803, -5.1231, "NW")
+        "Carn Eige": (57.2803, -5.1231, "NW"),
+        "Loch Lomond": (56.156, -4.656, "OUT"),
+        "Glasgow": (55.861, -4.250, "OUT"),
+        "Carlisle": (54.894, -2.936, "OUT")
     }
     
     print("\n--- Running Geographic Validation ---")
     all_valid = True
     for peak_name, (lat, lon, target_code) in peaks.items():
-        poly = geocoded_data[target_code]["coordinates"]
-        is_inside = point_in_polygon(lat, lon, poly)
-        print(f"Peak {peak_name:12s} ({lat:.4f}, {lon:.4f}) inside target region {target_code}: {is_inside}")
-        # Note: Carn Eige is right on the border and may fail due to hand-drawn map limits.
-        if not is_inside and peak_name != "Carn Eige":
-            all_valid = False
+        if target_code == "OUT":
+            is_inside_any = False
+            for code in geocoded_data:
+                if point_in_polygon(lat, lon, geocoded_data[code]["coordinates"]):
+                    is_inside_any = True
+                    break
+            print(f"Location {peak_name:12s} ({lat:.4f}, {lon:.4f}) should be OUT: {not is_inside_any}")
+            if is_inside_any:
+                all_valid = False
+        else:
+            poly = geocoded_data[target_code]["coordinates"]
+            is_inside = point_in_polygon(lat, lon, poly)
+            print(f"Peak {peak_name:12s} ({lat:.4f}, {lon:.4f}) inside target region {target_code}: {is_inside}")
+            # Note: Carn Eige is right on the border and may fail due to hand-drawn map limits.
+            if not is_inside and peak_name != "Carn Eige":
+                all_valid = False
             
     if all_valid:
         print("Geographic validation PASSED! (with expected minor hand-drawn map tolerance for Carn Eige)")

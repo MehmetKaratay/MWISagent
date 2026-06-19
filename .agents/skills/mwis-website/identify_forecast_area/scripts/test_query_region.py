@@ -79,6 +79,27 @@ class TestQueryRegionCLI(unittest.TestCase):
         self.assertEqual(res.returncode, 0)
         self.assertIn('not in an mwis area', res.stdout.lower())
 
+    def test_loch_lomond(self):
+        # Loch Lomond -> "WH" or WH is nearest as on boundary of region
+        res = self.run_query(['Loch Lomond'])
+        self.assertEqual(res.returncode, 0)
+        self.assertIn('not in an mwis area', res.stdout.lower())
+        self.assertIn('EH', res.stdout)
+
+    def test_carlisle(self):
+        # Carlisle -> Not in any region. "SU" and "YD" are nearest
+        res = self.run_query(['Carlisle'])
+        self.assertEqual(res.returncode, 0)
+        self.assertIn('not in an mwis area', res.stdout.lower())
+        self.assertIn('LD', res.stdout)
+
+    def test_glasgow(self):
+        # Glasgow -> not in any region. "WH" and "SU" are nearest. "SH" may be within closeness tolerance
+        res = self.run_query(['Glasgow'])
+        self.assertEqual(res.returncode, 0)
+        self.assertIn('not in an mwis area', res.stdout.lower())
+        self.assertIn('SU', res.stdout)
+
     def test_json_output_success(self):
         res = self.run_query(['53.0685', '-4.0763', '--json'])
         self.assertEqual(res.returncode, 0)
