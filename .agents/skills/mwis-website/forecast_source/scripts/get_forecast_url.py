@@ -12,44 +12,40 @@ DEFAULT_CSV_PATH = os.path.join(
     "mwis-regions.csv"
 )
 
-def get_forecast_url(query: str, csv_path: str = None) -> str:
-    """
-    Looks up and returns the forecast URL for a given region code or name.
-
-    Args:
-        query (str): The region code (e.g. 'WH') or region name (e.g. 'West Highlands').
-        csv_path (str, optional): Custom path to the mwis-regions.csv file.
-
-    Returns:
-        str: The URL of the forecast area.
-
-    Raises:
-        ValueError: If the query is empty or no matching region is found.
-        FileNotFoundError: If the CSV reference file cannot be located.
-    """
-    if csv_path is None:
-        csv_path = DEFAULT_CSV_PATH
-
-    normalized_query = str(query).strip().lower()
-    if not normalized_query:
+def validate_non_empty_query(query: str) -> str:
+    normalized = str(query).strip().lower()
+    if not normalized:
         raise ValueError("Search query cannot be empty.")
+    return normalized
 
+def ensure_csv_file_exists(csv_path: str) -> None:
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"Regions reference CSV not found at: {csv_path}")
 
-    with open(csv_path, mode="r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            # Match against RegionCode or RegionName
-            code = row.get("RegionCode", "").strip().lower()
-            name = row.get("RegionName", "").strip().lower()
-            
-            if normalized_query in (code, name):
-                url = row.get("Url", "").strip()
-                if url:
-                    return url
+def find_url_in_csv_rows(reader, normalized_query: str) -> str:
+    for row in reader:
+        code = row.get("RegionCode", "").strip().lower()
+        name = row.get("RegionName", "").strip().lower()
+        if normalized_query in (code, name):
+            return row.get("Url", "").strip()
+    return ""
 
-    raise ValueError(f"No matching MWIS region found for: '{query}'")
+def extract_url_from_csv(normalized_query: str, csv_path: str) -> str:
+    with open(csv_path, mode="r", encoding="utf-8") as f:
+        url = find_url_in_csv_rows(csv.DictReader(f), normalized_query)
+        if url:
+            return url
+    raise ValueError("No matching MWIS region found.")
+
+def get_forecast_url(query: str, csv_path: str = None) -> str:
+    path = csv_path if csv_path is not None else DEFAULT_CSV_PATH
+    q_norm = validate_non_empty_query(query)
+    ensure_csv_file_exists(path)
+    try:
+        return extract_url_from_csv(q_norm, path)
+    except ValueError:
+        raise ValueError(f"No matching MWIS region found for: '{query}'")
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
