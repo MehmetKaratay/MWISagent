@@ -124,7 +124,7 @@ def get_matching_regions(lat, lon, boundaries):
     for code, info in boundaries.items():
         if point_in_polygon(lat, lon, info["coordinates"]):
             matches.append(code)
-    # Filter duplicates (e.g. SE/SH)
+    # Return sorted unique matching region codes
     return sorted(list(set(matches)))
 
 def get_nearest_regions(lat, lon, boundaries, tolerance_pct):

@@ -178,14 +178,7 @@ def main():
             "coordinates": gps_poly
         }
         
-    # Map 'SH' to 'SE' as well to match the regionCode used in mwis-regions.csv
-    if "SH" in geocoded_data:
-        geocoded_data["SE"] = {
-            "name": "Southeastern Highlands",
-            "coordinates": geocoded_data["SH"]["coordinates"]
-        }
-        print("Mapped 'SH' boundary to 'SE' to match mwis-regions.csv code.")
-        
+
     # Save to JSON file
     output_path = '/home/karatay/Repositories/learning/ai/mwis_agent/.agents/skills/mwis-website/identify_forecast_area/assets/mwis-region-boundaries.json'
     with open(output_path, 'w') as f:
