@@ -1,0 +1,11 @@
+RegionCode,RegionName,Country,Url
+NW,North West Highlands,Scotland,https://mwis.org.uk/forecasts/scottish/the-northwest-highlands/text
+WH,West Highlands,Scotland,https://mwis.org.uk/forecasts/scottish/west-highlands/text
+EH,Eastern Highlands,Scotland,https://mwis.org.uk/forecasts/scottish/cairngorms/text
+SE,South East Scotland,Scotland,https://mwis.org.uk/forecasts/scottish/south-east-scotland/text
+SU,Southern Uplands,Scotland,https://mwis.org.uk/forecasts/scottish/the-southern-uplands/text
+LD,Lake District,England,https://mwis.org.uk/forecasts/english/the-lake-district/text
+YD,Yorkshire Dales & North Pennines,England,https://mwis.org.uk/forecasts/english/the-yorkshire-dales/text
+PD,Peak District,England,https://mwis.org.uk/forecasts/english/the-peak-district/text
+SD,Snowdonia & North Wales,Wales,https://mwis.org.uk/forecasts/welsh/snowdonia/text
+BB,Brecon Beacons,Wales,https://mwis.org.uk/forecasts/welsh/brecon-beacons/text
