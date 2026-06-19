@@ -33,4 +33,4 @@ The goal of this skill is to [more detailed description]
  - Use `assets/template.md` etc.
 
 ## Anti-patterns to avoid
- - Don't [...]
+ - Avoid guessing. If you are unsure say so.
