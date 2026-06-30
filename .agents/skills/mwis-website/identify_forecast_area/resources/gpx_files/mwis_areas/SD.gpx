@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gpx version="1.1" creator="OS Maps - Web" xmlns="http://www.topografix.com/GPX/1/1"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd"
+xmlns:gs="http://www.topografix.com/GPX/gpx_style/0/2"
+xmlns:gh="https://graphhopper.com/public/schema/gpx/1.1"
+xmlns:os="https://ordnancesurvey.co.uk/public/schema/route/0.1">
+    <metadata>
+        <name>MWIS SD</name>
+        <desc></desc>
+        <bounds minlat="52.4861400" minlon="-4.8434100" maxlat="53.2445500" maxlon="-3.2375200"/>
+        <extensions>
+            <os:version>2.0</os:version>
+            <os:point lat="53.0228000" lon="-4.4237200" type="start"/>
+            <os:point lat="53.0228000" lon="-4.4237200" type="end"/>
+            <os:activity>ON_FOOT_WALKING</os:activity>
+            <os:difficulty>UNKNOWN</os:difficulty>
+            <os:paths/>
+            <os:distance>323545.1816094</os:distance>
+            <os:elevation_ascent>8276.3900000</os:elevation_ascent>
+            <os:route_type>SINGLE</os:route_type>
+        </extensions>
+    </metadata>
+    <wpt lat="53.0228000" lon="-4.4237200"/>
+    <wpt lat="53.0872100" lon="-4.2579500"/>
+    <wpt lat="53.1730700" lon="-4.1030500"/>
+    <wpt lat="53.2109200" lon="-4.0229000"/>
+    <wpt lat="53.2397200" lon="-3.9591900"/>
+    <wpt lat="53.2445500" lon="-3.7901000"/>
+    <wpt lat="53.2322200" lon="-3.6103700"/>
+    <wpt lat="53.2257700" lon="-3.4987100"/>
+    <wpt lat="53.2025300" lon="-3.3570800"/>
+    <wpt lat="53.1764500" lon="-3.3342500"/>
+    <wpt lat="53.1350100" lon="-3.2998600"/>
+    <wpt lat="53.1022000" lon="-3.2938300"/>
+    <wpt lat="53.0713900" lon="-3.2925500"/>
+    <wpt lat="53.0499900" lon="-3.2706600"/>
+    <wpt lat="53.0068200" lon="-3.2594200"/>
+    <wpt lat="52.9736700" lon="-3.2488600"/>
+    <wpt lat="52.9283200" lon="-3.2375200"/>
+    <wpt lat="52.9002800" lon="-3.2427300"/>
+    <wpt lat="52.8787600" lon="-3.2509400"/>
+    <wpt lat="52.8647200" lon="-3.2721800"/>
+    <wpt lat="52.8407000" lon="-3.2993800"/>
+    <wpt lat="52.8152400" lon="-3.3483500"/>
+    <wpt lat="52.7956000" lon="-3.3748200"/>
+    <wpt lat="52.7815900" lon="-3.3933500"/>
+    <wpt lat="52.7689900" lon="-3.4264700"/>
+    <wpt lat="52.7520200" lon="-3.4491900"/>
+    <wpt lat="52.7370500" lon="-3.4567800"/>
+    <wpt lat="52.7220200" lon="-3.4679900"/>
+    <wpt lat="52.7107400" lon="-3.4857300"/>
+    <wpt lat="52.7026000" lon="-3.5145000"/>
+    <wpt lat="52.6825300" lon="-3.5300700"/>
+    <wpt lat="52.6608700" lon="-3.5410200"/>
+    <wpt lat="52.6385900" lon="-3.5555900"/>
+    <wpt lat="52.5820900" lon="-3.6051700"/>
+    <wpt lat="52.5141400" lon="-3.6761100"/>
+    <wpt lat="52.4861400" lon="-4.1478400"/>
+    <wpt lat="52.7961300" lon="-4.1969000"/>
+    <wpt lat="52.8601500" lon="-4.2958100"/>
+    <wpt lat="52.7628400" lon="-4.5225600"/>
+    <wpt lat="52.7668400" lon="-4.7127600"/>
+    <wpt lat="52.8205600" lon="-4.8434100"/>
+    <wpt lat="53.0228000" lon="-4.4237200"/>
+    <trk>
+        <name>MWIS SD</name>
+        <trkseg>
+            <trkpt lat="53.0228000" lon="-4.4237200"/>
+            <trkpt lat="53.0872100" lon="-4.2579500"/>
+            <trkpt lat="53.1730700" lon="-4.1030500"/>
+            <trkpt lat="53.2109200" lon="-4.0229000"/>
+            <trkpt lat="53.2397200" lon="-3.9591900"/>
+            <trkpt lat="53.2445500" lon="-3.7901000"/>
+            <trkpt lat="53.2322200" lon="-3.6103700"/>
+            <trkpt lat="53.2257700" lon="-3.4987100"/>
+            <trkpt lat="53.2025300" lon="-3.3570800"/>
+            <trkpt lat="53.1764500" lon="-3.3342500"/>
+            <trkpt lat="53.1350100" lon="-3.2998600"/>
+            <trkpt lat="53.1022000" lon="-3.2938300"/>
+            <trkpt lat="53.0713900" lon="-3.2925500"/>
+            <trkpt lat="53.0499900" lon="-3.2706600"/>
+            <trkpt lat="53.0068200" lon="-3.2594200"/>
+            <trkpt lat="52.9736700" lon="-3.2488600"/>
+            <trkpt lat="52.9283200" lon="-3.2375200"/>
+            <trkpt lat="52.9002800" lon="-3.2427300"/>
+            <trkpt lat="52.8787600" lon="-3.2509400"/>
+            <trkpt lat="52.8647200" lon="-3.2721800"/>
+            <trkpt lat="52.8407000" lon="-3.2993800"/>
+            <trkpt lat="52.8152400" lon="-3.3483500"/>
+            <trkpt lat="52.7956000" lon="-3.3748200"/>
+            <trkpt lat="52.7815900" lon="-3.3933500"/>
+            <trkpt lat="52.7689900" lon="-3.4264700"/>
+            <trkpt lat="52.7520200" lon="-3.4491900"/>
+            <trkpt lat="52.7370500" lon="-3.4567800"/>
+            <trkpt lat="52.7220200" lon="-3.4679900"/>
+            <trkpt lat="52.7107400" lon="-3.4857300"/>
+            <trkpt lat="52.7026000" lon="-3.5145000"/>
+            <trkpt lat="52.6825300" lon="-3.5300700"/>
+            <trkpt lat="52.6608700" lon="-3.5410200"/>
+            <trkpt lat="52.6385900" lon="-3.5555900"/>
+            <trkpt lat="52.5820900" lon="-3.6051700"/>
+            <trkpt lat="52.5141400" lon="-3.6761100"/>
+            <trkpt lat="52.4861400" lon="-4.1478400"/>
+            <trkpt lat="52.7961300" lon="-4.1969000"/>
+            <trkpt lat="52.8601500" lon="-4.2958100"/>
+            <trkpt lat="52.7628400" lon="-4.5225600"/>
+            <trkpt lat="52.7668400" lon="-4.7127600"/>
+            <trkpt lat="52.8205600" lon="-4.8434100"/>
+            <trkpt lat="53.0228000" lon="-4.4237200"/>
+        </trkseg>
+    </trk>
+</gpx>
