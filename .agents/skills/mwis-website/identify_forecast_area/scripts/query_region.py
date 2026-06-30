@@ -77,6 +77,16 @@ def query_nominatim(name):
         pass
     return None
 
+def get_cardinal_direction(lat1, lon1, lat2, lon2):
+    y = math.sin(math.radians(lon2 - lon1)) * math.cos(math.radians(lat2))
+    x = math.cos(math.radians(lat1)) * math.sin(math.radians(lat2)) - \
+        math.sin(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.cos(math.radians(lon2 - lon1))
+    bearing = math.degrees(math.atan2(y, x))
+    bearing = (bearing + 360) % 360
+    dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+    idx = round(bearing / 45) % 8
+    return dirs[idx]
+
 def point_to_segment_distance_km(p_lat, p_lon, lat1, lon1, lat2, lon2):
     avg_lat = (p_lat + lat1 + lat2) / 3.0
     scale_y = 111.0
@@ -88,18 +98,25 @@ def point_to_segment_distance_km(p_lat, p_lon, lat1, lon1, lat2, lon2):
     apx, apy = px - ax, py - ay
     ab2 = abx*abx + aby*aby
     if ab2 == 0:
-        return math.sqrt(apx*apx + apy*apy)
+        return math.sqrt(apx*apx + apy*apy), lat1, lon1
     t = max(0.0, min(1.0, (apx*abx + apy*aby) / ab2))
-    return math.sqrt((px - (ax + t * abx))**2 + (py - (ay + t * aby))**2)
+    closest_px = ax + t * abx
+    closest_py = ay + t * aby
+    closest_lon = closest_px / scale_x
+    closest_lat = closest_py / scale_y
+    dist = math.sqrt((px - closest_px)**2 + (py - closest_py)**2)
+    return dist, closest_lat, closest_lon
 
 def polygon_distance_km(lat, lon, polygon):
     min_dist = float('inf')
+    closest_pt = (None, None)
     # Loop over all edges
     for i in range(len(polygon) - 1):
-        d = point_to_segment_distance_km(lat, lon, polygon[i][0], polygon[i][1], polygon[i+1][0], polygon[i+1][1])
+        d, c_lat, c_lon = point_to_segment_distance_km(lat, lon, polygon[i][0], polygon[i][1], polygon[i+1][0], polygon[i+1][1])
         if d < min_dist:
             min_dist = d
-    return min_dist
+            closest_pt = (c_lat, c_lon)
+    return min_dist, closest_pt[0], closest_pt[1]
 
 def point_in_polygon(lat, lon, polygon):
     # Ensure not closed loop duplicates
@@ -130,13 +147,15 @@ def get_matching_regions(lat, lon, boundaries):
 def get_nearest_regions(lat, lon, boundaries, tolerance_pct):
     distances = {}
     for code, info in boundaries.items():
-        distances[code] = polygon_distance_km(lat, lon, info["coordinates"])
-    min_code = min(distances, key=distances.get)
-    min_dist = distances[min_code]
+        dist, c_lat, c_lon = polygon_distance_km(lat, lon, info["coordinates"])
+        direction = get_cardinal_direction(lat, lon, c_lat, c_lon)
+        distances[code] = (dist, direction)
+    min_code = min(distances, key=lambda k: distances[k][0])
+    min_dist = distances[min_code][0]
     limit = min_dist * (1.0 + tolerance_pct / 100.0)
     # Find all within tolerance limit
-    near = {code: dist for code, dist in distances.items() if dist <= limit}
-    return sorted(near.items(), key=lambda x: x[1])
+    near = [(code, dist, direct) for code, (dist, direct) in distances.items() if dist <= limit]
+    return sorted(near, key=lambda x: x[1])
 
 def handle_out_of_scope(as_json):
     msg = "The requested location is out of scope of this skill. Only locations in Great Britain are supported."
@@ -152,7 +171,7 @@ def print_result_json(in_scope, in_area, regions, nearest):
         out["regions"] = regions
         out["overlap"] = len(regions) > 1
     else:
-        out["nearest"] = [{"code": code, "distance_km": round(dist, 2)} for code, dist in nearest]
+        out["nearest"] = [{"code": code, "distance_km": round(dist, 2), "direction": direct} for code, dist, direct in nearest]
     print(json.dumps(out))
 
 def print_result_text(in_area, regions, nearest, boundaries):
@@ -164,8 +183,8 @@ def print_result_text(in_area, regions, nearest, boundaries):
     else:
         print("The location is not in an MWIS area.")
         print("Nearest area(s):")
-        for code, dist in nearest:
-            print(f"  - {code} ({boundaries[code]['name']}): {dist:.2f} km away")
+        for code, dist, direct in nearest:
+            print(f"  - {code} ({boundaries[code]['name']}): {dist:.2f} km away to the {direct}")
 
 def resolve_input(args):
     # Parse inputs (returns lat, lon or region_code if Munro)

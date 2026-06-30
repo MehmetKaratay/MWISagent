@@ -87,10 +87,12 @@ class TestQueryRegionCLI(unittest.TestCase):
 
     def test_carlisle(self):
         # Carlisle -> Not in any region. YD is nearest
+        import re
         res = self.run_query(['Carlisle'])
         self.assertEqual(res.returncode, 0)
         self.assertIn('not in an mwis area', res.stdout.lower())
         self.assertIn('YD', res.stdout)
+        self.assertTrue(re.search(r'km away to the (N|NE|E|SE|S|SW|W|NW)', res.stdout), "Direction string missing")
 
     def test_glasgow(self):
         # Glasgow -> not in any region. "WH" and "SU" are nearest. "SH" may be within closeness tolerance
