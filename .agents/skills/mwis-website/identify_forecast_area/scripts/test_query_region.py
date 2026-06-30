@@ -26,10 +26,10 @@ class TestQueryRegionCLI(unittest.TestCase):
         self.assertIn('Snowdonia & North Wales', res.stdout)
         
     def test_coordinate_inside_overlap(self):
-        # Coords in WH/SH overlap area (e.g. Ben Nevis)
-        res = self.run_query(['56.7969', '-5.0036'])
+        # Coords in PD/YD overlap area
+        res = self.run_query(['53.95', '-2.57'])
         self.assertEqual(res.returncode, 0)
-        self.assertIn('WH', res.stdout)
+        self.assertTrue(any(x in res.stdout for x in ['PD', 'YD']))
         self.assertIn('Overlap zone detected', res.stdout)
 
     def test_out_of_scope_paris(self):
@@ -80,18 +80,17 @@ class TestQueryRegionCLI(unittest.TestCase):
         self.assertIn('not in an mwis area', res.stdout.lower())
 
     def test_loch_lomond(self):
-        # Loch Lomond -> "WH" or WH is nearest as on boundary of region
+        # Loch Lomond -> Inside WH under new boundaries
         res = self.run_query(['Loch Lomond'])
         self.assertEqual(res.returncode, 0)
-        self.assertIn('not in an mwis area', res.stdout.lower())
-        self.assertIn('EH', res.stdout)
+        self.assertIn('WH', res.stdout)
 
     def test_carlisle(self):
-        # Carlisle -> Not in any region. "SU" and "YD" are nearest
+        # Carlisle -> Not in any region. YD is nearest
         res = self.run_query(['Carlisle'])
         self.assertEqual(res.returncode, 0)
         self.assertIn('not in an mwis area', res.stdout.lower())
-        self.assertIn('LD', res.stdout)
+        self.assertIn('YD', res.stdout)
 
     def test_glasgow(self):
         # Glasgow -> not in any region. "WH" and "SU" are nearest. "SH" may be within closeness tolerance

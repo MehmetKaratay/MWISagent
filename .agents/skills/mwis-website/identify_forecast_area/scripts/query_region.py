@@ -9,13 +9,13 @@ import urllib.parse
 # Path Configuration
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(SCRIPT_DIR, '..', 'assets')
-REFERENCES_DIR = os.path.join(SCRIPT_DIR, '..', 'references')
+RESOURCES_DIR = os.path.join(SCRIPT_DIR, '..', 'resources')
 
 CONFIG_PATH = os.path.join(ASSETS_DIR, 'query_config.json')
 BOUNDARIES_PATH = os.path.join(ASSETS_DIR, 'mwis_region_boundaries.json') # Wait! Let's check the filename in assets: earlier it was saved to mwis-region-boundaries.json! Let's verify.
 # In task-254 it was: mwis-region-boundaries.json. Let's make sure it matches.
 BOUNDARIES_PATH = os.path.join(ASSETS_DIR, 'mwis-region-boundaries.json')
-MUNROS_PATH = os.path.join(REFERENCES_DIR, 'munros.csv')
+MUNROS_PATH = os.path.join(RESOURCES_DIR, 'munros.csv')
 
 def load_config():
     if not os.path.exists(CONFIG_PATH):
