@@ -6,7 +6,7 @@ import os
 import json
 import glob
 import xml.etree.ElementTree as ET
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Tuple
 
 # Path Configuration relative to this script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -33,6 +33,14 @@ LAT_ATTR = 'lat'
 LON_ATTR = 'lon'
 JSON_INDENT = 2
 
+def _parse_trackpoint(elem: ET.Element) -> Optional[List[float]]:
+    try:
+        lat = float(elem.attrib[LAT_ATTR])
+        lon = float(elem.attrib[LON_ATTR])
+        return [lat, lon]
+    except (KeyError, ValueError):
+        return None
+
 def parse_gpx_coordinates(filepath: str) -> List[List[float]]:
     """
     Parses a GPX file and extracts coordinates [lat, lon] from trackpoints (<trkpt>).
@@ -48,50 +56,49 @@ def parse_gpx_coordinates(filepath: str) -> List[List[float]]:
     for elem in root.iter():
         tag_local = elem.tag.split('}')[-1]
         if tag_local == XML_TRKPT_TAG:
-            try:
-                lat = float(elem.attrib[LAT_ATTR])
-                lon = float(elem.attrib[LON_ATTR])
-                coordinates.append([lat, lon])
-            except (KeyError, ValueError) as e:
-                print(f"Skipping invalid trackpoint in {filepath}: {e}")
+            pt = _parse_trackpoint(elem)
+            if pt:
+                coordinates.append(pt)
+            else:
+                print(f"Skipping invalid trackpoint in {filepath}")
                 
     return coordinates
+
+def _process_gpx_file(filepath: str) -> Optional[Tuple[str, Dict[str, Any]]]:
+    filename = os.path.basename(filepath)
+    code = os.path.splitext(filename)[0]
+    if code not in REGION_NAMES:
+        print(f"Skipping unknown region code/file: {filename}")
+        return None
+    coords = parse_gpx_coordinates(filepath)
+    if not coords:
+        print(f"Warning: No coordinates found in {filename}")
+        return None
+    return code, {
+        "name": REGION_NAMES[code],
+        "coordinates": coords
+    }
 
 def update_boundaries(gpx_dir: str, output_path: str) -> None:
     if not os.path.isdir(gpx_dir):
         print(f"Error: GPX directory does not exist at: {gpx_dir}")
         return
-        
-    gpx_files = glob.glob(os.path.join(gpx_dir, "*.gpx"))
+    gpx_files = sorted(glob.glob(os.path.join(gpx_dir, "*.gpx")))
     if not gpx_files:
         print(f"No GPX files found in: {gpx_dir}")
         return
         
     new_data: Dict[str, Any] = {}
-    for filepath in sorted(gpx_files):
-        filename = os.path.basename(filepath)
-        code = os.path.splitext(filename)[0]
-        
-        if code not in REGION_NAMES:
-            print(f"Skipping unknown region code/file: {filename}")
-            continue
-            
-        coords = parse_gpx_coordinates(filepath)
-        if not coords:
-            print(f"Warning: No coordinates found in {filename}")
-            continue
-            
-        new_data[code] = {
-            "name": REGION_NAMES[code],
-            "coordinates": coords
-        }
-        print(f"Processed {code} ({REGION_NAMES[code]}): {len(coords)} coordinates")
+    for filepath in gpx_files:
+        res = _process_gpx_file(filepath)
+        if res:
+            code, val = res
+            new_data[code] = val
+            print(f"Processed {code} ({val['name']}): {len(val['coordinates'])} coordinates")
         
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, 'w') as f:
         json.dump(new_data, f, indent=JSON_INDENT)
-        
-    print(f"Successfully updated boundaries JSON at: {output_path}")
 
 def main() -> None:
     update_boundaries(GPX_DIR, OUTPUT_JSON_PATH)

@@ -89,27 +89,27 @@ class GeoMath:
         return CARDINAL_DIRS[idx]
 
     @staticmethod
+    def _project_point(pt: Point, scale_x: float) -> Tuple[float, float]:
+        return pt.lon * scale_x, pt.lat * EARTH_RADIUS_KM
+
+    @staticmethod
     def point_to_segment_distance(pt: Point, seg: Segment) -> Tuple[float, Point]:
         avg_lat = (pt.lat + seg.start.lat + seg.end.lat) / 3.0
         scale_x = EARTH_RADIUS_KM * math.cos(math.radians(avg_lat))
-        
-        px, py = pt.lon * scale_x, pt.lat * EARTH_RADIUS_KM
-        ax, ay = seg.start.lon * scale_x, seg.start.lat * EARTH_RADIUS_KM
-        bx, by = seg.end.lon * scale_x, seg.end.lat * EARTH_RADIUS_KM
+        px, py = GeoMath._project_point(pt, scale_x)
+        ax, ay = GeoMath._project_point(seg.start, scale_x)
+        bx, by = GeoMath._project_point(seg.end, scale_x)
         
         abx, aby = bx - ax, by - ay
         apx, apy = px - ax, py - ay
         ab2 = abx*abx + aby*aby
-        
         if ab2 == 0:
             return math.sqrt(apx*apx + apy*apy), seg.start
             
         t = max(0.0, min(1.0, (apx*abx + apy*aby) / ab2))
-        closest_px = ax + t * abx
-        closest_py = ay + t * aby
-        closest_lon = closest_px / scale_x
-        closest_lat = closest_py / EARTH_RADIUS_KM
-        dist = math.sqrt((px - closest_px)**2 + (py - closest_py)**2)
+        closest_lon = (ax + t * abx) / scale_x
+        closest_lat = (ay + t * aby) / EARTH_RADIUS_KM
+        dist = math.sqrt((px - (ax + t * abx))**2 + (py - (ay + t * aby))**2)
         return dist, Point(closest_lat, closest_lon)
 
     @staticmethod
@@ -289,6 +289,16 @@ class TextFormatter(ResultFormatter):
         msg = "The requested location is out of scope of this skill. Only locations in Great Britain are supported."
         print(msg, file=sys.stderr)
 
+def _process_location(pt: Point, boundaries: Dict[str, Any], formatter: ResultFormatter) -> None:
+    finder = RegionFinder(boundaries)
+    regions = finder.get_matching_regions(pt)
+    if regions:
+        formatter.format_success(regions, boundaries)
+    else:
+        tol = ConfigLoader.get_overlap_tolerance()
+        nearest = finder.get_nearest_regions(pt, tol)
+        formatter.format_nearest(nearest, boundaries)
+
 def main():
     args = [a for a in sys.argv[1:] if a != '--json']
     as_json = '--json' in sys.argv
@@ -305,15 +315,7 @@ def main():
         formatter.format_out_of_scope()
         sys.exit(2)
         
-    finder = RegionFinder(boundaries)
-    regions = finder.get_matching_regions(pt)
-    
-    if regions:
-        formatter.format_success(regions, boundaries)
-    else:
-        tol = ConfigLoader.get_overlap_tolerance()
-        nearest = finder.get_nearest_regions(pt, tol)
-        formatter.format_nearest(nearest, boundaries)
+    _process_location(pt, boundaries, formatter)
 
 if __name__ == '__main__':
     main()
