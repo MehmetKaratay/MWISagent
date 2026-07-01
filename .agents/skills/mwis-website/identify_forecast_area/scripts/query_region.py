@@ -28,6 +28,17 @@ GB_LON_MIN, GB_LON_MAX = -8.6, 1.8
 NI_LAT_MIN, NI_LAT_MAX = 54.0, 55.3
 NI_LON_MIN, NI_LON_MAX = -8.2, -5.4
 
+# Grid reference constants
+GRID_ALPHABET = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
+GRID_SIZE_500K_M = 500000
+GRID_SIZE_100K_M = 100000
+GRID_COLS = 5
+GRID_ROW_OFFSET_500K = 3
+GRID_ROW_OFFSET_100K = 4
+MAX_GRID_DIGIT_PRECISION = 5
+EPSG_BNG = "epsg:27700"
+EPSG_WGS84 = "epsg:4326"
+
 @dataclass
 class Point:
     lat: float
@@ -215,16 +226,15 @@ class InputResolver:
 
     @staticmethod
     def _get_grid_square_base(first: str, second: str) -> Optional[Tuple[int, int, int, int]]:
-        alphabet = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
         try:
-            f_idx = alphabet.index(first)
-            s_idx = alphabet.index(second)
+            f_idx = GRID_ALPHABET.index(first)
+            s_idx = GRID_ALPHABET.index(second)
         except ValueError:
             return None
-        e500 = ((f_idx % 5) - 2) * 500000
-        n500 = (3 - (f_idx // 5)) * 500000
-        e100 = (s_idx % 5) * 100000
-        n100 = (4 - (s_idx // 5)) * 100000
+        e500 = ((f_idx % GRID_COLS) - 2) * GRID_SIZE_500K_M
+        n500 = (GRID_ROW_OFFSET_500K - (f_idx // GRID_COLS)) * GRID_SIZE_500K_M
+        e100 = (s_idx % GRID_COLS) * GRID_SIZE_100K_M
+        n100 = (GRID_ROW_OFFSET_100K - (s_idx // GRID_COLS)) * GRID_SIZE_100K_M
         return e500, n500, e100, n100
 
     @staticmethod
@@ -239,11 +249,11 @@ class InputResolver:
         if not base:
             return None
         e500, n500, e100, n100 = base
-        scale = 10 ** (5 - len(digits) // 2)
+        scale = 10 ** (MAX_GRID_DIGIT_PRECISION - len(digits) // 2)
         e = e500 + e100 + int(digits[:len(digits)//2]) * scale
         n = n500 + n100 + int(digits[len(digits)//2:]) * scale
         from pyproj import Transformer
-        transformer = Transformer.from_crs("epsg:27700", "epsg:4326", always_xy=True)
+        transformer = Transformer.from_crs(EPSG_BNG, EPSG_WGS84, always_xy=True)
         lon, lat = transformer.transform(e, n)
         return Point(lat, lon)
 
