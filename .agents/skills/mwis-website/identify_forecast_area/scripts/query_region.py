@@ -1,10 +1,12 @@
-#!/usr/bin/env /usr/bin/python3
+#!/usr/bin/env python3
 import sys
 import os
 import json
 import math
 import urllib.request
 import urllib.parse
+from dataclasses import dataclass
+from typing import List, Tuple, Dict, Optional, Any
 
 # Path Configuration
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -12,229 +14,306 @@ ASSETS_DIR = os.path.join(SCRIPT_DIR, '..', 'assets')
 RESOURCES_DIR = os.path.join(SCRIPT_DIR, '..', 'resources')
 
 CONFIG_PATH = os.path.join(ASSETS_DIR, 'query_config.json')
-BOUNDARIES_PATH = os.path.join(ASSETS_DIR, 'mwis_region_boundaries.json') # Wait! Let's check the filename in assets: earlier it was saved to mwis-region-boundaries.json! Let's verify.
-# In task-254 it was: mwis-region-boundaries.json. Let's make sure it matches.
 BOUNDARIES_PATH = os.path.join(ASSETS_DIR, 'mwis-region-boundaries.json')
 MUNROS_PATH = os.path.join(RESOURCES_DIR, 'munros.csv')
 
-def load_config():
-    if not os.path.exists(CONFIG_PATH):
-        return {"overlap_tolerance_pct": 15.0}
-    try:
-        with open(CONFIG_PATH, 'r') as f:
-            return json.load(f)
-    except Exception:
-        return {"overlap_tolerance_pct": 15.0}
+# Constants
+DEFAULT_OVERLAP_TOLERANCE_PCT = 15.0
+EARTH_RADIUS_KM = 111.0
+NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+CARDINAL_DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+GB_LAT_MIN, GB_LAT_MAX = 49.9, 60.9
+GB_LON_MIN, GB_LON_MAX = -8.6, 1.8
+NI_LAT_MIN, NI_LAT_MAX = 54.0, 55.3
+NI_LON_MIN, NI_LON_MAX = -8.2, -5.4
 
-def load_boundaries():
-    try:
-        with open(BOUNDARIES_PATH, 'r') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"Error loading boundaries file: {e}", file=sys.stderr)
-        sys.exit(1)
+@dataclass
+class Point:
+    lat: float
+    lon: float
 
-def is_in_gb(lat, lon):
-    # Bounding box check for Great Britain (excluding Northern Ireland)
-    if not (49.9 <= lat <= 60.9 and -8.6 <= lon <= 1.8):
-        return False
-    # Exclude Northern Ireland box
-    if (54.0 <= lat <= 55.3) and (-8.2 <= lon <= -5.4):
-        return False
-    return True
+@dataclass
+class Segment:
+    start: Point
+    end: Point
 
-def search_munros(name):
-    if not os.path.exists(MUNROS_PATH):
+@dataclass
+class RegionDistance:
+    code: str
+    distance_km: float
+    direction: str
+
+class OutOfScopeError(Exception):
+    pass
+
+class BoundariesLoader:
+    @staticmethod
+    def load() -> Dict[str, Any]:
+        try:
+            with open(BOUNDARIES_PATH, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading boundaries file: {e}", file=sys.stderr)
+            sys.exit(1)
+
+class ConfigLoader:
+    @staticmethod
+    def get_overlap_tolerance() -> float:
+        if not os.path.exists(CONFIG_PATH):
+            return DEFAULT_OVERLAP_TOLERANCE_PCT
+        try:
+            with open(CONFIG_PATH, 'r') as f:
+                config = json.load(f)
+                return float(config.get("overlap_tolerance_pct", DEFAULT_OVERLAP_TOLERANCE_PCT))
+        except Exception:
+            return DEFAULT_OVERLAP_TOLERANCE_PCT
+
+class GeoMath:
+    @staticmethod
+    def is_in_gb(pt: Point) -> bool:
+        if not (GB_LAT_MIN <= pt.lat <= GB_LAT_MAX and GB_LON_MIN <= pt.lon <= GB_LON_MAX):
+            return False
+        if (NI_LAT_MIN <= pt.lat <= NI_LAT_MAX) and (NI_LON_MIN <= pt.lon <= NI_LON_MAX):
+            return False
+        return True
+
+    @staticmethod
+    def get_cardinal_direction(start: Point, target: Point) -> str:
+        y = math.sin(math.radians(target.lon - start.lon)) * math.cos(math.radians(target.lat))
+        x = math.cos(math.radians(start.lat)) * math.sin(math.radians(target.lat)) - \
+            math.sin(math.radians(start.lat)) * math.cos(math.radians(target.lat)) * math.cos(math.radians(target.lon - start.lon))
+        bearing = math.degrees(math.atan2(y, x))
+        bearing = (bearing + 360) % 360
+        idx = round(bearing / 45) % 8
+        return CARDINAL_DIRS[idx]
+
+    @staticmethod
+    def point_to_segment_distance(pt: Point, seg: Segment) -> Tuple[float, Point]:
+        avg_lat = (pt.lat + seg.start.lat + seg.end.lat) / 3.0
+        scale_x = EARTH_RADIUS_KM * math.cos(math.radians(avg_lat))
+        
+        px, py = pt.lon * scale_x, pt.lat * EARTH_RADIUS_KM
+        ax, ay = seg.start.lon * scale_x, seg.start.lat * EARTH_RADIUS_KM
+        bx, by = seg.end.lon * scale_x, seg.end.lat * EARTH_RADIUS_KM
+        
+        abx, aby = bx - ax, by - ay
+        apx, apy = px - ax, py - ay
+        ab2 = abx*abx + aby*aby
+        
+        if ab2 == 0:
+            return math.sqrt(apx*apx + apy*apy), seg.start
+            
+        t = max(0.0, min(1.0, (apx*abx + apy*aby) / ab2))
+        closest_px = ax + t * abx
+        closest_py = ay + t * aby
+        closest_lon = closest_px / scale_x
+        closest_lat = closest_py / EARTH_RADIUS_KM
+        dist = math.sqrt((px - closest_px)**2 + (py - closest_py)**2)
+        return dist, Point(closest_lat, closest_lon)
+
+    @staticmethod
+    def point_in_polygon(pt: Point, polygon: List[List[float]]) -> bool:
+        if len(polygon) > 1 and polygon[0] == polygon[-1]:
+            polygon = polygon[:-1]
+        n = len(polygon)
+        inside = False
+        p1y, p1x = polygon[0]
+        for i in range(n):
+            p2y, p2x = polygon[(i + 1) % n]
+            if min(p1y, p2y) < pt.lat <= max(p1y, p2y):
+                if pt.lon <= max(p1x, p2x):
+                    if p1y != p2y:
+                        xints = (pt.lat - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                    if p1x == p2x or pt.lon <= xints:
+                        inside = not inside
+            p1y, p1x = p2y, p2x
+        return inside
+
+    @staticmethod
+    def polygon_distance(pt: Point, polygon: List[List[float]]) -> Tuple[float, Point]:
+        min_dist = float('inf')
+        closest_pt = Point(0, 0)
+        for i in range(len(polygon) - 1):
+            seg = Segment(Point(polygon[i][0], polygon[i][1]), Point(polygon[i+1][0], polygon[i+1][1]))
+            d, c_pt = GeoMath.point_to_segment_distance(pt, seg)
+            if d < min_dist:
+                min_dist = d
+                closest_pt = c_pt
+        return min_dist, closest_pt
+
+class RegionFinder:
+    def __init__(self, boundaries: Dict[str, Any]):
+        self.boundaries = boundaries
+
+    def get_matching_regions(self, pt: Point) -> List[str]:
+        matches = []
+        for code, info in self.boundaries.items():
+            if GeoMath.point_in_polygon(pt, info["coordinates"]):
+                matches.append(code)
+        return sorted(list(set(matches)))
+
+    def get_nearest_regions(self, pt: Point, tolerance_pct: float) -> List[RegionDistance]:
+        distances = []
+        for code, info in self.boundaries.items():
+            dist, c_pt = GeoMath.polygon_distance(pt, info["coordinates"])
+            direction = GeoMath.get_cardinal_direction(pt, c_pt)
+            distances.append(RegionDistance(code, dist, direction))
+            
+        if not distances:
+            return []
+            
+        min_dist = min(d.distance_km for d in distances)
+        limit = min_dist * (1.0 + tolerance_pct / 100.0)
+        
+        near = [d for d in distances if d.distance_km <= limit]
+        near.sort(key=lambda x: x.distance_km)
+        return near
+
+class InputResolver:
+    @staticmethod
+    def _fetch_nominatim_data(name: str) -> Optional[Dict[str, Any]]:
+        params = urllib.parse.urlencode({'q': name, 'format': 'json', 'addressdetails': 1, 'limit': 1})
+        url = f"{NOMINATIM_URL}?{params}"
+        req = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
+        try:
+            with urllib.request.urlopen(req, timeout=5) as response:
+                data = json.loads(response.read().decode('utf-8'))
+                return data[0] if data else None
+        except Exception:
+            return None
+
+    @staticmethod
+    def search_munros(name: str) -> Optional[str]:
+        if not os.path.exists(MUNROS_PATH):
+            return None
+        try:
+            with open(MUNROS_PATH, 'r') as f:
+                for line in f:
+                    parts = line.strip().split(',')
+                    if len(parts) >= 3 and parts[1].lower() == name.lower():
+                        return parts[2]
+        except Exception:
+            pass
         return None
-    try:
-        with open(MUNROS_PATH, 'r') as f:
-            for line in f:
-                parts = line.strip().split(',')
-                if len(parts) >= 3 and parts[1].lower() == name.lower():
-                    return parts[2] # Return RegionCode
-    except Exception:
-        pass
-    return None
 
-def query_nominatim(name):
-    # Character limit mitigation for DoS
-    if len(name) > 100:
+    @staticmethod
+    def query_nominatim(name: str) -> Optional[Point]:
+        if len(name) > 100:
+            return None
+        data = InputResolver._fetch_nominatim_data(name)
+        if not data:
+            return None
+            
+        addr = data.get('address', {})
+        country_code = addr.get('country_code', '')
+        state = addr.get('state', '').lower()
+        
+        if country_code == 'gb' and 'northern ireland' not in state:
+            return Point(float(data['lat']), float(data['lon']))
         return None
-    params = urllib.parse.urlencode({'q': name, 'format': 'json', 'addressdetails': 1, 'limit': 1})
-    url = f"https://nominatim.openstreetmap.org/search?{params}"
-    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
-    try:
-        with urllib.request.urlopen(req, timeout=5) as response:
-            data = json.loads(response.read().decode('utf-8'))
-            if data:
-                addr = data[0].get('address', {})
-                country_code = addr.get('country_code', '')
-                state = addr.get('state', '').lower()
-                # Check scope constraints
-                if country_code == 'gb' and 'northern ireland' not in state:
-                    return float(data[0]['lat']), float(data[0]['lon'])
-    except Exception:
-        pass
-    return None
 
-def get_cardinal_direction(lat1, lon1, lat2, lon2):
-    y = math.sin(math.radians(lon2 - lon1)) * math.cos(math.radians(lat2))
-    x = math.cos(math.radians(lat1)) * math.sin(math.radians(lat2)) - \
-        math.sin(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.cos(math.radians(lon2 - lon1))
-    bearing = math.degrees(math.atan2(y, x))
-    bearing = (bearing + 360) % 360
-    dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-    idx = round(bearing / 45) % 8
-    return dirs[idx]
+    @staticmethod
+    def resolve_args(args: List[str]) -> Tuple[Optional[Point], Optional[str]]:
+        if len(args) == 1:
+            m_code = InputResolver.search_munros(args[0])
+            if m_code:
+                return None, m_code
+            coords = InputResolver.query_nominatim(args[0])
+            if coords:
+                return coords, None
+        elif len(args) >= 2:
+            try:
+                return Point(float(args[0]), float(args[1])), None
+            except ValueError:
+                pass
+        return None, None
 
-def point_to_segment_distance_km(p_lat, p_lon, lat1, lon1, lat2, lon2):
-    avg_lat = (p_lat + lat1 + lat2) / 3.0
-    scale_y = 111.0
-    scale_x = 111.0 * math.cos(math.radians(avg_lat))
-    px, py = p_lon * scale_x, p_lat * scale_y
-    ax, ay = lon1 * scale_x, lat1 * scale_y
-    bx, by = lon2 * scale_x, lat2 * scale_y
-    abx, aby = bx - ax, by - ay
-    apx, apy = px - ax, py - ay
-    ab2 = abx*abx + aby*aby
-    if ab2 == 0:
-        return math.sqrt(apx*apx + apy*apy), lat1, lon1
-    t = max(0.0, min(1.0, (apx*abx + apy*aby) / ab2))
-    closest_px = ax + t * abx
-    closest_py = ay + t * aby
-    closest_lon = closest_px / scale_x
-    closest_lat = closest_py / scale_y
-    dist = math.sqrt((px - closest_px)**2 + (py - closest_py)**2)
-    return dist, closest_lat, closest_lon
+class ResultFormatter:
+    def format_success(self, regions: List[str], boundaries: Dict[str, Any]) -> None:
+        raise NotImplementedError
 
-def polygon_distance_km(lat, lon, polygon):
-    min_dist = float('inf')
-    closest_pt = (None, None)
-    # Loop over all edges
-    for i in range(len(polygon) - 1):
-        d, c_lat, c_lon = point_to_segment_distance_km(lat, lon, polygon[i][0], polygon[i][1], polygon[i+1][0], polygon[i+1][1])
-        if d < min_dist:
-            min_dist = d
-            closest_pt = (c_lat, c_lon)
-    return min_dist, closest_pt[0], closest_pt[1]
+    def format_nearest(self, nearest: List[RegionDistance], boundaries: Dict[str, Any]) -> None:
+        raise NotImplementedError
+        
+    def format_out_of_scope(self) -> None:
+        raise NotImplementedError
 
-def point_in_polygon(lat, lon, polygon):
-    # Ensure not closed loop duplicates
-    if len(polygon) > 1 and polygon[0] == polygon[-1]:
-        polygon = polygon[:-1]
-    n = len(polygon)
-    inside = False
-    p1y, p1x = polygon[0]
-    for i in range(n):
-        p2y, p2x = polygon[(i + 1) % n]
-        if min(p1y, p2y) < lat <= max(p1y, p2y):
-            if lon <= max(p1x, p2x):
-                if p1y != p2y:
-                    xints = (lat - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                if p1x == p2x or lon <= xints:
-                    inside = not inside
-        p1y, p1x = p2y, p2x
-    return inside
+class JsonFormatter(ResultFormatter):
+    def format_success(self, regions: List[str], boundaries: Dict[str, Any]) -> None:
+        out = {
+            "in_scope": True,
+            "in_area": True,
+            "regions": regions,
+            "overlap": len(regions) > 1
+        }
+        print(json.dumps(out))
 
-def get_matching_regions(lat, lon, boundaries):
-    matches = []
-    for code, info in boundaries.items():
-        if point_in_polygon(lat, lon, info["coordinates"]):
-            matches.append(code)
-    # Return sorted unique matching region codes
-    return sorted(list(set(matches)))
+    def format_nearest(self, nearest: List[RegionDistance], boundaries: Dict[str, Any]) -> None:
+        out = {
+            "in_scope": True,
+            "in_area": False,
+            "nearest": [
+                {
+                    "code": d.code,
+                    "distance_km": round(d.distance_km, 2),
+                    "direction": d.direction
+                } for d in nearest
+            ]
+        }
+        print(json.dumps(out))
+        
+    def format_out_of_scope(self) -> None:
+        out = {
+            "in_scope": False, 
+            "error": "OUT_OF_SCOPE", 
+            "message": "The requested location is out of scope of this skill. Only locations in Great Britain are supported."
+        }
+        print(json.dumps(out))
 
-def get_nearest_regions(lat, lon, boundaries, tolerance_pct):
-    distances = {}
-    for code, info in boundaries.items():
-        dist, c_lat, c_lon = polygon_distance_km(lat, lon, info["coordinates"])
-        direction = get_cardinal_direction(lat, lon, c_lat, c_lon)
-        distances[code] = (dist, direction)
-    min_code = min(distances, key=lambda k: distances[k][0])
-    min_dist = distances[min_code][0]
-    limit = min_dist * (1.0 + tolerance_pct / 100.0)
-    # Find all within tolerance limit
-    near = [(code, dist, direct) for code, (dist, direct) in distances.items() if dist <= limit]
-    return sorted(near, key=lambda x: x[1])
-
-def handle_out_of_scope(as_json):
-    msg = "The requested location is out of scope of this skill. Only locations in Great Britain are supported."
-    if as_json:
-        print(json.dumps({"in_scope": False, "error": "OUT_OF_SCOPE", "message": msg}))
-    else:
-        print(msg, file=sys.stderr)
-    sys.exit(2)
-
-def print_result_json(in_scope, in_area, regions, nearest):
-    out = {"in_scope": in_scope, "in_area": in_area}
-    if in_area:
-        out["regions"] = regions
-        out["overlap"] = len(regions) > 1
-    else:
-        out["nearest"] = [{"code": code, "distance_km": round(dist, 2), "direction": direct} for code, dist, direct in nearest]
-    print(json.dumps(out))
-
-def print_result_text(in_area, regions, nearest, boundaries):
-    if in_area:
+class TextFormatter(ResultFormatter):
+    def format_success(self, regions: List[str], boundaries: Dict[str, Any]) -> None:
         names = [boundaries[code]["name"] for code in regions]
         print(f"Region(s): {', '.join(regions)} ({', '.join(names)})")
         if len(regions) > 1:
             print("Note: Overlap zone detected.")
-    else:
+
+    def format_nearest(self, nearest: List[RegionDistance], boundaries: Dict[str, Any]) -> None:
         print("The location is not in an MWIS area.")
         print("Nearest area(s):")
-        for code, dist, direct in nearest:
-            print(f"  - {code} ({boundaries[code]['name']}): {dist:.2f} km away to the {direct}")
-
-def resolve_input(args):
-    # Parse inputs (returns lat, lon or region_code if Munro)
-    if len(args) == 1:
-        # Check Munro
-        m_code = search_munros(args[0])
-        if m_code:
-            return None, None, m_code
-        # Try Nominatim
-        coords = query_nominatim(args[0])
-        if coords:
-            return coords[0], coords[1], None
-    elif len(args) >= 2:
-        try:
-            return float(args[0]), float(args[1]), None
-        except ValueError:
-            pass
-    return None, None, None
+        for d in nearest:
+            name = boundaries[d.code]["name"]
+            print(f"  - {d.code} ({name}): {d.distance_km:.2f} km away to the {d.direction}")
+            
+    def format_out_of_scope(self) -> None:
+        msg = "The requested location is out of scope of this skill. Only locations in Great Britain are supported."
+        print(msg, file=sys.stderr)
 
 def main():
     args = [a for a in sys.argv[1:] if a != '--json']
     as_json = '--json' in sys.argv
-    lat, lon, munro_code = resolve_input(args)
-    boundaries = load_boundaries()
+    formatter = JsonFormatter() if as_json else TextFormatter()
+    
+    pt, munro_code = InputResolver.resolve_args(args)
+    boundaries = BoundariesLoader.load()
     
     if munro_code:
-        # If it matched Munro directly
-        if as_json:
-            print_result_json(True, True, [munro_code], [])
-        else:
-            print_result_text(True, [munro_code], [], boundaries)
+        formatter.format_success([munro_code], boundaries)
         sys.exit(0)
         
-    if lat is None or lon is None or not is_in_gb(lat, lon):
-        handle_out_of_scope(as_json)
+    if pt is None or not GeoMath.is_in_gb(pt):
+        formatter.format_out_of_scope()
+        sys.exit(2)
         
-    regions = get_matching_regions(lat, lon, boundaries)
+    finder = RegionFinder(boundaries)
+    regions = finder.get_matching_regions(pt)
+    
     if regions:
-        if as_json:
-            print_result_json(True, True, regions, [])
-        else:
-            print_result_text(True, regions, [], boundaries)
+        formatter.format_success(regions, boundaries)
     else:
-        config = load_config()
-        tol = config.get("overlap_tolerance_pct", 15.0)
-        nearest = get_nearest_regions(lat, lon, boundaries, tol)
-        if as_json:
-            print_result_json(True, False, [], nearest)
-        else:
-            print_result_text(False, [], nearest, boundaries)
+        tol = ConfigLoader.get_overlap_tolerance()
+        nearest = finder.get_nearest_regions(pt, tol)
+        formatter.format_nearest(nearest, boundaries)
 
 if __name__ == '__main__':
     main()

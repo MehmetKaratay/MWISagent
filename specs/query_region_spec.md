@@ -141,3 +141,14 @@ test_cases:
       in_scope: false
       error_code: OUT_OF_SCOPE
 ```
+
+---
+
+## 7. Clean Code Standards
+
+To ensure maintainability and robustness, all scripts in this skill must adhere to the `python-clean-code` standard:
+- **No Magic Numbers**: All configuration, scaling factors, bounding box coordinates, and other numbers must be explicitly named constants at the top of the file.
+- **Maximum Arguments**: Functions should take no more than 3 arguments. Group parameters into structures (like `@dataclass`) when passing multiple related values (e.g. `Point`).
+- **No Flag Arguments**: Boolean flags passed to change function behavior (e.g., `as_json`) are prohibited. Use polymorphic classes (e.g., `JsonFormatter` and `TextFormatter`) or split functions instead.
+- **Single Responsibility**: Functions should do exactly one thing. For example, API fetching logic should be strictly separated from parsing and error-handling logic.
+- **Type Hints**: All public and internal interfaces should be annotated with strict Python type hints.

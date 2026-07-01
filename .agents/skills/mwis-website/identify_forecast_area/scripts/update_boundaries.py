@@ -6,6 +6,7 @@ import os
 import json
 import glob
 import xml.etree.ElementTree as ET
+from typing import List, Dict, Any
 
 # Path Configuration relative to this script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -26,7 +27,13 @@ REGION_NAMES = {
     "BB": "Brecon Beacons"
 }
 
-def parse_gpx_coordinates(filepath):
+# Constants
+XML_TRKPT_TAG = 'trkpt'
+LAT_ATTR = 'lat'
+LON_ATTR = 'lon'
+JSON_INDENT = 2
+
+def parse_gpx_coordinates(filepath: str) -> List[List[float]]:
     """
     Parses a GPX file and extracts coordinates [lat, lon] from trackpoints (<trkpt>).
     """
@@ -38,30 +45,29 @@ def parse_gpx_coordinates(filepath):
         return []
     
     coordinates = []
-    # Use iter to search for 'trkpt' elements regardless of XML namespace prefix
     for elem in root.iter():
         tag_local = elem.tag.split('}')[-1]
-        if tag_local == 'trkpt':
+        if tag_local == XML_TRKPT_TAG:
             try:
-                lat = float(elem.attrib['lat'])
-                lon = float(elem.attrib['lon'])
+                lat = float(elem.attrib[LAT_ATTR])
+                lon = float(elem.attrib[LON_ATTR])
                 coordinates.append([lat, lon])
             except (KeyError, ValueError) as e:
                 print(f"Skipping invalid trackpoint in {filepath}: {e}")
                 
     return coordinates
 
-def main():
-    if not os.path.isdir(GPX_DIR):
-        print(f"Error: GPX directory does not exist at: {GPX_DIR}")
+def update_boundaries(gpx_dir: str, output_path: str) -> None:
+    if not os.path.isdir(gpx_dir):
+        print(f"Error: GPX directory does not exist at: {gpx_dir}")
         return
         
-    gpx_files = glob.glob(os.path.join(GPX_DIR, "*.gpx"))
+    gpx_files = glob.glob(os.path.join(gpx_dir, "*.gpx"))
     if not gpx_files:
-        print(f"No GPX files found in: {GPX_DIR}")
+        print(f"No GPX files found in: {gpx_dir}")
         return
         
-    new_data = {}
+    new_data: Dict[str, Any] = {}
     for filepath in sorted(gpx_files):
         filename = os.path.basename(filepath)
         code = os.path.splitext(filename)[0]
@@ -81,12 +87,14 @@ def main():
         }
         print(f"Processed {code} ({REGION_NAMES[code]}): {len(coords)} coordinates")
         
-    # Write updated boundaries to assets directory
-    os.makedirs(os.path.dirname(OUTPUT_JSON_PATH), exist_ok=True)
-    with open(OUTPUT_JSON_PATH, 'w') as f:
-        json.dump(new_data, f, indent=2)
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    with open(output_path, 'w') as f:
+        json.dump(new_data, f, indent=JSON_INDENT)
         
-    print(f"Successfully updated boundaries JSON at: {OUTPUT_JSON_PATH}")
+    print(f"Successfully updated boundaries JSON at: {output_path}")
+
+def main() -> None:
+    update_boundaries(GPX_DIR, OUTPUT_JSON_PATH)
 
 if __name__ == "__main__":
     main()
