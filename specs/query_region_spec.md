@@ -9,7 +9,7 @@ metadata:
   location: .agents/skills/mwis-website/identify_forecast_area/scripts/query_region.py
   config_file: .agents/skills/mwis-website/identify_forecast_area/assets/query_config.json
   boundaries_file: .agents/skills/mwis-website/identify_forecast_area/assets/mwis-region-boundaries.json
-  munros_file: .agents/skills/mwis-website/identify_forecast_area/references/munros.csv
+  munros_file: .agents/skills/mwis-website/identify_forecast_area/resources/munros.csv
 ```
 
 ---
@@ -53,7 +53,7 @@ scope_rules:
 - **Out-of-Area Near Boundary Calculation**:
   - If a coordinate is within Great Britain but does not fall inside any MWIS region polygon:
     - Calculate the shortest great-circle (Haversine) distance from the coordinate to the boundary line segments of each of the 10 MWIS polygons.
-    - Identify the nearest region and print its name and distance (in miles or kilometers).
+    - Identify the nearest region and print its name, distance (in kilometers), and cardinal direction (e.g., N, NE, E, SE) to the nearest boundary point.
     - If other regions have boundary distances within the configured `overlap_tolerance_pct` tolerance of the minimum distance, list those regions as well.
 
 ---
@@ -117,7 +117,7 @@ test_cases:
     expected:
       in_scope: true
       in_area: false
-      nearest: ["LD", "YD", "SU"]  # LD is nearest, others might match depending on tolerance
+      nearest: ["YD"]  # YD is nearest, directional output included
   - name: Sheffield Out-of-Area Boundary Check
     inputs: [53.3811, -1.4701]
     expected:
