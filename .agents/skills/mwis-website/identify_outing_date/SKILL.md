@@ -1,6 +1,6 @@
 ---
 name: identify-outing-date
-description: [Description]
+description: Identify outing date range from user input and check whether the MWIS forecast is available for that date range.
 version: 0.0.1
 license: MIT
 metadata:
@@ -8,15 +8,14 @@ metadata:
 ---
 
 # Identify Outing Date
-The goal of this skill is to [more detailed description]
 
 ## When to use
- - [Concrete scenario]
- - [concrete scenario]
+ - User mentions an outing for a specific date, or range of dates, for example "Snowdonia, today and tomorrow"
+ - User asks for a forecast for a mountain region in the UK
+ 
 
 ## When NOT to use
- - [Concrete scenario]
- - [Concrete scenario]
+ - User does not specify a date range
 
 ## Workflow
  1. [step]

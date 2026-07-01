@@ -18,7 +18,11 @@ The goal of this skill is to retrieve the most recent forecast for a specific re
 
 ## Workflow
  1. Use the `identify_forecast_area` skill to identify the region
- 2. Use the `identify_outing_date` skill to identify the date range (today and tomorrow for now)
+ 2. Identify the date range
+    - If user does not specify a date, ask the user to provide a date or date range they are interested in. "Today", "Tomorrow", "Sunday to Wednesday", "02/07/2026" are all acceptable date formats; other identifiable dates are acceptable too.
+    - If a user gives a date such as "02/07" clarify that you are interpreting this as "DD/MM/YYYY" and that this is 02nd July 2007. Allow the user to override the date specified if needed but do not proactively give them that option.
+    - Use the `identify_outing_date` skill to check which forecast date(s) are available
+    - If user requests a forecast that we do not have access to, for example because it is too far in the future, inform the user that we do not have access to that forecast and ask if they would like the closest available forecast instead. If they agree proceed to fetch the closest available forecast. If they do not agree, do not fetch any forecast and inform the user that you cannot help with their request
  3. Fetch the forecast for the region and date range using the `fetch_mwis_forecast` tool.
  4. Summarise the forecast
  5. Present the forecast to the user
