@@ -8,7 +8,7 @@ import sys
 # Paths to the script under test
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_PATH = os.path.join(SCRIPT_DIR, 'query_region.py')
-PYTHON_EXE = '/usr/bin/python3'
+PYTHON_EXE = sys.executable
 
 SNOWDON_COORDS = ['53.0685', '-4.0763']
 PD_YD_OVERLAP_COORDS = ['53.95', '-2.57']
@@ -122,6 +122,18 @@ class TestQueryRegionCLI(unittest.TestCase):
         data = json.loads(res.stdout)
         self.assertFalse(data.get('in_scope'))
         self.assertEqual(data.get('error'), 'OUT_OF_SCOPE')
+
+    def test_grid_references_inside_eh(self):
+        for gr in ['NJ 009 020', 'NJ 00992 02017', 'NJ009020', 'NJ0099202017']:
+            res = self.run_query([gr])
+            self.assertEqual(res.returncode, 0)
+            self.assertIn('EH', res.stdout)
+            self.assertIn('Eastern Highlands', res.stdout)
+
+    def test_grid_reference_outside_mwis_area(self):
+        res = self.run_query(['TL 561 571'])
+        self.assertEqual(res.returncode, 0)
+        self.assertIn('not in an mwis area', res.stdout.lower())
 
 if __name__ == '__main__':
     unittest.main()

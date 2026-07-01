@@ -214,8 +214,45 @@ class InputResolver:
         return None
 
     @staticmethod
+    def _get_grid_square_base(first: str, second: str) -> Optional[Tuple[int, int, int, int]]:
+        alphabet = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
+        try:
+            f_idx = alphabet.index(first)
+            s_idx = alphabet.index(second)
+        except ValueError:
+            return None
+        e500 = ((f_idx % 5) - 2) * 500000
+        n500 = (3 - (f_idx // 5)) * 500000
+        e100 = (s_idx % 5) * 100000
+        n100 = (4 - (s_idx // 5)) * 100000
+        return e500, n500, e100, n100
+
+    @staticmethod
+    def parse_grid_reference(grid_ref: str) -> Optional[Point]:
+        grid_ref = grid_ref.replace(" ", "").upper()
+        if len(grid_ref) < 2 or not grid_ref[:2].isalpha():
+            return None
+        first, second, digits = grid_ref[0], grid_ref[1], grid_ref[2:]
+        if len(digits) % 2 != 0 or not digits.isdigit() or not digits:
+            return None
+        base = InputResolver._get_grid_square_base(first, second)
+        if not base:
+            return None
+        e500, n500, e100, n100 = base
+        scale = 10 ** (5 - len(digits) // 2)
+        e = e500 + e100 + int(digits[:len(digits)//2]) * scale
+        n = n500 + n100 + int(digits[len(digits)//2:]) * scale
+        from pyproj import Transformer
+        transformer = Transformer.from_crs("epsg:27700", "epsg:4326", always_xy=True)
+        lon, lat = transformer.transform(e, n)
+        return Point(lat, lon)
+
+    @staticmethod
     def resolve_args(args: List[str]) -> Tuple[Optional[Point], Optional[str]]:
         if len(args) == 1:
+            grid_pt = InputResolver.parse_grid_reference(args[0])
+            if grid_pt:
+                return grid_pt, None
             m_code = InputResolver.search_munros(args[0])
             if m_code:
                 return None, m_code

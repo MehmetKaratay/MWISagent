@@ -18,6 +18,7 @@ metadata:
 
 The tool must accept input arguments in the following formats:
 - **Coordinates**: Two float numbers representing `latitude` and `longitude`.
+- **Ordnance Survey Grid Reference**: A string representing an OS grid reference (e.g. `"NJ 009 020"`, `"NJ0099202017"`).
 - **Location Name**: A string representing a mountain or place name (e.g. `"Ben Nevis"`, `"Keswick"`).
 - **JSON Flag**: An optional `--json` argument to request structured JSON output instead of human-readable text.
 
@@ -40,13 +41,20 @@ scope_rules:
       message: "The requested location is out of scope of this skill. Only locations in Great Britain are supported."
 ```
 
-- Every queried coordinate or resolved place name must be checked to verify it lies inside Great Britain (England, Scotland, Wales).
+- Every queried coordinate, parsed grid reference, or resolved place name must be checked to verify it lies inside Great Britain (England, Scotland, Wales).
 - Locations in Northern Ireland or outside the UK are considered **out of scope** and must trigger the configured exit code and error message.
 
 ---
 
 ## 3. Query Logic & Distance Calculations
 
+- **Input Parsing & Grid Reference Flow**:
+  1. Determine if the input argument matches an OS grid reference format (two letters followed by an even number of digits, ignoring spaces).
+  2. If it is an OS Grid Reference:
+     - Parse the two letters to identify the 100km square base Easting and Northing.
+     - Convert the digits to meter offsets and add to the base to get the BNG (OSGB36, EPSG:27700) coordinates.
+     - Use `pyproj` to transform the BNG coordinates to WGS84 latitude and longitude (EPSG:4326).
+  3. If not an OS Grid Reference, perform the Name Lookup Flow.
 - **Name Lookup Flow**:
   1. Check for a case-insensitive match in `munros.csv`. If found, resolve to its designated `RegionCode` immediately.
   2. If not found in `munros.csv`, query `https://nominatim.openstreetmap.org/search` over HTTPS to resolve the name to coordinates.
@@ -140,6 +148,28 @@ test_cases:
     expected:
       in_scope: false
       error_code: OUT_OF_SCOPE
+  - name: NJ 009 020 Grid Reference Check
+    inputs: ["NJ 009 020"]
+    expected:
+      regions: ["EH"]
+  - name: NJ 00992 02017 Grid Reference Check
+    inputs: ["NJ 00992 02017"]
+    expected:
+      regions: ["EH"]
+  - name: NJ009020 Grid Reference Check
+    inputs: ["NJ009020"]
+    expected:
+      regions: ["EH"]
+  - name: NJ0099202017 Grid Reference Check
+    inputs: ["NJ0099202017"]
+    expected:
+      regions: ["EH"]
+  - name: TL 561 571 Grid Reference Check
+    inputs: ["TL 561 571"]
+    expected:
+      in_scope: true
+      in_area: false
+      nearest: ["PD"]
 ```
 
 ---
