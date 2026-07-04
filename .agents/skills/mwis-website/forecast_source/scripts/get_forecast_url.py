@@ -9,6 +9,7 @@ import csv
 import sys
 import json
 import argparse
+from typing import Optional, Any
 
 DEFAULT_CSV_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -39,7 +40,7 @@ def ensure_csv_file_exists(csv_path: str) -> None:
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"Regions reference CSV not found at: {csv_path}")
 
-def find_url_in_csv_rows(reader, normalized_query: str) -> str:
+def find_url_in_csv_rows(reader: csv.DictReader, normalized_query: str) -> str:
     """Find the URL matching the query from CSV rows.
 
     Args:
@@ -72,7 +73,7 @@ def extract_url_from_csv(normalized_query: str, csv_path: str) -> str:
             return url
     raise ValueError("No matching MWIS region found.")
 
-def get_forecast_url(query: str, csv_path: str = None) -> str:
+def get_forecast_url(query: str, csv_path: Optional[str] = None) -> str:
     """Get the forecast URL for the given query.
 
     Args:
@@ -90,7 +91,7 @@ def get_forecast_url(query: str, csv_path: str = None) -> str:
     except ValueError:
         raise ValueError(f"No matching MWIS region found for: '{query}'")
 
-def main():
+def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description="Extract MWIS forecast URL.")
     parser.add_argument("query", help="Region code or region name")
