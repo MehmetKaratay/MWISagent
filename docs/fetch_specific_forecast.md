@@ -72,3 +72,50 @@ Output:
 ## Underlying Configuration Files
 
 - `references/mwis-regions.csv`: A CSV database of all 10 MWIS regions containing codes, names, countries, reference heights, freezing level calculation formats, and forecast URLs.
+
+---
+
+## parse_forecast.py CLI Usage
+
+To parse an MWIS text forecast HTML page into JSON:
+```bash
+python3 parse_forecast.py <source>
+```
+The `<source>` argument can be a local file path or a URL starting with `http://` or `https://`.
+
+### Output Format
+On success, outputs a JSON object containing the parsed forecast data:
+```bash
+python3 parse_forecast.py tests/resources/eh-forecast.html
+```
+Output:
+```json
+{
+  "region": "Cairngorms NP and Monadhliath",
+  "days": [
+    {
+      "day_index": 0,
+      "date": "Sunday 5th July 2026",
+      "last_updated": "Sat 4th Jul 26 at 4:17PM",
+      "uk_summary": "...",
+      "region_headline": "...",
+      "wind_mountain": "...",
+      "wind_effect": "...",
+      "precipitation": "...",
+      "cloud_hills": "...",
+      "chance_cloud_free": "...",
+      "sun_clarity": "...",
+      "cold_temp": "...",
+      "freezing_level": "..."
+    }
+  ],
+  "outlook": "Planning outlook text..."
+}
+```
+
+### Exit Codes
+- `0`: Success
+- `1`: General Error
+- `2`: Network Error (if URL fetch fails)
+- `3`: File Missing Error (if local file path is invalid)
+- `4`: Parsing Error (if HTML structure is invalid)

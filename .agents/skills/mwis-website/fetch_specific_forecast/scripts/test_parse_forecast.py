@@ -20,6 +20,8 @@ class TestParseForecast(unittest.TestCase):
     def test_parse_eh_static_html(self):
         """Verify parsing of Cairngorms (EH) static HTML."""
         # This will fail initially because parse_forecast.py is not yet implemented.
+        if SCRIPT_DIR not in sys.path:
+            sys.path.insert(0, SCRIPT_DIR)
         from parse_forecast import parse_forecast_html
         eh_path = os.path.join(RESOURCES_DIR, 'eh-forecast.html')
         with open(eh_path, 'r', encoding='utf-8') as f:
@@ -68,6 +70,45 @@ class TestParseForecast(unittest.TestCase):
         finally:
             if os.path.exists(temp_file):
                 os.remove(temp_file)
+
+    def test_fetch_forecast_html_network_error(self):
+        """Verify network error exits with code 2."""
+        from unittest.mock import patch
+        import requests
+        from parse_forecast import main
+        import sys
+        
+        with patch("requests.get") as mock_get:
+            mock_get.side_effect = requests.RequestException("Network Error")
+            with patch.object(sys, 'argv', ["parse_forecast.py", "http://example.com/forecast"]):
+                with self.assertRaises(SystemExit) as cm:
+                    main()
+                self.assertEqual(cm.exception.code, 2)
+
+    def test_fetch_forecast_html_network_success(self):
+        """Verify successful network fetch parses correctly."""
+        from unittest.mock import patch
+        import requests
+        from parse_forecast import main
+        import sys
+        from io import StringIO
+        
+        eh_path = os.path.join(RESOURCES_DIR, 'eh-forecast.html')
+        with open(eh_path, 'r', encoding='utf-8') as f:
+            html = f.read()
+
+        with patch("requests.get") as mock_get:
+            mock_resp = mock_get.return_value
+            mock_resp.text = html
+            mock_resp.raise_for_status.return_value = None
+            
+            with patch.object(sys, 'argv', ["parse_forecast.py", "http://example.com/forecast"]):
+                with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+                    with self.assertRaises(SystemExit) as cm:
+                        main()
+                    self.assertEqual(cm.exception.code, 0)
+                    data = json.loads(mock_stdout.getvalue())
+                    self.assertIn("Cairngorms", data["region"])
 
 if __name__ == '__main__':
     unittest.main()
