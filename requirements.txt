@@ -1,3 +1,5 @@
 # OS Grid Reference to Lat/Long conversion
 pyproj>=3.7.1
 parsedatetime>=2.6
+beautifulsoup4>=4.12.3
+requests>=2.31.0

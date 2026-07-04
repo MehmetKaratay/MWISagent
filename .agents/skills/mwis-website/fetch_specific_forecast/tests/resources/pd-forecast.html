@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+
+    <link rel="apple-touch-icon-precomposed" sizes="57x57" href="/icon/apple-touch-icon-57x57.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/icon/apple-touch-icon-114x114.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/icon/apple-touch-icon-72x72.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/icon/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="60x60" href="/icon/apple-touch-icon-60x60.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="/icon/apple-touch-icon-120x120.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="76x76" href="/icon/apple-touch-icon-76x76.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/icon/apple-touch-icon-152x152.png" />
+    <link rel="icon" type="image/png" href="/icon/favicon-196x196.png" sizes="196x196" />
+    <link rel="icon" type="image/png" href="/icon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/png" href="/icon/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/icon/favicon-16x16.png" sizes="16x16" />
+    <link rel="icon" type="image/png" href="/icon/favicon-128.png" sizes="128x128" />
+    <meta name="application-name" content="&nbsp;" />
+    <meta name="msapplication-TileColor" content="#FFFFFF" />
+    <meta name="msapplication-TileImage" content="/icon/mstile-144x144.png" />
+    <meta name="msapplication-square70x70logo" content="/icon/mstile-70x70.png" />
+    <meta name="msapplication-square150x150logo" content="/icon/mstile-150x150.png" />
+    <meta name="msapplication-wide310x150logo" content="/icon/mstile-310x150.png" />
+    <meta name="msapplication-square310x310logo" content="/icon/mstile-310x310.png" />
+
+
+</head>
+<body>
+
+    
+
+
+    
+<div class="forecast-area">
+
+    <h1>Peak District</h1>
+    <p>The southernmost Pennines, covering the entire Peak District National Park, also extending north to hills accessed from Hebden Bridge, and including the hills immediately north of Manchester.</p>
+
+        <h4>
+Sunday&#39;s            Forecast
+        </h4>
+<div class="row">
+    <div class="col-xs-12" style="width:100%;">
+                <div id="modal-xs-0" class="icon-modal-content">
+                    <span class="close" id="cross-0" onclick="CloseIconModal()">&times;</span>
+                    <h3>Moderate breeze, locally gusty</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Wind-Fairly_Small.jpg" height="200" width="200" title="Moderate breeze, locally gusty" alt="Moderate breeze, locally gusty" />
+                    <p>A noticeable breeze, feeling cool where exposed on tops. Locally may be gusty, but unlikely to affect walking progress. 15-25mph.</p>
+                </div>
+                <div id="modal-xs-1" class="icon-modal-content">
+                    <span class="close" id="cross-1" onclick="CloseIconModal()">&times;</span>
+                    <h3>Patchy rain or drizzle</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Precipitation-Drizzle.jpg" height="200" width="200" title="Patchy rain or drizzle" alt="Patchy rain or drizzle" />
+                    <p>Rain on and off, or generally drizzly - total amounts small, but may be persistently damp, especially where hills are shrouded in cloud.</p>
+                </div>
+                <div id="modal-xs-2" class="icon-modal-content">
+                    <span class="close" id="cross-2" onclick="CloseIconModal()">&times;</span>
+                    <h3>Very warm</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Temperature-Hot.png" height="200" width="200" title="Very warm" alt="Very warm" />
+                    <p>Warm conditions across the hills, rising above 15C on tops. Increasingly hot on lower terrain, reaching 25C+ in many valleys. Beware of dehydration.</p>
+                </div>
+    </div>
+    <div class="col-md-1"></div>
+        <ul style="list-style:none;display:inline;padding-inline-start:0px;">
+                    <li style="display:inline">
+                        <img class="icon-img" id="icon-0" data-icon="MW06-100001" src="https://www.mwis.org.uk/assets/weather-icons/Wind-Fairly_Small.jpg" onclick="OpenIconModal('0')" height="110" width="110" title="Moderate breeze, locally gusty" alt="Moderate breeze, locally gusty" />
+                    </li>
+                    <li style="display:inline">
+                        <img class="icon-img" id="icon-1" data-icon="MW06-100009" src="https://www.mwis.org.uk/assets/weather-icons/Precipitation-Drizzle.jpg" onclick="OpenIconModal('1')" height="110" width="110" title="Patchy rain or drizzle" alt="Patchy rain or drizzle" />
+                    </li>
+                    <li style="display:inline">
+                        <img class="icon-img" id="icon-2" data-icon="MW06-100024" src="https://www.mwis.org.uk/assets/weather-icons/Temperature-Hot.png" onclick="OpenIconModal('2')" height="110" width="110" title="Very warm" alt="Very warm" />
+                    </li>
+        </ul>
+
+    <div class="col-md-1"></div>
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+        <p>Click an icon for more information or <a target="_blank" href="/information/icon-information">click here</a> for a key to all icons.</p>
+    </div>
+    <div class="col-md-1"></div>
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+                <div id="modal-0" class="icon-modal-content">
+                    <span class="close" id="cross-0" onclick="CloseIconModal()">&times;</span>
+                    <h3>Moderate breeze, locally gusty</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Wind-Fairly_Small.jpg" height="200" width="200" title="Moderate breeze, locally gusty" alt="Moderate breeze, locally gusty" />
+                    <p>A noticeable breeze, feeling cool where exposed on tops. Locally may be gusty, but unlikely to affect walking progress. 15-25mph.</p>
+                </div>
+                <div id="modal-1" class="icon-modal-content">
+                    <span class="close" id="cross-1" onclick="CloseIconModal()">&times;</span>
+                    <h3>Patchy rain or drizzle</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Precipitation-Drizzle.jpg" height="200" width="200" title="Patchy rain or drizzle" alt="Patchy rain or drizzle" />
+                    <p>Rain on and off, or generally drizzly - total amounts small, but may be persistently damp, especially where hills are shrouded in cloud.</p>
+                </div>
+                <div id="modal-2" class="icon-modal-content">
+                    <span class="close" id="cross-2" onclick="CloseIconModal()">&times;</span>
+                    <h3>Very warm</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Temperature-Hot.png" height="200" width="200" title="Very warm" alt="Very warm" />
+                    <p>Warm conditions across the hills, rising above 15C on tops. Increasingly hot on lower terrain, reaching 25C+ in many valleys. Beware of dehydration.</p>
+                </div>
+    </div>
+    <div class="col-md-1"></div>
+</div>
+
+    
+
+
+
+    <div class="row forecast-area--downloads">
+        <div class="col-md-6">
+            <div class="media">
+                <div class="align-self-center mr-3 ml-2"><a href="/assets/forecasts/pd-mwi-wm14532_2026-07-04_161734_3377.pdf" target="_blank"><i class="fas fa-2x fa-file-pdf"></i></a></div>
+                <div class="media-body">
+                    <a href="/assets/forecasts/pd-mwi-wm14532_2026-07-04_161734_3377.pdf" target="_blank">Click here to download the latest PDF</a>
+                    <small class="d-none d-md-block d-xl-none">
+                        Last Updated Sat 4th Jul 26 at
+                        4:17PM
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="media">
+                <div class="align-self-center mr-3 ml-2"><a href="/forecasts/english-and-welsh/peak-district/text"><i class="fas fa-2x fa-file-alt"></i></a></div>
+                <div class="media-body">
+                        <a href="/forecasts/english-and-welsh/peak-district">View our detailed version</a>
+                        <small class="d-none d-md-block d-xl-none">
+                            Last Updated Sat 4th Jul 26 at
+                            4:17PM
+                        </small>
+                    </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <style>
+
+        .category-end {
+            border-bottom: 1px solid #c4c2c2
+        }
+
+        .icon-img {
+            border-radius: 20%;
+            margin: 15px;
+        }
+
+        .icon-modal {
+            position: fixed; /* Stay in place */
+            z-index: 30; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            text-align: center;
+        }
+
+        /* Modal Content/Box */
+        .icon-modal-content {
+            display: none;
+            position: center;
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #888;
+            text-align: center;
+            margin: auto;
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+    </style>
+
+
+    <ul class="nav nav-tabs flex-grow-1 flex-nowrap" role="tablist">
+        <li class="nav-item mr-auto pt-2 pl-3 tab-title">
+            <strong>Forecast information for&hellip;</strong>
+        </li>
+
+
+
+
+
+            <li class="nav-item">
+                <a class="nav-link active" href="#Forecast0" role="tab" data-toggle="tab" aria-selected=&quot;true&quot;>
+Sunday                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " href="#Forecast1" role="tab" data-toggle="tab" >
+Monday                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " href="#Forecast2" role="tab" data-toggle="tab" >
+Tuesday                </a>
+            </li>
+
+
+
+
+    </ul>
+
+
+    <div class="tab-content">
+
+            <div id="Forecast0" class="forecast forecast-area tab-pane active" role="tabpanel">
+
+                <div class="forecast-area--forecast-details category-end">
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Viewing Forecast For<br /></h4></div>
+                        <div class="col">
+                            <p>
+                                <strong>Peak District</strong><br />
+                                <strong>Sunday 5th July 2026</strong><br />
+                                <small>
+                                    Last updated
+                                    Sat 4th Jul 26 at
+                                    4:17PM
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+
+                        <div class="row">
+                            <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Summary for all mountain areas</h4></div>
+                            <div class="col"><p>Early sunny bursts in east Scotland, rain and cloud setting in west and spreading widely with time. Extensive cloud and drizzle on English summits, some patchy rain, notably northwest hill groups; south Pennines drier later. Largely dry Wales, sun increasingly breaking out (through high cloud), particularly south.</p></div>
+                        </div>
+
+                        <div class="row category-end">
+                            <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Headline for Peak District</h4></div>
+                            <div class="col"><p>Morning low cloud lifts off the tops; breezy in exposure</p></div>
+                        </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How windy? (On the summits)</h4></div>
+                        <div class="col"><p>Westerly 20-30mph, quite gusty over the high tops, particularly early and late in the day.</p></div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Effect of the wind on you?</h4></div>
+                        <div class="col"><p>Ease of walking becoming impacted on high terrain, particularly early and late in the day with notable gusts affecting balance.</p></div>
+                    </div>
+
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How Wet?</h4></div>
+                        <div class="col">
+                            <p><strong>Light patchy rain, mostly early</strong></p>
+                            <p>A few patches of light rain drifting from the west from time to time, mostly early and amounting to little; steadiest falls to the north and west of Kinder Scout. Some drizzle on the summits in cloud, but a general drying trend, substantially dry by later afternoon.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Cloud on the hills?</h4></div>
+                        <div class="col">
+                            <p><strong>Lifting off the hills</strong></p>
+                            <p>Fog covers most high terrain in the morning with some lower banks, most extensive to the west of high edges. Cloud lifts through morning, clearing above the moors afternoon, soonest  south and east.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Chance of cloud free summits?</h4></div>
+                        <div class="col">
+                            <p>40% dawn, rising to 90% through morning</p>
+                        </div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-md-6 col-lg-5 col-xl-4"><h4>Sunshine and air clarity?</h4></div>
+                        <div class="col">
+                            <p>Sun bursts increasingly breaking out though weakened by high cloud
+Very good visibility once cloud lifts.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Temperature (at 600m)</h4></div>
+                        <div class="col">
+                            <p>12C rising to 15 or 16C, warmest south where may rise a degree warmer.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>And in the valleys</h4></div>
+                        <div class="col">
+                            <p>14C at dawn rising to 19 or 20C; up to 22C in the valleys south of Kinder Scout.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <div id="Forecast1" class="forecast forecast-area tab-pane " role="tabpanel">
+
+                <div class="forecast-area--forecast-details category-end">
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Viewing Forecast For<br /></h4></div>
+                        <div class="col">
+                            <p>
+                                <strong>Peak District</strong><br />
+                                <strong>Monday 6th July 2026</strong><br />
+                                <small>
+                                    Last updated
+                                    Sat 4th Jul 26 at
+                                    4:17PM
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+
+
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How windy? (On the summits)</h4></div>
+                        <div class="col"><p>Westerly 20-30mph, risk of strong gusts over tops early, as high as 40mph.</p></div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Effect of the wind on you?</h4></div>
+                        <div class="col"><p>Ease of walking becoming impacted on high terrain, particularly in early gusts; locally fairly small effects.</p></div>
+                    </div>
+
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How Wet?</h4></div>
+                        <div class="col">
+                            <p><strong>Substantially dry</strong></p>
+                            <p>A few spots of light rain across northern moors in the morning, otherwise dry.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Cloud on the hills?</h4></div>
+                        <div class="col">
+                            <p><strong>Lifting off the hills</strong></p>
+                            <p>Fog covers most high terrain in the morning with some lower banks, most extensive to the west of high edges. Cloud lifts through morning for clear hills afternoon.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Chance of cloud free summits?</h4></div>
+                        <div class="col">
+                            <p>30% dawn, rising to 80% by afternoon</p>
+                        </div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-md-6 col-lg-5 col-xl-4"><h4>Sunshine and air clarity?</h4></div>
+                        <div class="col">
+                            <p>Occasional weak sun through high cloud.
+Very good visibility.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Temperature (at 600m)</h4></div>
+                        <div class="col">
+                            <p>12C rising to 15 or 16C, or warmer southernmost moors.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>And in the valleys</h4></div>
+                        <div class="col">
+                            <p>14C at dawn rising to 21C, perhaps several degrees warmer southern valleys, to 23C.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <div id="Forecast2" class="forecast forecast-area tab-pane " role="tabpanel">
+
+                <div class="forecast-area--forecast-details category-end">
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Viewing Forecast For<br /></h4></div>
+                        <div class="col">
+                            <p>
+                                <strong>Peak District</strong><br />
+                                <strong>Tuesday 7th July 2026</strong><br />
+                                <small>
+                                    Last updated
+                                    Sat 4th Jul 26 at
+                                    4:17PM
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+
+
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How windy? (On the summits)</h4></div>
+                        <div class="col"><p>West-northwesterly 25-30mph, quite gusty over the tops and downslope early, easing to around 20mph aftenroon.</p></div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Effect of the wind on you?</h4></div>
+                        <div class="col"><p>Strenuous walking on high terrain early with notable buffeting; a trend towards fairly small effects.</p></div>
+                    </div>
+
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How Wet?</h4></div>
+                        <div class="col">
+                            <p><strong>Likely dry</strong></p>
+                            <p>Small chance of some light sprinkles drifting over northern moors, but likely entirely dry.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Cloud on the hills?</h4></div>
+                        <div class="col">
+                            <p><strong>Lifting to often clear the summits</strong></p>
+                            <p>Fairly extensive over high edges in the morning, lowest bases to the northwest, perhaps to 400-500m at dawn. Lifting, clearing the summits by afternoon, but occasional caps may return to northern summits at times.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Chance of cloud free summits?</h4></div>
+                        <div class="col">
+                            <p>Rising to 70%</p>
+                        </div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-md-6 col-lg-5 col-xl-4"><h4>Sunshine and air clarity?</h4></div>
+                        <div class="col">
+                            <p>A mix of cloud and sun, some high cloud around, perhaps sunnier later.
+Very good visibility.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Temperature (at 600m)</h4></div>
+                        <div class="col">
+                            <p>11 or 12C rising to 16C.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>And in the valleys</h4></div>
+                        <div class="col">
+                            <p>14C at dawn rising to 21 or 22C, some chance of higher temperatures southern valleys.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+    </div>
+
+    <div class="forecast-area--planning-outlook">
+        <h3>Planning Outlook</h3>
+        <p class="mb-0">Rain, drizzle and low cloud persist over western hills from Lake District northward into early next week. Temperatures near average, but feeling cool in exposure to wind on tops, quite strong and gusty central and south Scotland. Northeast areas are drier with higher cloud bases but rain reaches here too. Higher pressure south maintains drier conditions in Wales and the south Pennines but cloud and some drizzle will affect high western slopes from time to time; lighter wind here, but nuisance gusts in exposure. A drier and warmer window builds into the middle of next week: very warm in England and Wales, spells of sunshine spread northward, and lighter wind. Some showers and patchy rain continue through late week and next weekend, though detail is uncertain and more often dry.</p>
+    </div>
+
+</div>
+<script>
+
+    var infoOpen = ""
+
+    function CloseIconModal() {
+
+        var descriptions = document.getElementsByClassName("icon-modal-content");
+        for (var i = 0; i < descriptions.length; i++) {
+            descriptions[i].style.display = "none";
+        }
+        infoOpen = "";
+    }
+
+    function OpenIconModal(id) {
+
+        var modal = document.getElementById("modal-" + id)
+        if (window.screen.width <= 426) {
+            modal = document.getElementById("modal-xs-" + id)
+        }
+        var descriptions = document.getElementsByClassName("icon-modal-content");
+        for (var i = 0; i < descriptions.length; i++) {
+            descriptions[i].style.display = "none";
+        }
+        if (infoOpen == id) {
+            infoOpen = "";
+        } else {
+            modal.style.display = "block";
+            infoOpen = id;
+        }        
+    }
+</script>
+       
+
+</body>
+</html>
