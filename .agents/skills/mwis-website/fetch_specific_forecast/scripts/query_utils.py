@@ -31,31 +31,25 @@ def ensure_csv_file_exists(csv_path: str) -> None:
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"Regions reference CSV not found at: {csv_path}")
 
+VALIDATION_RULES = {
+    "RegionCode": lambda val: bool(re.match(r"^[A-Z]{2}$", val)),
+    "RegionName": lambda val: bool(re.match(r"^[a-zA-Z &]+$", val)),
+    "RefHeight": lambda val: bool(re.match(r"^\d{3}m$", val)),
+    "FLorValley": lambda val: val in ("FL", "Valley"),
+    "Country": lambda val: val in ("Scotland", "England", "Wales"),
+    "Url": lambda val: val.startswith("https://mwis.org.uk/forecasts/"),
+}
+
 def validate_row_schema(row: dict[str, str]) -> None:
     """Validate columns of a CSV row against schema rules.
 
     Args:
         row (dict[str, str]): Row dictionary.
     """
-    code = row.get("RegionCode", "").strip()
-    name = row.get("RegionName", "").strip()
-    height = row.get("RefHeight", "").strip()
-    fl_val = row.get("FLorValley", "").strip()
-    country = row.get("Country", "").strip()
-    url = row.get("Url", "").strip()
-
-    if not re.match(r"^[A-Z]{2}$", code):
-        raise ValueError(f"Invalid RegionCode: '{code}'")
-    if not re.match(r"^[a-zA-Z &]+$", name):
-        raise ValueError(f"Invalid RegionName: '{name}'")
-    if not re.match(r"^\d{3}m$", height):
-        raise ValueError(f"Invalid RefHeight: '{height}'")
-    if fl_val not in ("FL", "Valley"):
-        raise ValueError(f"Invalid FLorValley: '{fl_val}'")
-    if country not in ("Scotland", "England", "Wales"):
-        raise ValueError(f"Invalid Country: '{country}'")
-    if not url.startswith("https://mwis.org.uk/forecasts/"):
-        raise ValueError(f"Invalid Url: '{url}'")
+    for key, rule in VALIDATION_RULES.items():
+        val = row.get(key, "").strip()
+        if not rule(val):
+            raise ValueError(f"Invalid {key}: '{val}'")
 
 def find_region_row(csv_path: str, query: str) -> dict[str, str]:
     """Find a region row in the CSV file matching the query.
