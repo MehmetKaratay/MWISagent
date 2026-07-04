@@ -7,6 +7,7 @@
  * Create CONTEXT.md to explain the overall goal, so agent knows int include scope for interpreting weather features and their impact.
     - Add note to say that we will be fetching forecast from website but in future we may access db directly. The code should be designed to make this swap trivial.
  * Python script to fetch MWIS forecast. Output goes to LLM.
+ * Resent AGENTS.md file
 
 
 
@@ -22,21 +23,3 @@
 
 
 ## Draft prompts
-
-### fetch_specific_forecast → fetch_forecast
-
-change fetch_specific_forecast to be fetch_forecast. Use the url provided by [query_url.py](file;file:///home/karatay/Repositories/learning/ai/MWISagent/skills-mwis-website/fetch_specific_forecast/scripts/query_url.py) to fetch the live MWIS forecast. Create a copy of what you receive to use for tests as the live forecast will keep changing.
-
-The forecast you fetch will contain three forecast days and an outlook. Each day will contain, in order:
- - UK Summary (first day only)
- - Region Summary (first day only)
- - Wind headline
- - Wind details (may be empty)
- - Rain headline
- - Rain deatils (may be empty)
- - Cloud headline
- - Cloud details
-** THIS SHOULD BE IN A SKILL AS REFERENCE **
-
-
-The result of this forecast will be passed to the LLM. Output the forecast as an LLM, paying special attention to divide the forecast by date (YYYY-MM-DD) and ("outlook").
