@@ -1,6 +1,6 @@
 # Fetch Specific Forecast Spec
 
-This specification defines a command-line tool `get_forecast_url.py` to resolve MWIS region codes or names to forecast text URLs.
+This specification defines a command-line tool `query_url.py` to resolve MWIS region codes or names to forecast text URLs.
 
 ```yaml
 name: fetch_specific_forecast
@@ -38,8 +38,8 @@ dependencies:
 
 | Command | Expected Output (stdout) | Expected Exit Code |
 | :--- | :--- | :--- |
-| `python3 get_forecast_url.py "WH"` | `{"url": "https://mwis.org.uk/forecasts/scottish/west-highlands/text"}` | 0 |
-| `python3 get_forecast_url.py "WH" -stdout` | `https://mwis.org.uk/forecasts/scottish/west-highlands/text` | 0 |
-| `python3 get_forecast_url.py "West Highlands"` | `{"url": "https://mwis.org.uk/forecasts/scottish/west-highlands/text"}` | 0 |
-| `python3 get_forecast_url.py "West Highlands" --stdout` | `https://mwis.org.uk/forecasts/scottish/west-highlands/text` | 0 |
-| `python3 get_forecast_url.py "Invalid"` | *(Error msg on stderr)* | 1 |
+| `python3 query_url.py "WH"` | `{"url": "https://mwis.org.uk/forecasts/scottish/west-highlands/text"}` | 0 |
+| `python3 query_url.py "WH" -stdout` | `https://mwis.org.uk/forecasts/scottish/west-highlands/text` | 0 |
+| `python3 query_url.py "West Highlands"` | `{"url": "https://mwis.org.uk/forecasts/scottish/west-highlands/text"}` | 0 |
+| `python3 query_url.py "West Highlands" --stdout` | `https://mwis.org.uk/forecasts/scottish/west-highlands/text` | 0 |
+| `python3 query_url.py "Invalid"` | *(Error msg on stderr)* | 1 |

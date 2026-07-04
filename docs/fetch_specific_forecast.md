@@ -7,7 +7,7 @@ The `fetch_specific_forecast` skill resolves a specific MWIS forecast region cod
 This skill utilizes the underlying python utilities:
 - **Freezing Level Query**: `skills-mwis-website/fetch_specific_forecast/scripts/query_fl.py`
 - **Reference Height Query**: `skills-mwis-website/fetch_specific_forecast/scripts/query_refHeight.py`
-- **Forecast URL Query**: `skills-mwis-website/fetch_specific_forecast/scripts/get_forecast_url.py`
+- **Forecast URL Query**: `skills-mwis-website/fetch_specific_forecast/scripts/query_url.py`
 - **Shared Helpers**: `skills-mwis-website/fetch_specific_forecast/scripts/query_utils.py`
 
 ---
@@ -50,17 +50,17 @@ Output:
 
 ---
 
-## get_forecast_url.py CLI Usage
+## query_url.py CLI Usage
 
 To run the URL utility manually:
 ```bash
-python3 get_forecast_url.py <region_code_or_name> [custom_csv_path] [-stdout]
+python3 query_url.py <region_code_or_name> [custom_csv_path] [-stdout]
 ```
 
 ### Output Format
 By default, outputs a JSON object containing the URL:
 ```bash
-python3 get_forecast_url.py "WH"
+python3 query_url.py "WH"
 ```
 Output:
 ```json

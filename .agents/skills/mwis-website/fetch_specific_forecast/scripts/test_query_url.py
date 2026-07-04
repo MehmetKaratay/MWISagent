@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Mehmet Rahmi Karatay
 # Licensed under the MIT License.
 
-"""Unit tests for the get_forecast_url.py CLI tool."""
+"""Unit tests for the query_url.py CLI tool."""
 
 import unittest
 import os
@@ -12,11 +12,11 @@ import sys
 
 # Paths to the script under test
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-SCRIPT_PATH = os.path.join(SCRIPT_DIR, 'get_forecast_url.py')
+SCRIPT_PATH = os.path.join(SCRIPT_DIR, 'query_url.py')
 PYTHON_EXE = sys.executable
 
-class TestGetForecastUrlCLI(unittest.TestCase):
-    """Test suite verifying CLI execution of get_forecast_url.py."""
+class TestQueryUrlCLI(unittest.TestCase):
+    """Test suite verifying CLI execution of query_url.py."""
 
     def setUp(self):
         # Create a temporary CSV file mimicking the structure of mwis-regions.csv for tests

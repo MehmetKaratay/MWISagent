@@ -19,9 +19,9 @@ The goal of this skill is to retrieve the source URL of a specific forecast area
  - You already know the source URL
 
 ## Workflow
- 1. Use the `get_forecast_url.py` script to try to find the source URL.
+ 1. Use the `query_url.py` script to try to find the source URL.
  2. If the script returns a URL, return it.
- 3. If the script returns an error, use your own logic to inspect `resources/mwis-regions.csv` to find the source URL.
+ 3. If the script returns an error, use your own logic to inspect `references/mwis-regions.csv` to find the source URL.
 
 ## Examples
  - Input: "WH" → Output: "https://mwis.org.uk/forecasts/scottish/west-highlands/text"

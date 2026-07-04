@@ -12,6 +12,7 @@
 
 
 ## Future
+* Refactor python scripts to send data directly instead of through command line (if this is more efficient for LLM)
 * Generate the main agent to run on Google Cloud
 * Create a front end
    - Interaction with full agent
@@ -24,7 +25,7 @@
 
 ### fetch_specific_forecast → fetch_forecast
 
-change fetch_specific_forecast to be fetch_forecast. Use the url provided by [get_forecast_url.py](file;file:///home/karatay/Repositories/learning/ai/MWISagent/skills-mwis-website/fetch_specific_forecast/scripts/get_forecast_url.py) to fetch the live MWIS forecast. Create a copy of what you receive to use for tests as the live forecast will keep changing.
+change fetch_specific_forecast to be fetch_forecast. Use the url provided by [query_url.py](file;file:///home/karatay/Repositories/learning/ai/MWISagent/skills-mwis-website/fetch_specific_forecast/scripts/query_url.py) to fetch the live MWIS forecast. Create a copy of what you receive to use for tests as the live forecast will keep changing.
 
 The forecast you fetch will contain three forecast days and an outlook. Each day will contain, in order:
  - UK Summary (first day only)

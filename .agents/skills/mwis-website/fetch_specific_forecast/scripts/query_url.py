@@ -13,7 +13,7 @@ from typing import Optional, Any
 
 DEFAULT_CSV_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "resources",
+    "references",
     "mwis-regions.csv"
 )
 
