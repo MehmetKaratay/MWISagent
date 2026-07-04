@@ -1,3 +1,3 @@
 # OS Grid Reference to Lat/Long conversion
 pyproj>=3.7.1
-
+parsedatetime>=2.6
