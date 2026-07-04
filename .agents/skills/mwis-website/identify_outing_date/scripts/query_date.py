@@ -25,43 +25,101 @@ def get_reference_date() -> datetime.date:
             pass
     return datetime.date.today()
 
-def parse_single_date(text: str, ref_date: datetime.date) -> datetime.date:
-    """Parse a single date string using DD/MM/YYYY, DD/MM, or parsedatetime.
+def _parse_formatted_date(text: str, ref_year: int) -> datetime.date:
+    """Parse DD/MM or DD/MM/YYYY formatted dates.
 
     Args:
         text (str): The date string to parse.
-        ref_date (datetime.date): The reference date to resolve relative dates.
+        ref_year (int): Year fallback if not in text.
 
     Returns:
-        datetime.date: The resolved date.
-
-    Raises:
-        ValueError: If the date cannot be parsed.
+        datetime.date: The parsed date.
     """
-    text = text.strip()
-    
-    # Try parsing DD/MM/YYYY or DD/MM
     m = re.match(r'^(\d{1,2})/(\d{1,2})(?:/(\d{4}))?$', text)
-    if m:
-        day = int(m.group(1))
-        month = int(m.group(2))
-        year = int(m.group(3)) if m.group(3) else ref_date.year
-        try:
-            return datetime.date(year, month, day)
-        except ValueError as e:
-            raise ValueError(f"Invalid date: {text}") from e
+    if not m:
+        raise ValueError()
+    day = int(m.group(1))
+    month = int(m.group(2))
+    year = int(m.group(3)) if m.group(3) else ref_year
+    return datetime.date(year, month, day)
 
-    # Fallback to parsedatetime
+def _parse_fuzzy_date(text: str, ref_date: datetime.date) -> datetime.date:
+    """Parse relative/fuzzy date descriptions using parsedatetime.
+
+    Args:
+        text (str): Relative date query.
+        ref_date (datetime.date): Reference date.
+
+    Returns:
+        datetime.date: The parsed date.
+    """
     cal = parsedatetime.Calendar()
     ref_dt = datetime.datetime.combine(ref_date, datetime.time.min)
     struct, flag = cal.parse(text, ref_dt.timetuple())
     if flag > 0:
         return datetime.date(struct.tm_year, struct.tm_mon, struct.tm_mday)
-
     raise ValueError(f"Could not parse date: '{text}'")
 
+def parse_single_date(text: str, ref_date: datetime.date) -> datetime.date:
+    """Parse a single date string using DD/MM/YYYY, DD/MM, or parsedatetime.
+
+    Args:
+        text (str): The date string to parse.
+        ref_date (datetime.date): Reference date.
+
+    Returns:
+        datetime.date: The resolved date.
+    """
+    text = text.strip()
+    try:
+        return _parse_formatted_date(text, ref_date.year)
+    except ValueError:
+        return _parse_fuzzy_date(text, ref_date)
+
+def _resolve_weekend(ref_date: datetime.date) -> list[datetime.date]:
+    """Calculate the dates for the upcoming weekend.
+
+    Args:
+        ref_date (datetime.date): Reference date.
+
+    Returns:
+        list[datetime.date]: Sat and Sun dates (or just Sun if today is Sun).
+    """
+    weekday = ref_date.weekday()
+    if weekday == 4:
+        return [ref_date + datetime.timedelta(days=1), ref_date + datetime.timedelta(days=2)]
+    elif weekday == 5:
+        return [ref_date, ref_date + datetime.timedelta(days=1)]
+    elif weekday == 6:
+        return [ref_date]
+    sat = ref_date + datetime.timedelta(days=5 - weekday)
+    sun = ref_date + datetime.timedelta(days=6 - weekday)
+    return [sat, sun]
+
+def _resolve_range(start_str: str, end_str: str, ref_date: datetime.date) -> list[datetime.date]:
+    """Generate all dates between start and end query strings.
+
+    Args:
+        start_str (str): Start date query.
+        end_str (str): End date query.
+        ref_date (datetime.date): Reference date.
+
+    Returns:
+        list[datetime.date]: List of dates in range.
+    """
+    start = parse_single_date(start_str, ref_date)
+    end = parse_single_date(end_str, ref_date)
+    if start > end:
+        start, end = end, start
+    dates = []
+    curr = start
+    while curr <= end:
+        dates.append(curr)
+        curr += datetime.timedelta(days=1)
+    return dates
+
 def resolve_query_to_dates(query: str, ref_date: datetime.date) -> list[datetime.date]:
-    """Resolve a date query string (which may represent ranges) into a list of dates.
+    """Resolve a date query string into a list of dates.
 
     Args:
         query (str): The date query.
@@ -71,42 +129,15 @@ def resolve_query_to_dates(query: str, ref_date: datetime.date) -> list[datetime
         list[datetime.date]: Chronologically sorted list of unique dates.
     """
     normalized = query.lower().strip()
-
-    # Handle "this weekend" / "weekend"
     if "weekend" in normalized:
-        weekday = ref_date.weekday()  # Monday is 0, Sunday is 6
-        if weekday == 4:  # Friday
-            return [ref_date + datetime.timedelta(days=1), ref_date + datetime.timedelta(days=2)]
-        elif weekday == 5:  # Saturday
-            return [ref_date, ref_date + datetime.timedelta(days=1)]
-        elif weekday == 6:  # Sunday
-            return [ref_date]
-        else:
-            # Upcoming Saturday and Sunday
-            sat = ref_date + datetime.timedelta(days=5 - weekday)
-            sun = ref_date + datetime.timedelta(days=6 - weekday)
-            return [sat, sun]
-
-    # Handle "to" / "through" ranges (e.g. "04/07 to 06/07" or "today to tomorrow")
+        return _resolve_weekend(ref_date)
+    
     m_range = re.split(r'\s+(?:to|through)\s+', normalized)
     if len(m_range) == 2:
-        start_date = parse_single_date(m_range[0], ref_date)
-        end_date = parse_single_date(m_range[1], ref_date)
-        if start_date > end_date:
-            start_date, end_date = end_date, start_date
-        dates = []
-        curr = start_date
-        while curr <= end_date:
-            dates.append(curr)
-            curr += datetime.timedelta(days=1)
-        return dates
+        return _resolve_range(m_range[0], m_range[1], ref_date)
 
-    # Handle "and" / comma-separated lists
     parts = re.split(r'\s+and\s+|,\s*', normalized)
-    dates = []
-    for part in parts:
-        if part.strip():
-            dates.append(parse_single_date(part, ref_date))
+    dates = [parse_single_date(p, ref_date) for p in parts if p.strip()]
     return sorted(list(set(dates)))
 
 def map_date_to_code(target: datetime.date, ref_date: datetime.date) -> str:
@@ -132,8 +163,29 @@ def map_date_to_code(target: datetime.date, ref_date: datetime.date) -> str:
         return "D3"
     elif 4 <= delta <= 7:
         return "Doutlook"
-    else:
-        return "Dfuture"
+    return "Dfuture"
+
+def _resolve_codes(query: str, ref_date: datetime.date) -> list[str]:
+    """Resolve a query to unique chronological MWIS coverage codes.
+
+    Args:
+        query (str): Date query.
+        ref_date (datetime.date): Reference date.
+
+    Returns:
+        list[str]: Unique forecast codes.
+    """
+    dates = resolve_query_to_dates(query, ref_date)
+    if not dates:
+        raise ValueError("No dates resolved.")
+    codes = []
+    seen = set()
+    for d in dates:
+        code = map_date_to_code(d, ref_date)
+        if code not in seen:
+            seen.add(code)
+            codes.append(code)
+    return codes
 
 def main():
     """Main CLI entry point."""
@@ -141,23 +193,8 @@ def main():
         sys.stderr.write("Error: Missing date query argument.\n")
         sys.exit(1)
 
-    query = sys.argv[1]
-    ref_date = get_reference_date()
-
     try:
-        dates = resolve_query_to_dates(query, ref_date)
-        if not dates:
-            raise ValueError("No dates resolved.")
-        
-        # Map dates to codes, preserving chronological order of dates and uniqueness
-        codes = []
-        seen = set()
-        for d in dates:
-            code = map_date_to_code(d, ref_date)
-            if code not in seen:
-                seen.add(code)
-                codes.append(code)
-
+        codes = _resolve_codes(sys.argv[1], get_reference_date())
         print(json.dumps(codes))
         sys.exit(0)
     except Exception as e:
