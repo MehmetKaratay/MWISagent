@@ -39,6 +39,93 @@ def fetch_forecast_html(source: str) -> str:
             return f.read()
 
 
+HEADING_MAPPING = {
+    "summary for all": "uk_summary",
+    "headline for": "region_headline",
+    "how windy?": "wind_mountain",
+    "effect of the wind": "wind_effect",
+    "how wet?": "precipitation",
+    "cloud on the hills?": "cloud_hills",
+    "chance of cloud free": "chance_cloud_free",
+    "sunshine and air clarity?": "sun_clarity",
+    "how cold?": "cold_temp",
+    "freezing level": "freezing_level"
+}
+
+
+def _extract_date_metadata(day_div: Any) -> tuple[str, str]:
+    """Extract the date and last updated fields from a day's forecast container."""
+    date = ""
+    last_updated = ""
+    viewing_for_row = None
+
+    # Search for the "Viewing Forecast For" row
+    for row in day_div.find_all("div", class_="row"):
+        heading_div = row.find("div", class_=lambda c: c and "col-lg-5" in c)
+        if heading_div and "Viewing Forecast For" in heading_div.get_text(separator=" "):
+            viewing_for_row = row
+            break
+    
+    # Fallback to general lookup of the row
+    if not viewing_for_row:
+        for row in day_div.find_all("div", class_="row"):
+            if "Viewing Forecast For" in row.get_text(separator=" "):
+                viewing_for_row = row
+                break
+
+    if viewing_for_row:
+        content_div = viewing_for_row.find_all("div", class_=lambda c: c and "col" in c)[-1]
+        if content_div:
+            strong_tags = content_div.find_all("strong")
+            if len(strong_tags) >= 2:
+                date = strong_tags[1].get_text().strip()
+            elif len(strong_tags) == 1:
+                date = strong_tags[0].get_text().strip()
+            else:
+                date = "Unknown Date"
+            
+            small_tag = content_div.find("small")
+            if small_tag:
+                last_updated = " ".join(small_tag.get_text().split())
+                if last_updated.lower().startswith("last updated"):
+                    last_updated = last_updated[len("last updated"):].strip()
+
+    return date, last_updated
+
+
+def _parse_day_forecast(day_div: Any, idx: int) -> Dict[str, Any]:
+    """Parse a single day's forecast div container."""
+    date, last_updated = _extract_date_metadata(day_div)
+
+    fields = {val: "" for val in HEADING_MAPPING.values()}
+
+    for row in day_div.find_all("div", class_="row"):
+        h4 = row.find("h4")
+        if not h4:
+            continue
+        
+        heading_text = h4.get_text().strip().lower()
+        cols = row.find_all("div", class_=lambda c: c and "col" in c)
+        if len(cols) < 2:
+            continue
+        
+        content_div = cols[-1]
+        content_text = " ".join(content_div.get_text(separator=" ").split()).strip()
+
+        for heading_key, field_key in HEADING_MAPPING.items():
+            if heading_key in heading_text:
+                fields[field_key] = content_text
+                break
+
+    day_dict = {
+        "day_index": idx,
+        "date": date,
+        "last_updated": last_updated
+    }
+    day_dict.update(fields)
+    return day_dict
+
+
 def parse_forecast_html(html_content: str) -> Dict[str, Any]:
     """Parse MWIS forecast HTML content into a structured dictionary.
 
@@ -70,101 +157,7 @@ def parse_forecast_html(html_content: str) -> Dict[str, Any]:
                 raise ValueError("Missing Forecast0 container")
             continue
 
-        date = ""
-        last_updated = ""
-        viewing_for_row = None
-
-        # Extract date and last_updated
-        for row in day_div.find_all("div", class_="row"):
-            heading_div = row.find("div", class_=lambda c: c and "col-lg-5" in c)
-            if heading_div and "Viewing Forecast For" in heading_div.get_text(separator=" "):
-                viewing_for_row = row
-                break
-        
-        # Some older or different layouts might just use col-xs-12 or col-md-3 etc.
-        # Let's fallback if the above didn't work but we find "Viewing Forecast For" anywhere
-        if not viewing_for_row:
-            for row in day_div.find_all("div", class_="row"):
-                if "Viewing Forecast For" in row.get_text(separator=" "):
-                    viewing_for_row = row
-                    break
-
-        if viewing_for_row:
-            content_div = viewing_for_row.find_all("div", class_=lambda c: c and "col" in c)[-1]
-            if content_div:
-                strong_tags = content_div.find_all("strong")
-                if len(strong_tags) >= 2:
-                    date = strong_tags[1].get_text().strip()
-                elif len(strong_tags) == 1:
-                    date = strong_tags[0].get_text().strip()
-                else:
-                    date = "Unknown Date"
-                
-                small_tag = content_div.find("small")
-                if small_tag:
-                    last_updated = " ".join(small_tag.get_text().split())
-                    # strip out "Last updated" text if present
-                    if last_updated.lower().startswith("last updated"):
-                        last_updated = last_updated[len("last updated"):].strip()
-
-        fields: Dict[str, str] = {
-            "uk_summary": "",
-            "region_headline": "",
-            "wind_mountain": "",
-            "wind_effect": "",
-            "precipitation": "",
-            "cloud_hills": "",
-            "chance_cloud_free": "",
-            "sun_clarity": "",
-            "cold_temp": "",
-            "freezing_level": ""
-        }
-
-        # Extract remaining fields
-        for row in day_div.find_all("div", class_="row"):
-            # MWIS format uses an H4 for the heading inside a col-lg-5 or similar
-            h4 = row.find("h4")
-            if not h4:
-                continue
-            
-            heading_text = h4.get_text().strip().lower()
-            
-            # The content is usually in the sibling column or the last column in the row
-            cols = row.find_all("div", class_=lambda c: c and "col" in c)
-            if len(cols) < 2:
-                continue
-            
-            # Use the last col which typically contains the content
-            content_div = cols[-1]
-            content_text = " ".join(content_div.get_text(separator=" ").split()).strip()
-
-            if "summary for all" in heading_text:
-                fields["uk_summary"] = content_text
-            elif "headline for" in heading_text:
-                fields["region_headline"] = content_text
-            elif "how windy?" in heading_text:
-                fields["wind_mountain"] = content_text
-            elif "effect of the wind" in heading_text:
-                fields["wind_effect"] = content_text
-            elif "how wet?" in heading_text:
-                fields["precipitation"] = content_text
-            elif "cloud on the hills?" in heading_text:
-                fields["cloud_hills"] = content_text
-            elif "chance of cloud free" in heading_text:
-                fields["chance_cloud_free"] = content_text
-            elif "sunshine and air clarity?" in heading_text:
-                fields["sun_clarity"] = content_text
-            elif "how cold?" in heading_text:
-                fields["cold_temp"] = content_text
-            elif "freezing level" in heading_text:
-                fields["freezing_level"] = content_text
-
-        day_dict = {
-            "day_index": idx,
-            "date": date,
-            "last_updated": last_updated
-        }
-        day_dict.update(fields)
+        day_dict = _parse_day_forecast(day_div, idx)
         days_data.append(day_dict)
 
     # Extract Planning Outlook
