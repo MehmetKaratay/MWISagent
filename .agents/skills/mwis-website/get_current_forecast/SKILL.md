@@ -16,6 +16,11 @@ The goal of this skill is to retrieve the most recent forecast for a specific re
 ## When NOT to use
  - The user requests a forecast from a source which is not MWIS, for example "According to the Met Office what will the weather on Ben Nevis be tomorrow?"
 
+ ## Skill dependencies
+  * identify_forecast_area
+  * identify_forecast_date
+  * fetch_mwis_forecast
+
 ## Workflow
  1. Use the `identify_forecast_area` skill to identify the region
  2. Identify the date range
@@ -29,4 +34,6 @@ The goal of this skill is to retrieve the most recent forecast for a specific re
 
 ## Examples
  - Input: "Snowdonia, today and tomorrow" → Output: "[A summary of the forecast for Snowdonia for today and tomorrow]"
+
+
 
