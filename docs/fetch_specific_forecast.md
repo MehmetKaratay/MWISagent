@@ -1,34 +1,64 @@
 # Fetch Specific Forecast Skill Documentation
 
-The `fetch_specific_forecast` skill resolves a specific MWIS forecast region code or name (e.g., `WH` or `West Highlands`) into its corresponding direct text forecast URL on the Mountain Weather Information Service (MWIS) website.
+The `fetch_specific_forecast` skill resolves a specific MWIS forecast region code or name (e.g., `WH` or `West Highlands`) into its corresponding direct text forecast URL, freezing level formatting (`FLorValley`), and reference height (`RefHeight`).
 
 ## Component Overview
 
-This skill utilizes the underlying python utility `get_forecast_url.py` to identify the URL.
+This skill utilizes the underlying python utilities:
+- **Freezing Level Query**: `skills-mwis-website/fetch_specific_forecast/scripts/query_fl.py`
+- **Reference Height Query**: `skills-mwis-website/fetch_specific_forecast/scripts/query_refHeight.py`
+- **Forecast URL Query**: `skills-mwis-website/fetch_specific_forecast/scripts/get_forecast_url.py`
+- **Shared Helpers**: `skills-mwis-website/fetch_specific_forecast/scripts/query_utils.py`
 
-- **Skill Entry Point**: `skills-mwis-website/fetch_specific_forecast/SKILL.md`
-- **CLI Utility**: `skills-mwis-website/fetch_specific_forecast/scripts/get_forecast_url.py`
+---
 
-## CLI Usage
+## query_fl.py CLI Usage
 
-To run the utility manually:
+To run the freezing level utility manually:
+```bash
+python3 query_fl.py <region_code_or_name> [custom_csv_path]
+```
+
+### Output Format
+On success, outputs JSON indicating if the freezing level is calculated as a Freezing Level (`FL`) or Valley Temperature (`Valley`):
+```bash
+python3 query_fl.py "WH"
+```
+Output:
+```json
+{"FLorValley": "FL"}
+```
+
+---
+
+## query_refHeight.py CLI Usage
+
+To run the reference height utility manually:
+```bash
+python3 query_refHeight.py <region_code_or_name> [custom_csv_path]
+```
+
+### Output Format
+On success, outputs JSON containing the reference height:
+```bash
+python3 query_refHeight.py "WH"
+```
+Output:
+```json
+{"RefHeight": "900m"}
+```
+
+---
+
+## get_forecast_url.py CLI Usage
+
+To run the URL utility manually:
 ```bash
 python3 get_forecast_url.py <region_code_or_name> [custom_csv_path] [-stdout]
 ```
 
-### Input Formats
-
-The script accepts:
-1. **Region Code** (case-insensitive): E.g., `"WH"`, `"SD"`, `"LD"`.
-2. **Region Name** (case-insensitive): E.g., `"West Highlands"`, `"lake district"`.
-
-### Optional Flags
-
-- `-stdout` / `--stdout`: Output the raw URL string directly to `stdout` instead of a JSON object.
-
 ### Output Format
-
-By default, on success, the script outputs a JSON object containing the URL to `stdout` and exits with code 0:
+By default, outputs a JSON object containing the URL:
 ```bash
 python3 get_forecast_url.py "WH"
 ```
@@ -37,24 +67,8 @@ Output:
 {"url": "https://mwis.org.uk/forecasts/scottish/west-highlands/text"}
 ```
 
-With the `-stdout` or `--stdout` flag, it outputs the raw URL string directly to `stdout`:
-```bash
-python3 get_forecast_url.py "WH" -stdout
-```
-Output:
-```
-https://mwis.org.uk/forecasts/scottish/west-highlands/text
-```
-
-If the region is not found or the input is invalid, it prints an error message to `stderr` and exits with code 1:
-```bash
-python3 get_forecast_url.py "InvalidRegion"
-```
-Output (stderr):
-```
-Error: No matching MWIS region found for: 'InvalidRegion'
-```
+---
 
 ## Underlying Configuration Files
 
-- `resources/mwis-regions.csv`: A CSV mapping database of all 10 MWIS region codes, names, countries, and direct forecast text URLs.
+- `references/mwis-regions.csv`: A CSV database of all 10 MWIS regions containing codes, names, countries, reference heights, freezing level calculation formats, and forecast URLs.
