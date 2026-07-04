@@ -23,10 +23,10 @@ class TestQueryUrlCLI(unittest.TestCase):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.csv_path = os.path.join(self.temp_dir.name, "test-regions.csv")
         with open(self.csv_path, "w", encoding="utf-8") as f:
-            f.write("RegionCode,RegionName,Country,Url\n")
-            f.write("NW,North West Highlands,Scotland,https://mwis.org.uk/forecasts/scottish/the-northwest-highlands/text\n")
-            f.write("WH,West Highlands,Scotland,https://mwis.org.uk/forecasts/scottish/west-highlands/text\n")
-            f.write("EH,Eastern Highlands,Scotland,https://mwis.org.uk/forecasts/scottish/cairngorms/text\n")
+            f.write("RegionCode,RegionName,RefHeight,FLorValley,Country,Url\n")
+            f.write("NW,North West Highlands,900m,FL,Scotland,https://mwis.org.uk/forecasts/scottish/the-northwest-highlands/text\n")
+            f.write("WH,West Highlands,900m,FL,Scotland,https://mwis.org.uk/forecasts/scottish/west-highlands/text\n")
+            f.write("EH,Eastern Highlands,900m,FL,Scotland,https://mwis.org.uk/forecasts/scottish/cairngorms/text\n")
 
     def tearDown(self):
         self.temp_dir.cleanup()

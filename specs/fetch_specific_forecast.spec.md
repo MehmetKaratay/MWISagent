@@ -27,7 +27,15 @@ dependencies:
 
 ## Behavior & Parsing Logic
 
-- **Source Reference**: Mappings are loaded from `mwis-regions.csv`.
+- **Shared Helper module (`query_utils.py`)**: All common behaviors (loading CSV, field normalization, row matching, and schema validation) are implemented in `query_utils.py` and imported by `query_url.py`.
+- **CSV Parsing and Schema Validation**:
+  - `RegionCode`: `^[A-Z]{2}$`
+  - `RegionName`: `^[a-zA-Z &]+$`
+  - `RefHeight`: `^\d{3}m$`
+  - `FLorValley`: `"FL"` or `"Valley"`
+  - `Country`: `"Scotland"`, `"England"`, or `"Wales"`
+  - `Url`: Starts with `"https://mwis.org.uk/forecasts/"`
+  - Any failure to validate immediately aborts execution with exit code 1.
 - **Query Matching**: Case-insensitive matching against `RegionCode` and `RegionName`.
 - **Argument Parsing**: Uses `argparse` to handle positional and optional arguments.
 - **Output Formats**:
