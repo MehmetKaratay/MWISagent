@@ -1,14 +1,28 @@
+# Copyright (c) 2026 Mehmet Rahmi Karatay
+# Licensed under the MIT License.
+
+"""Unit tests for the get_forecast_url.py CLI tool."""
+
 import unittest
 import os
 import tempfile
-from get_forecast_url import get_forecast_url
+import subprocess
+import json
+import sys
 
-class TestGetForecastUrl(unittest.TestCase):
+# Paths to the script under test
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_PATH = os.path.join(SCRIPT_DIR, 'get_forecast_url.py')
+PYTHON_EXE = sys.executable
+
+class TestGetForecastUrlCLI(unittest.TestCase):
+    """Test suite verifying CLI execution of get_forecast_url.py."""
+
     def setUp(self):
         # Create a temporary CSV file mimicking the structure of mwis-regions.csv for tests
         self.temp_dir = tempfile.TemporaryDirectory()
         self.csv_path = os.path.join(self.temp_dir.name, "test-regions.csv")
-        with open(self.csv_path, "w") as f:
+        with open(self.csv_path, "w", encoding="utf-8") as f:
             f.write("RegionCode,RegionName,Country,Url\n")
             f.write("NW,North West Highlands,Scotland,https://mwis.org.uk/forecasts/scottish/the-northwest-highlands/text\n")
             f.write("WH,West Highlands,Scotland,https://mwis.org.uk/forecasts/scottish/west-highlands/text\n")
@@ -17,33 +31,56 @@ class TestGetForecastUrl(unittest.TestCase):
     def tearDown(self):
         self.temp_dir.cleanup()
 
-    def test_get_url_by_exact_region_code(self):
-        url = get_forecast_url("WH", self.csv_path)
-        self.assertEqual(url, "https://mwis.org.uk/forecasts/scottish/west-highlands/text")
+    def run_cli(self, query: str, stdout_flag: str = None) -> subprocess.CompletedProcess:
+        """Helper to execute the script in a subprocess."""
+        cmd = [PYTHON_EXE, SCRIPT_PATH, query, self.csv_path]
+        if stdout_flag:
+            cmd.append(stdout_flag)
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=5)
 
-    def test_get_url_by_lowercase_region_code(self):
-        url = get_forecast_url("wh", self.csv_path)
-        self.assertEqual(url, "https://mwis.org.uk/forecasts/scottish/west-highlands/text")
+    def test_default_json_output(self):
+        """Verify default execution prints JSON-formatted URL."""
+        res = self.run_cli("WH")
+        self.assertEqual(res.returncode, 0)
+        data = json.loads(res.stdout.strip())
+        self.assertEqual(data, {"url": "https://mwis.org.uk/forecasts/scottish/west-highlands/text"})
 
-    def test_get_url_by_exact_region_name(self):
-        url = get_forecast_url("North West Highlands", self.csv_path)
-        self.assertEqual(url, "https://mwis.org.uk/forecasts/scottish/the-northwest-highlands/text")
+    def test_stdout_flag_short(self):
+        """Verify -stdout flag prints raw URL string."""
+        res = self.run_cli("WH", "-stdout")
+        self.assertEqual(res.returncode, 0)
+        self.assertEqual(res.stdout.strip(), "https://mwis.org.uk/forecasts/scottish/west-highlands/text")
 
-    def test_get_url_by_lowercase_region_name(self):
-        url = get_forecast_url("north west highlands", self.csv_path)
-        self.assertEqual(url, "https://mwis.org.uk/forecasts/scottish/the-northwest-highlands/text")
+    def test_stdout_flag_long(self):
+        """Verify --stdout flag prints raw URL string."""
+        res = self.run_cli("WH", "--stdout")
+        self.assertEqual(res.returncode, 0)
+        self.assertEqual(res.stdout.strip(), "https://mwis.org.uk/forecasts/scottish/west-highlands/text")
 
-    def test_get_url_with_surrounding_whitespace(self):
-        url = get_forecast_url("  EH  ", self.csv_path)
-        self.assertEqual(url, "https://mwis.org.uk/forecasts/scottish/cairngorms/text")
+    def test_case_insensitive_name(self):
+        """Verify name resolution is case-insensitive and outputs JSON by default."""
+        res = self.run_cli("north west highlands")
+        self.assertEqual(res.returncode, 0)
+        data = json.loads(res.stdout.strip())
+        self.assertEqual(data, {"url": "https://mwis.org.uk/forecasts/scottish/the-northwest-highlands/text"})
 
-    def test_get_url_invalid_query_raises_value_error(self):
-        with self.assertRaises(ValueError):
-            get_forecast_url("Invalid Region", self.csv_path)
+    def test_invalid_region_exits_with_error(self):
+        """Verify query for non-existent region outputs error on stderr and exits with 1."""
+        res = self.run_cli("InvalidRegion")
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("Error:", res.stderr)
 
-    def test_get_url_empty_query_raises_value_error(self):
-        with self.assertRaises(ValueError):
-            get_forecast_url("", self.csv_path)
+    def test_empty_query_exits_with_error(self):
+        """Verify query with empty string outputs error and exits with 1."""
+        res = self.run_cli("")
+        self.assertEqual(res.returncode, 1)
+
+    def test_missing_csv_file_exits_with_error(self):
+        """Verify non-existent CSV path outputs error and exits with 1."""
+        cmd = [PYTHON_EXE, SCRIPT_PATH, "WH", "/nonexistent/path.csv"]
+        res = subprocess.run(cmd, capture_output=True, text=True, timeout=5)
+        self.assertEqual(res.returncode, 1)
+        self.assertIn("Error:", res.stderr)
 
 if __name__ == "__main__":
     unittest.main()

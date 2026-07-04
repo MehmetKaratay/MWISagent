@@ -13,7 +13,7 @@ This skill utilizes the underlying python utility `get_forecast_url.py` to ident
 
 To run the utility manually:
 ```bash
-python3 get_forecast_url.py <region_code_or_name> [custom_csv_path]
+python3 get_forecast_url.py <region_code_or_name> [custom_csv_path] [-stdout]
 ```
 
 ### Input Formats
@@ -22,11 +22,24 @@ The script accepts:
 1. **Region Code** (case-insensitive): E.g., `"WH"`, `"SD"`, `"LD"`.
 2. **Region Name** (case-insensitive): E.g., `"West Highlands"`, `"lake district"`.
 
+### Optional Flags
+
+- `-stdout` / `--stdout`: Output the raw URL string directly to `stdout` instead of a JSON object.
+
 ### Output Format
 
-On success, the script prints the exact text forecast URL to `stdout` and exits with code 0:
+By default, on success, the script outputs a JSON object containing the URL to `stdout` and exits with code 0:
 ```bash
 python3 get_forecast_url.py "WH"
+```
+Output:
+```json
+{"url": "https://mwis.org.uk/forecasts/scottish/west-highlands/text"}
+```
+
+With the `-stdout` or `--stdout` flag, it outputs the raw URL string directly to `stdout`:
+```bash
+python3 get_forecast_url.py "WH" -stdout
 ```
 Output:
 ```
