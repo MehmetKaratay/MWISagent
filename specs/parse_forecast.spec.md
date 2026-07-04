@@ -76,3 +76,11 @@ dependencies:
   "outlook": "Planning outlook text..."
 }
 ```
+
+---
+
+## Design Decisions
+
+- **Database Transition**:
+  - The HTML parsing logic defined in this specification is designed to be replaceable. In the future, the backend might fetch forecast data directly from a database query instead of scraping the live MWIS HTML pages.
+  - The external interface—specifically the JSON output schema, CLI arguments, and CLI exit codes—**must remain unchanged** when this transition to a database query occurs to ensure full backward compatibility.
