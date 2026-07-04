@@ -1,5 +1,8 @@
 # MWIS Agent
 
+## Note for GEMINI
+This document is a draft items with [[double square brackets]] are TBC.
+
 ## Goal
 Create an agent that reads MWIS forecasts and interpretation of them for a given date and location. The agent will be used to provide mountain weather information to users on an interactive website.
 
@@ -70,3 +73,40 @@ Skills are dividing into categories to make it easier to identify and use skills
    - These skills will explain the impact of weather on mountain safety.
    - The agent will use this skill to provide mountain safety advice based on the weather conditions.
    - This will be mostly based on LLM understanding.
+
+## Component Inventory
+- **Forecast Area Query**: `skills-mwis-website/identify_forecast_area/scripts/query_region.py` (determines region from location name, coords, or grid reference).
+- **Date Query**: `skills-mwis-website/identify_outing_date/scripts/query_date.py` (resolves query dates/ranges to MWIS codes).
+- **Forecast Source URL**: `skills-mwis-website/forecast_source/scripts/get_forecast_url.py` (resolves region code/name to MWIS URL).
+- **Forecast Fetcher**: [[Provide script name/path if exists, e.g., fetch_mwis_forecast.py]]
+
+## Security & Input Validation Controls
+- **Input Filtering**: [[Explain input validation strategy, e.g., Pydantic schemas, character length limits, regex filtering]]
+- **Prompt Injection Mitigations**: [[Explain prompt injection strategy, e.g. strict system instructions, separation of user input from instructions, sanitization]]
+
+## Data Flow & Architecture Pipeline
+```
+[User Input] ──> [Frontend (Alpine.js)] ──> [FastAPI Backend]
+                                                    │
+                                                    ▼
+                                         [LLM Processor /Agent]
+                                         - extract region to pass to query_region.py
+                                         - extract date to pass to query_date.py
+                                                    │
+                                                    ▼                                       
+                                         [Deterministic Python Scripts]
+                                         - query_region.py
+                                         - query_date.py
+                                         - get_forecast_url.py
+                                                    │
+                                                    ▼
+                                          [LLM Processor / Agent]
+                                                    │
+                                                    ▼
+                                              [User Response]
+```
+
+## Google Cloud Deployment
+- **Hosting Service**: [[Specify GCP hosting, e.g., Cloud Run for backend, Cloud Storage for frontend static files]]
+- **Authentication / IAM**: [[Specify backend authentication or access rules if needed]]
+
