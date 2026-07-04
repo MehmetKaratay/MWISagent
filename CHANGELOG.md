@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **2026-07-05 00:15**: Implemented `parse_forecast.py` HTML to JSON parser using BeautifulSoup, with comprehensive tests and mocked requests.
 - **2026-07-04 22:44**: Implemented `query_fl.py` and `query_refHeight.py` CLI utilities with strict CSV schema validations.
 
 ### Changed
