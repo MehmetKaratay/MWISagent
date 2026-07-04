@@ -1,5 +1,5 @@
 ---
-name: get-current-forecast
+name: serve-forecast-to-user
 description: Retrieve the most recent forecast for a region and date from the Mountain Weather Information Service (MWIS) website
 version: 0.0.1
 license: MIT
@@ -7,7 +7,7 @@ metadata:
   author: Mehmet Rahmi Karatay
 ---
 
-# Get Current Forecast
+# Serve Forecast to User
 The goal of this skill is to retrieve the most recent forecast for a specific region and date range from the Mountain Weather Information Service (MWIS) website.
 
 ## When to use
@@ -34,6 +34,3 @@ The goal of this skill is to retrieve the most recent forecast for a specific re
 
 ## Examples
  - Input: "Snowdonia, today and tomorrow" → Output: "[A summary of the forecast for Snowdonia for today and tomorrow]"
-
-
-

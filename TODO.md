@@ -2,7 +2,7 @@
 
 ## Next time
  * Create MWIS forecast structure reference
- * Improve get_current_forecast skills definition (perhaps)
+ * Improve serve_forecast_to_user skills definition (perhaps)
     - Rename to parse_current_forecast
  * Create CONTEXT.md to explain the overall goal, so agent knows int include scope for interpreting weather features and their impact.
     - Add note to say that we will be fetching forecast from website but in future we may access db directly. The code should be designed to make this swap trivial.
