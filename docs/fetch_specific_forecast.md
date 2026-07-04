@@ -1,13 +1,13 @@
-# Forecast Source Skill Documentation
+# Fetch Specific Forecast Skill Documentation
 
-The `forecast_source` skill resolves a specific MWIS forecast region code or name (e.g., `WH` or `West Highlands`) into its corresponding direct text forecast URL on the Mountain Weather Information Service (MWIS) website.
+The `fetch_specific_forecast` skill resolves a specific MWIS forecast region code or name (e.g., `WH` or `West Highlands`) into its corresponding direct text forecast URL on the Mountain Weather Information Service (MWIS) website.
 
 ## Component Overview
 
 This skill utilizes the underlying python utility `get_forecast_url.py` to identify the URL.
 
-- **Skill Entry Point**: `skills-mwis-website/forecast_source/SKILL.md`
-- **CLI Utility**: `skills-mwis-website/forecast_source/scripts/get_forecast_url.py`
+- **Skill Entry Point**: `skills-mwis-website/fetch_specific_forecast/SKILL.md`
+- **CLI Utility**: `skills-mwis-website/fetch_specific_forecast/scripts/get_forecast_url.py`
 
 ## CLI Usage
 

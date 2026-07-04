@@ -77,7 +77,7 @@ Skills are dividing into categories to make it easier to identify and use skills
 ## Component Inventory
 - **Forecast Area Query**: `skills-mwis-website/identify_forecast_area/scripts/query_region.py` (determines region from location name, coords, or grid reference).
 - **Date Query**: `skills-mwis-website/identify_outing_date/scripts/query_date.py` (resolves query dates/ranges to MWIS codes).
-- **Forecast Source URL**: `skills-mwis-website/forecast_source/scripts/get_forecast_url.py` (resolves region code/name to MWIS URL).
+- **Fetch Specific Forecast URL**: `skills-mwis-website/fetch_specific_forecast/scripts/get_forecast_url.py` (resolves region code/name to MWIS URL).
 - **Forecast Fetcher**: [[Provide script name/path if exists, e.g., fetch_mwis_forecast.py]]
 
 ## Security & Input Validation Controls

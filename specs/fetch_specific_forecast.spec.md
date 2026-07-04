@@ -1,9 +1,9 @@
-# Forecast Source Spec
+# Fetch Specific Forecast Spec
 
 This specification defines a command-line tool `get_forecast_url.py` to resolve MWIS region codes or names to forecast text URLs.
 
 ```yaml
-name: forecast_source
+name: fetch_specific_forecast
 summary: Resolve input region codes or names to direct MWIS forecast text URLs.
 inputs:
   - name: query

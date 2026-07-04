@@ -1,5 +1,5 @@
 ---
-name: forecast-source
+name: fetch-specific-forecast
 description: Retrieves the source URL of a specific forecast area from the Mountain Weather Information Service (MWIS) website.
 version: 0.0.1
 license: MIT
@@ -7,8 +7,8 @@ metadata:
   author: Mehmet Rahmi Karatay
 ---
 
-# Forecast Source
-The goal of this skill is to retrieve the source URL of a specific forecast area from the Mountain Weather Information Service (MWIS) website using a deterministic process. It uses the `forecast_area_to_url.csv` mapping file to find the source URL.
+# Fetch Specific Forecast
+The goal of this skill is to retrieve the source URL of a specific forecast area from the Mountain Weather Information Service (MWIS) website using a deterministic process. It uses the `mwis-regions.csv` mapping file to find the source URL.
 
 ## When to use
  - You need to retrieve the source URL of a specific forecast area from the Mountain Weather Information Service (MWIS) website.
@@ -21,7 +21,7 @@ The goal of this skill is to retrieve the source URL of a specific forecast area
 ## Workflow
  1. Use the `get_forecast_url.py` script to try to find the source URL.
  2. If the script returns a URL, return it.
- 3. If the script returns an error, use your own logic to inspect `references/mwis-regions.csv` to find the source URL.
+ 3. If the script returns an error, use your own logic to inspect `resources/mwis-regions.csv` to find the source URL.
 
 ## Examples
  - Input: "WH" → Output: "https://mwis.org.uk/forecasts/scottish/west-highlands/text"
