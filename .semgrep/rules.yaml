@@ -116,3 +116,45 @@ rules:
     languages:
       - python
     severity: ERROR
+
+  - id: detect-yaml-load
+    patterns:
+      - pattern: yaml.load(...)
+      - pattern-not: yaml.load(..., Loader=yaml.SafeLoader, ...)
+      - pattern-not: yaml.load(..., Loader=SafeLoader, ...)
+    message: "Security Warning: yaml.load is unsafe without SafeLoader. Use yaml.safe_load instead."
+    languages:
+      - python
+    severity: ERROR
+
+  - id: detect-eval-exec
+    patterns:
+      - pattern-either:
+          - pattern: eval(...)
+          - pattern: exec(...)
+    message: "Security Warning: Dynamic evaluation via eval or exec is extremely dangerous. Use safe alternatives."
+    languages:
+      - python
+    severity: ERROR
+
+  - id: detect-pickle-load
+    patterns:
+      - pattern-either:
+          - pattern: pickle.load(...)
+          - pattern: pickle.loads(...)
+    message: "Security Warning: pickle.load allows arbitrary code execution on deserialization. Use json or safe serialization formats."
+    languages:
+      - python
+    severity: ERROR
+
+  - id: detect-path-traversal
+    patterns:
+      - pattern-either:
+          - pattern: open($PATH, ...)
+      - metavariable-regex:
+          metavariable: $PATH
+          regex: .*(query|args|input|text|content|body|path|file).*
+    message: "Security Warning: File opened using dynamic variables. Ensure path validation/sanitization is applied to prevent path traversal."
+    languages:
+      - python
+    severity: WARNING

@@ -127,4 +127,8 @@ Skills are dividing into categories to make it easier to identify and use skills
   8. Use of assert statement validations in production code files.
   9. Potential log/output injection from unescaped raw inputs.
   10. SQL Injection (constructing raw query string interpolations).
+  11. Unsafe YAML loading (using `yaml.load` without safe loaders).
+  12. Arbitrary code evaluation (use of `eval` or `exec`).
+  13. Insecure object deserialization (use of `pickle.load` / `pickle.loads`).
+  14. Path traversal vulnerabilities (opening files with dynamically interpolated user inputs).
 
