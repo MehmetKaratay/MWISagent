@@ -99,7 +99,7 @@ Output:
       "last_updated": "Sat 4th Jul 26 at 4:17PM",
       "uk_summary": "...",
       "region_headline": "...",
-      "wind_mountain": "...",
+      "wind_headline": "...",
       "wind_effect": "...",
       "precipitation": "...",
       "cloud_hills": "...",

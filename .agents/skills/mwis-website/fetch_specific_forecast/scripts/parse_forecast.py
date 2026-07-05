@@ -17,7 +17,7 @@ from bs4 import BeautifulSoup
 HEADING_MAPPING = {
     "summary for all": "uk_summary",
     "headline for": "region_headline",
-    "how windy?": "wind_mountain",
+    "how windy?": "wind_headline",
     "effect of the wind": "wind_effect",
     "how wet?": "precipitation",
     "cloud on the hills?": "cloud_hills",

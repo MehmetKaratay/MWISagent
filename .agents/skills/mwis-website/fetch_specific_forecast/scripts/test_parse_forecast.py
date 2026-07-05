@@ -36,7 +36,7 @@ class TestParseForecast(unittest.TestCase):
             self.assertIn("day_index", day)
             self.assertIsNotNone(day["date"])
             self.assertIsNotNone(day["last_updated"])
-            self.assertIsNotNone(day["wind_mountain"])
+            self.assertIsNotNone(day["wind_headline"])
             self.assertIsNotNone(day["wind_effect"])
             self.assertIsNotNone(day["precipitation"])
             self.assertIsNotNone(day["cloud_hills"])

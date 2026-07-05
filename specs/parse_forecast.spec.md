@@ -38,7 +38,7 @@ dependencies:
     - `last_updated`: Found inside the metadata `<small>` tag.
     - `uk_summary`: Extracted from the `Summary for all mountain areas` heading row (Day 1 only).
     - `region_headline`: Extracted from the `Headline for [Region]` heading row (Day 1 only).
-    - `wind_mountain`: Extracted from `How windy?` heading row.
+    - `wind_headline`: Extracted from `How windy?` heading row.
     - `wind_effect`: Extracted from `Effect of the wind on you?` heading row.
     - `precipitation`: Extracted from `How Wet?` heading row.
     - `cloud_hills`: Extracted from `Cloud on the hills?` heading row.
@@ -62,7 +62,7 @@ dependencies:
       "last_updated": "Sat 4th Jul 26 at 4:17PM",
       "uk_summary": "Early sunny bursts...",
       "region_headline": "A few sunny glimpses...",
-      "wind_mountain": "...",
+      "wind_headline": "...",
       "wind_effect": "...",
       "precipitation": "...",
       "cloud_hills": "...",
