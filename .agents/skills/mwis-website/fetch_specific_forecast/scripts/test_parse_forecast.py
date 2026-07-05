@@ -38,13 +38,33 @@ class TestParseForecast(unittest.TestCase):
             self.assertIsNotNone(day["last_updated"])
             self.assertIsNotNone(day["wind_headline"])
             self.assertIsNotNone(day["wind_effect"])
-            self.assertIsNotNone(day["precipitation"])
-            self.assertIsNotNone(day["cloud_hills"])
+            self.assertIsNotNone(day["precip_headline"])
+            self.assertIsNotNone(day["precip_detail"])
+            self.assertIsNotNone(day["cloud_headline"])
+            self.assertIsNotNone(day["cloud_detail"])
             self.assertIsNotNone(day["chance_cloud_free"])
             self.assertIsNotNone(day["sun_clarity"])
             self.assertIsNotNone(day["cold_temp"])
             self.assertIsNotNone(day["freezing_level"])
         self.assertIsNotNone(data["outlook"])
+
+        # Detailed verification of split fields
+        day0 = data["days"][0]
+        self.assertEqual(day0["precip_headline"], "Rain sets in through afternoon")
+        self.assertEqual(
+            day0["precip_detail"],
+            "Drizzly on the high tops at dawn, a few spots of light rain from the west, "
+            "but several hours of largely dry conditions. Rain arrives from the west "
+            "as midday approaches, spreading widely and setting in persistently through afternoon.",
+        )
+        self.assertEqual(day0["cloud_headline"], "Becoming extensive through afternoon")
+        self.assertEqual(
+            day0["cloud_detail"],
+            "Bases start 700-1000m, lowest western hills but also some early breaks "
+            "(though high Cairngorm plateau likely stays shrouded). Cloud fills in from "
+            "the west from midday onward, bases to 500-600m near and west of Strathspey "
+            "with lower ragged patches. Hills north of Ben Avon stay clear up to 800-900m until later.",
+        )
 
     def test_cli_execution_success(self):
         """Verify successful CLI run with a local file."""

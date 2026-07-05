@@ -40,8 +40,10 @@ dependencies:
     - `region_headline`: Extracted from the `Headline for [Region]` heading row (Day 1 only).
     - `wind_headline`: Extracted from `How windy?` heading row.
     - `wind_effect`: Extracted from `Effect of the wind on you?` heading row.
-    - `precipitation`: Extracted from `How Wet?` heading row.
-    - `cloud_hills`: Extracted from `Cloud on the hills?` heading row.
+    - `precip_headline`: Extracted from the `<strong>` tag in first `<p>` of the `How Wet?` heading row.
+    - `precip_detail`: Extracted from the second `<p>` tag of the `How Wet?` heading row.
+    - `cloud_headline`: Extracted from the `<strong>` tag in first `<p>` of the `Cloud on the hills?` heading row.
+    - `cloud_detail`: Extracted from the second `<p>` tag of the `Cloud on the hills?` heading row.
     - `chance_cloud_free`: Extracted from `Chance of cloud free Munros?` heading row.
     - `sun_clarity`: Extracted from `Sunshine and air clarity?` heading row.
     - `cold_temp`: Extracted from `How Cold?` heading row.
@@ -64,8 +66,10 @@ dependencies:
       "region_headline": "A few sunny glimpses...",
       "wind_headline": "...",
       "wind_effect": "...",
-      "precipitation": "...",
-      "cloud_hills": "...",
+      "precip_headline": "...",
+      "precip_detail": "...",
+      "cloud_headline": "...",
+      "cloud_detail": "...",
       "chance_cloud_free": "...",
       "sun_clarity": "...",
       "cold_temp": "...",

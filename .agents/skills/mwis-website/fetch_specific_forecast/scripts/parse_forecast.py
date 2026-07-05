@@ -19,8 +19,8 @@ HEADING_MAPPING = {
     "headline for": "region_headline",
     "how windy?": "wind_headline",
     "effect of the wind": "wind_effect",
-    "how wet?": "precipitation",
-    "cloud on the hills?": "cloud_hills",
+    "how wet?": "precip_headline",
+    "cloud on the hills?": "cloud_headline",
     "chance of cloud free": "chance_cloud_free",
     "sunshine and air clarity?": "sun_clarity",
     "how cold?": "cold_temp",
@@ -86,8 +86,8 @@ def _extract_date_metadata(day_div: Any) -> Tuple[str, str]:
     return _parse_date_text(content_div), _parse_last_updated(content_div)
 
 
-def _extract_row_content(row: Any) -> Optional[Tuple[str, str]]:
-    """Extract heading text and content text from a row if they exist."""
+def _extract_row_content(row: Any) -> Optional[Tuple[str, Any]]:
+    """Extract heading text and content column div from a row if they exist."""
     h4 = row.find("h4")
     if not h4:
         return None
@@ -95,23 +95,84 @@ def _extract_row_content(row: Any) -> Optional[Tuple[str, str]]:
     if len(cols) < 2:
         return None
     heading_text = h4.get_text().strip().lower()
-    content_text = " ".join(cols[-1].get_text(separator=" ").split()).strip()
-    return heading_text, content_text
+    return heading_text, cols[-1]
 
 
 def _parse_day_forecast(day_div: Any, idx: int) -> Dict[str, Any]:
     """Parse a single day's forecast div container."""
     date, last_updated = _extract_date_metadata(day_div)
-    fields = {val: "" for val in HEADING_MAPPING.values()}
+    fields = {
+        "uk_summary": "",
+        "region_headline": "",
+        "wind_headline": "",
+        "wind_effect": "",
+        "precip_headline": "",
+        "precip_detail": "",
+        "cloud_headline": "",
+        "cloud_detail": "",
+        "chance_cloud_free": "",
+        "sun_clarity": "",
+        "cold_temp": "",
+        "freezing_level": "",
+    }
     for row in day_div.find_all("div", class_="row"):
         res = _extract_row_content(row)
         if not res:
             continue
-        heading, content = res
-        for heading_key, field_key in HEADING_MAPPING.items():
-            if heading_key in heading:
-                fields[field_key] = content
-                break
+        heading, content_col = res
+        if "summary for all" in heading:
+            fields["uk_summary"] = " ".join(content_col.get_text().split()).strip()
+        elif "headline for" in heading:
+            fields["region_headline"] = " ".join(content_col.get_text().split()).strip()
+        elif "how windy?" in heading:
+            fields["wind_headline"] = " ".join(content_col.get_text().split()).strip()
+        elif "effect of the wind" in heading:
+            fields["wind_effect"] = " ".join(content_col.get_text().split()).strip()
+        elif "how wet?" in heading:
+            p_tags = content_col.find_all("p")
+            if p_tags:
+                strong = p_tags[0].find("strong")
+                fields["precip_headline"] = (
+                    strong.get_text().strip()
+                    if strong
+                    else p_tags[0].get_text().strip()
+                )
+                if len(p_tags) > 1:
+                    fields["precip_detail"] = " ".join(
+                        p_tags[1].get_text().split()
+                    ).strip()
+            else:
+                fields["precip_headline"] = " ".join(
+                    content_col.get_text().split()
+                ).strip()
+        elif "cloud on the hills?" in heading:
+            p_tags = content_col.find_all("p")
+            if p_tags:
+                strong = p_tags[0].find("strong")
+                fields["cloud_headline"] = (
+                    strong.get_text().strip()
+                    if strong
+                    else p_tags[0].get_text().strip()
+                )
+                if len(p_tags) > 1:
+                    fields["cloud_detail"] = " ".join(
+                        p_tags[1].get_text().split()
+                    ).strip()
+            else:
+                fields["cloud_headline"] = " ".join(
+                    content_col.get_text().split()
+                ).strip()
+        elif "chance of cloud free" in heading:
+            fields["chance_cloud_free"] = " ".join(
+                content_col.get_text().split()
+            ).strip()
+        elif "sunshine and air clarity?" in heading:
+            fields["sun_clarity"] = " ".join(content_col.get_text().split()).strip()
+        elif "how cold?" in heading:
+            fields["cold_temp"] = " ".join(content_col.get_text().split()).strip()
+        elif "freezing level" in heading:
+            fields["freezing_level"] = " ".join(content_col.get_text().split()).strip()
+
     day_dict = {"day_index": idx, "date": date, "last_updated": last_updated}
     day_dict.update(fields)
     return day_dict
