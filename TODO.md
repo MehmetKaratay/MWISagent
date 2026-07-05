@@ -26,6 +26,8 @@
 ## Draft prompts
 
 ### Toekn Spend
-Summarise current state of project and archive unnecessary logs. Re-read `~/.gemini/GEMINI.md`, load relevant skills, and ask if you have any questions.`
+Summarise current state of project and archive unnecessary logs. Keep instructions regarding how you interact with me and how the the project environment is set up; in particular remember how you use `pip` and `uv`. Re-read `~/.gemini/GEMINI.md`, load relevant skills, and ask if you have any questions.`
 
 NOTE: This made the agent forget a lot of how we were working together and I had to remind it of our various 'rules'. Better to do that than to hallucinate. I added the second instruction to try to overcome this barrier.
+
+## tmp
