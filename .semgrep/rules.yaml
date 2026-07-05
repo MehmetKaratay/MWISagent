@@ -158,3 +158,54 @@ rules:
     languages:
       - python
     severity: WARNING
+
+  - id: detect-insecure-crypto
+    patterns:
+      - pattern-either:
+          - pattern: hashlib.md5(...)
+          - pattern: hashlib.sha1(...)
+    message: "Security Warning: MD5 and SHA1 are cryptographically broken. Use hashlib.sha256 or hashlib.sha3_256 instead."
+    languages:
+      - python
+    severity: ERROR
+
+  - id: detect-insecure-randomness
+    patterns:
+      - pattern-either:
+          - pattern: $TOKEN = random.randint(...)
+          - pattern: $TOKEN = random.random(...)
+          - pattern: $TOKEN = random.choice(...)
+          - pattern: $TOKEN = random.randrange(...)
+      - metavariable-regex:
+          metavariable: $TOKEN
+          regex: (?i)(token|key|password|secret|session|salt)
+    message: "Security Warning: Do not use random module for generating cryptographically secure variables. Use secrets module instead."
+    languages:
+      - python
+    severity: WARNING
+
+  - id: detect-debug-mode-enabled
+    patterns:
+      - pattern-either:
+          - pattern: $APP.run(..., debug=True, ...)
+          - pattern: debug=True
+      - pattern-not-inside: |
+          def test_$FUNC(...):
+              ...
+      - pattern-not-inside: |
+          class Test$CLASS(...):
+              ...
+    message: "Security Warning: Debug mode enabled. Ensure debug=True is disabled in production settings."
+    languages:
+      - python
+    severity: ERROR
+
+  - id: detect-all-interfaces-binding
+    patterns:
+      - pattern-either:
+          - pattern: host="0.0.0.0"
+          - pattern: $HOST = "0.0.0.0"
+    message: "Security Warning: Binding to '0.0.0.0' exposes server to all network interfaces. Ensure this is only enabled intentionally."
+    languages:
+      - python
+    severity: WARNING

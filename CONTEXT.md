@@ -131,4 +131,8 @@ Skills are dividing into categories to make it easier to identify and use skills
   12. Arbitrary code evaluation (use of `eval` or `exec`).
   13. Insecure object deserialization (use of `pickle.load` / `pickle.loads`).
   14. Path traversal vulnerabilities (opening files with dynamically interpolated user inputs).
+  15. Cryptographically weak hashing algorithms (MD5 / SHA1).
+  16. Predictable random number generation for security variables.
+  17. Framework debug modes enabled in production settings.
+  18. Interface binding to all IP interfaces (`0.0.0.0`).
 
