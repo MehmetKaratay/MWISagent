@@ -42,6 +42,8 @@ Security is a high priority. We want to minimise security leaks and make the age
  * Alpine.js
 
 ## Future goals
+These are mentioned so you can plan ahead for their implementation and design the project architecture accordingly.
+
 * Mountain weather understanding, using extra SKILLS for guidance, so LLM can answer the users questions about, but not limited to:
   - Why the weather is the way it is
   - What the weather will be like higher or lower on the mountain
@@ -58,19 +60,19 @@ Skills are dividing into categories to make it easier to identify and use skills
    - These live outside the MWISagent project folder and are mentioned in `~/.gemini/GEMINI.md`
    - They explain code-architeture, writing spec files, clean code, tdd cycle, etc.
 2. Security skills
-   - **Does not currently exist.**
-   - These live inside the MWISagent project folder in the `secure-skills` folder and are mentioned in `secure-skills/SKILL.md`
-3. Core skills — MWIS website
-   - These live inside the MWISagent project folder in the `MWISagent/skills-mwis-website` folder.
+   - These live inside the MWISagent project folder in the `./agents/skills/security` folder.
+   - They explain the security policies and practices that should be followed when developing the MWIS Agent.
+3. MWIS website
+   - These live inside the MWISagent project folder in the `./agents/skills/mwis-website` folder.
    - They explain the structure of the MWIS company and its offerings
    - They do not explain the physics or impact of weather.
-4. Core skills — Weather interpretation
-   - **Does not currently exist.**
+4. Weather Physics
+   - **No skills in the `./agents/skills/weather-physics` folder currently exist.**
    - These skills will explain the physics of weather.
    - The agent will use this skill to provide a finer grain interpretation of the forecast for a specific location within the forecast region.
    - Will use a mix of deterministic python scripts and LLM understanding.
-5. Core skills — Weather impact
-   - **Does not currently exist.**
+5. Weather impact
+   - **No skills in the `./agents/skills/weather-impact` folder currently exist.**
    - These skills will explain the impact of weather on mountain safety.
    - The agent will use this skill to provide mountain safety advice based on the weather conditions.
    - This will be mostly based on LLM understanding.
