@@ -73,13 +73,19 @@ dependencies:
       "chance_cloud_free": "...",
       "sun_clarity": "...",
       "temp": "...",
-      "freezing_level": "..."
+      "freezing_level": "...",
+      "Dcode": "D0"
     },
     ...
   ],
-  "outlook": "Planning outlook text..."
+  "outlook": {
+    "Dcode": "Doutlook",
+    "outlook": "Planning outlook text..."
+  }
 }
 ```
+
+Note: The raw parsed forecast output from `parse_forecast.py` does not contain the `"Dcode"` fields and has `"outlook"` as a flat string. The `"Dcode"` fields and the `"outlook"` object structure are added subsequently by `inject_Dcodes.py` (see [inject_Dcodes.spec.md](file:///home/karatay/Repositories/weather/MWISagent/specs/inject_Dcodes.spec.md)).
 
 ---
 

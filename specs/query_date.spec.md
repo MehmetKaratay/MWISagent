@@ -14,14 +14,7 @@ outputs:
   - name: codes
     type: array of strings
     description: "A JSON array of strings containing unique MWIS forecast codes that cover the requested date range"
-    values:
-      Dold: "Past dates (offset < 0 days)"
-      D0: "Today (offset = 0 days)"
-      D1: "Tomorrow (offset = 1 day)"
-      D2: "Day 2 (offset = 2 days)"
-      D3: "Day 3 (offset = 3 days)"
-      Doutlook: "Fuzzy max summary (offset = 4 to 7 days)"
-      Dfuture: "Future dates (offset >= 8 days)"
+    values: "See D-code value definitions in parse_Dcodes.spec.md"
 exit_codes:
   0: Success
   1: Invalid input format or parse error
@@ -33,16 +26,8 @@ dependencies:
 ## Behavior & Parsing Logic
 
 - **Reference Time**: All calculations are relative to the current local system date.
-- **Forecast Publication Shifts**: The Mountain Weather Information Service publishes the new forecast cycle daily (typically in the late afternoon, but occasionally as early as 11:00 AM). Because the timing is variable, clients must NOT rely on the system clock to map `day_index` to a D-code. Instead, calibrate the mapping by comparing the `"date"` string in `days[0]` with the current system date:
-  - **Case A: `days[0]["date"]` is today's date**:
-    - `D0` (today) corresponds to `days[0]` (`day_index == 0`)
-    - `D1` (tomorrow) corresponds to `days[1]` (`day_index == 1`)
-    - `D2` (day after tomorrow) corresponds to `days[2]` (`day_index == 2`)
-  - **Case B: `days[0]["date"]` is tomorrow's date**:
-    - `D1` (tomorrow) corresponds to `days[0]` (`day_index == 0`)
-    - `D2` (day after tomorrow) corresponds to `days[1]` (`day_index == 1`)
-    - `D3` (3 days ahead) corresponds to `days[2]` (`day_index == 2`)
-    - Today's date (`D0`) resolves to `Dold` (past/outdated).
+- **D-code Mapping**: Date values are resolved to D-codes using the rules and offsets defined in [parse_Dcodes.spec.md](file:///home/karatay/Repositories/weather/MWISagent/specs/parse_Dcodes.spec.md).
+- **Forecast Publication Shifts**: The mapping offset shifts are calibrated dynamically by downstream components based on the parsed JSON date fields (see [inject_Dcodes.spec.md](file:///home/karatay/Repositories/weather/MWISagent/specs/inject_Dcodes.spec.md)).
 - **Fuzzy Parsing**: Employs the `parsedatetime` library to resolve relative dates.
 - **DD/MM standard**: If `parsedatetime` fails or parses incorrectly, fallback to parsing as `DD/MM` (using the current system year) or `DD/MM/YYYY`.
 - **Range Resolution**: For inputs spanning multiple days (e.g., "this weekend" or "today and tomorrow"):
