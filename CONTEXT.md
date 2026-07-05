@@ -119,4 +119,8 @@ Skills are dividing into categories to make it easier to identify and use skills
 - **Semgrep Security Scanning**: Configured local custom security rules in `.semgrep/rules.yaml` to detect:
   1. Hardcoded Google API keys matching pattern `AIzaSy[A-Za-z0-9_\-]*`.
   2. Insecure shell execution (`shell=True` in subprocess calls or `os.system`).
+  3. Insecure HTTP SSL verification bypass (`verify=False` in requests).
+  4. Pydantic validation schema bypass on raw CLI inputs.
+  5. Hardcoded secret assignments (`password`, `secret`, `api_key`, `token`).
+  6. Insecure temporary file creation (`tempfile.mktemp`).
 

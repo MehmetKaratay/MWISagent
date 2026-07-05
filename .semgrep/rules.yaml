@@ -18,3 +18,48 @@ rules:
     languages:
       - python
     severity: ERROR
+
+  - id: detect-insecure-ssl-bypass
+    patterns:
+      - pattern-either:
+          - pattern: requests.get(..., verify=False, ...)
+          - pattern: requests.post(..., verify=False, ...)
+          - pattern: requests.request(..., verify=False, ...)
+    message: "Security Warning: SSL verification is disabled (verify=False). This exposes requests to Man-in-the-Middle (MitM) attacks."
+    languages:
+      - python
+    severity: ERROR
+
+  - id: detect-pydantic-validation-bypass
+    patterns:
+      - pattern-either:
+          - pattern: $X = sys.argv[...]
+          - pattern: $X = args.$Y
+      - pattern-not: validate_region_query(...)
+      - pattern-not: validate_date_query(...)
+    message: "Security Warning: CLI inputs are being processed without validation schemas."
+    languages:
+      - python
+    severity: WARNING
+
+  - id: detect-hardcoded-secret-assignment
+    patterns:
+      - pattern-either:
+          - pattern: $PASSWORD = "..."
+          - pattern: $SECRET = "..."
+          - pattern: $API_KEY = "..."
+          - pattern: $TOKEN = "..."
+      - metavariable-regex:
+          metavariable: $PASSWORD
+          regex: (?i)(password|secret|api_key|token|auth)
+    message: "Security Warning: Hardcoded secret detected in assignment. Always load credentials dynamically from environment variables."
+    languages:
+      - python
+    severity: WARNING
+
+  - id: detect-insecure-temp-file
+    pattern: tempfile.mktemp(...)
+    message: "Security Warning: tempfile.mktemp is deprecated and insecure. Use tempfile.TemporaryDirectory or tempfile.NamedTemporaryFile instead."
+    languages:
+      - python
+    severity: ERROR
