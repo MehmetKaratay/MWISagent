@@ -182,5 +182,5 @@ To ensure maintainability and robustness, all scripts in this skill must adhere 
 - **No Flag Arguments**: Boolean flags passed to change function behavior (e.g., `as_json`) are prohibited. Use polymorphic classes (e.g., `JsonFormatter` and `TextFormatter`) or split functions instead.
 - **Single Responsibility**: Functions should do exactly one thing. For example, API fetching logic should be strictly separated from parsing and error-handling logic.
 - **Well Named Functions**: Function names should make it clear what the function does, even if this means a longer function name
-- **Short Functions**: Functions should be no longer than 15 line whenever possible. 20 lines maximum. 
+- **Short Functions**: Functions should be no longer than 15 line whenever possible. 20 lines maximum.
 - **Type Hints**: All public and internal interfaces should be annotated with strict Python type hints.

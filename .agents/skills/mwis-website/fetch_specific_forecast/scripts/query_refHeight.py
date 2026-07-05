@@ -13,8 +13,9 @@ from query_utils import find_region_row
 DEFAULT_CSV_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "references",
-    "mwis-regions.csv"
+    "mwis-regions.csv",
 )
+
 
 def resolve_ref_height(query: str, csv_path: Optional[str] = None) -> str:
     """Resolve the RefHeight field of a region.
@@ -38,7 +39,9 @@ def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description="Query RefHeight for a region.")
     parser.add_argument("query", help="Region code or name")
-    parser.add_argument("csv_path", nargs="?", default=DEFAULT_CSV_PATH, help="Path to regions CSV")
+    parser.add_argument(
+        "csv_path", nargs="?", default=DEFAULT_CSV_PATH, help="Path to regions CSV"
+    )
 
     args = parser.parse_args()
     try:
@@ -48,6 +51,7 @@ def main() -> None:
     except Exception as err:
         sys.stderr.write(f"Error: {err}\n")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

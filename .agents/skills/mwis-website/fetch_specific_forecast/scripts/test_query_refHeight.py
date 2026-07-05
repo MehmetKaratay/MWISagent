@@ -11,8 +11,9 @@ import json
 import sys
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-SCRIPT_PATH = os.path.join(SCRIPT_DIR, 'query_refHeight.py')
+SCRIPT_PATH = os.path.join(SCRIPT_DIR, "query_refHeight.py")
 PYTHON_EXE = sys.executable
+
 
 class TestQueryRefHeightCLI(unittest.TestCase):
     """Test suite verifying CLI execution of query_refHeight.py."""
@@ -22,9 +23,15 @@ class TestQueryRefHeightCLI(unittest.TestCase):
         self.csv_path = os.path.join(self.temp_dir.name, "test-regions.csv")
         with open(self.csv_path, "w", encoding="utf-8") as f:
             f.write("RegionCode,RegionName,RefHeight,FLorValley,Country,Url\n")
-            f.write("NW,North West Highlands,900m,FL,Scotland,https://mwis.org.uk/forecasts/scottish/the-northwest-highlands/text\n")
-            f.write("WH,West Highlands,900m,FL,Scotland,https://mwis.org.uk/forecasts/scottish/west-highlands/text\n")
-            f.write("PD,Peak District,600m,Valley,England,https://mwis.org.uk/forecasts/english/the-peak-district/text\n")
+            f.write(
+                "NW,North West Highlands,900m,FL,Scotland,https://mwis.org.uk/forecasts/scottish/the-northwest-highlands/text\n"
+            )
+            f.write(
+                "WH,West Highlands,900m,FL,Scotland,https://mwis.org.uk/forecasts/scottish/west-highlands/text\n"
+            )
+            f.write(
+                "PD,Peak District,600m,Valley,England,https://mwis.org.uk/forecasts/english/the-peak-district/text\n"
+            )
 
     def tearDown(self):
         self.temp_dir.cleanup()
@@ -71,7 +78,9 @@ class TestQueryRefHeightCLI(unittest.TestCase):
         bad_csv = os.path.join(self.temp_dir.name, "bad-regions.csv")
         with open(bad_csv, "w", encoding="utf-8") as f:
             f.write("RegionCode,RegionName,RefHeight,FLorValley,Country,Url\n")
-            f.write("WH,West Highlands,not_a_height,FL,Scotland,https://mwis.org.uk/forecasts/scottish/west-highlands/text\n")
+            f.write(
+                "WH,West Highlands,not_a_height,FL,Scotland,https://mwis.org.uk/forecasts/scottish/west-highlands/text\n"
+            )
         res = self.run_cli("WH", bad_csv)
         self.assertEqual(res.returncode, 1)
         self.assertIn("Error:", res.stderr)
@@ -79,10 +88,12 @@ class TestQueryRefHeightCLI(unittest.TestCase):
     def test_programmatic_resolve_ref_height(self):
         """Verify that resolve_ref_height can be imported and executed programmatically."""
         from query_refHeight import resolve_ref_height
+
         self.assertEqual(resolve_ref_height("WH", self.csv_path), "900m")
         self.assertEqual(resolve_ref_height("peak district", self.csv_path), "600m")
         with self.assertRaises(ValueError):
             resolve_ref_height("InvalidRegion", self.csv_path)
+
 
 if __name__ == "__main__":
     unittest.main()

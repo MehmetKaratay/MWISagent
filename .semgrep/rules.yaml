@@ -78,12 +78,6 @@ rules:
   - id: detect-assert-in-production
     patterns:
       - pattern: assert ...
-      - pattern-not-inside: |
-          def test_$FUNC(...):
-              ...
-      - pattern-not-inside: |
-          class Test$CLASS(...):
-              ...
     message: "Security Warning: Assert statements are removed in optimized execution mode. Use explicit conditional checks for security validation."
     languages:
       - python
@@ -189,12 +183,6 @@ rules:
       - pattern-either:
           - pattern: $APP.run(..., debug=True, ...)
           - pattern: debug=True
-      - pattern-not-inside: |
-          def test_$FUNC(...):
-              ...
-      - pattern-not-inside: |
-          class Test$CLASS(...):
-              ...
     message: "Security Warning: Debug mode enabled. Ensure debug=True is disabled in production settings."
     languages:
       - python

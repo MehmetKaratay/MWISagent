@@ -12,13 +12,16 @@ import sys
 
 # Paths to the script under test
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-SCRIPT_PATH = os.path.join(SCRIPT_DIR, 'query_date.py')
+SCRIPT_PATH = os.path.join(SCRIPT_DIR, "query_date.py")
 PYTHON_EXE = sys.executable
+
 
 class TestQueryDateCLI(unittest.TestCase):
     """Test suite for checking the functionality of the query_date.py command-line tool."""
 
-    def run_query(self, query: str, ref_date: str = None) -> subprocess.CompletedProcess:
+    def run_query(
+        self, query: str, ref_date: str = None
+    ) -> subprocess.CompletedProcess:
         """Run the query_date.py script with the given query and optional reference date.
 
         Args:
@@ -31,7 +34,7 @@ class TestQueryDateCLI(unittest.TestCase):
         cmd = [PYTHON_EXE, SCRIPT_PATH, query]
         env = os.environ.copy()
         if ref_date:
-            env['MWIS_REFERENCE_DATE'] = ref_date
+            env["MWIS_REFERENCE_DATE"] = ref_date
         res = subprocess.run(cmd, capture_output=True, text=True, env=env, timeout=5)
         return res
 
@@ -129,10 +132,14 @@ class TestQueryDateCLI(unittest.TestCase):
             sys.path.insert(0, SCRIPT_DIR)
         from query_date import resolve_date_query
         import datetime
+
         ref = datetime.date(2026, 7, 4)
-        self.assertEqual(resolve_date_query("today and tomorrow", ref_date=ref), ["D0", "D1"])
+        self.assertEqual(
+            resolve_date_query("today and tomorrow", ref_date=ref), ["D0", "D1"]
+        )
         with self.assertRaises(ValueError):
             resolve_date_query("invalid-query-string", ref_date=ref)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

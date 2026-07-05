@@ -14,8 +14,9 @@ from query_utils import find_region_row
 DEFAULT_CSV_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "references",
-    "mwis-regions.csv"
+    "mwis-regions.csv",
 )
+
 
 def get_forecast_url(query: str, csv_path: Optional[str] = None) -> str:
     """Get the forecast URL for the given query.
@@ -36,6 +37,7 @@ def get_forecast_url(query: str, csv_path: Optional[str] = None) -> str:
             raise ValueError(f"No matching MWIS region found for: '{query}'")
         raise
 
+
 def resolve_url(query: str, csv_path: Optional[str] = None) -> str:
     """Resolve the forecast URL for the given query.
 
@@ -48,12 +50,20 @@ def resolve_url(query: str, csv_path: Optional[str] = None) -> str:
     """
     return get_forecast_url(query, csv_path)
 
+
 def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description="Extract MWIS forecast URL.")
     parser.add_argument("query", help="Region code or region name")
-    parser.add_argument("csv_path", nargs="?", default=DEFAULT_CSV_PATH, help="Path to custom regions CSV")
-    parser.add_argument("-stdout", "--stdout", action="store_true", help="Print raw URL instead of JSON")
+    parser.add_argument(
+        "csv_path",
+        nargs="?",
+        default=DEFAULT_CSV_PATH,
+        help="Path to custom regions CSV",
+    )
+    parser.add_argument(
+        "-stdout", "--stdout", action="store_true", help="Print raw URL instead of JSON"
+    )
 
     args = parser.parse_args()
     try:
@@ -66,6 +76,7 @@ def main() -> None:
     except Exception as err:
         sys.stderr.write(f"Error: {err}\n")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

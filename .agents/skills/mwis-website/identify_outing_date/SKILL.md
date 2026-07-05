@@ -12,7 +12,7 @@ metadata:
 ## When to use
  - User mentions an outing for a specific date, or range of dates, for example "Snowdonia, today and tomorrow"
  - User asks for a forecast for a mountain region in the UK
- 
+
 
 ## When NOT to use
  - User does not specify a date range

@@ -13,6 +13,7 @@
 
 
 ## Future
+* Catching layer to minimise API/website-scraping calls
 * Refactor python scripts to send data directly instead of through command line (if this is more efficient for LLM)
 * Generate the main agent to run on Google Cloud
 * Check how we did security on Kaggle course
@@ -21,7 +22,13 @@
    - Simple box for ID forecast region (to test features)
    - Simple box for ID forecast date (to test features)
 
+### Low priority
+* Spec files for update-boundaries.py (sp?)
+
 ## Far future
 * Add Met Office Weather Warnings. See DEV-NOTES.md
 
 ## Draft prompts
+
+### Toekn Spend
+Summarise current state of project and archive unnecessary logs

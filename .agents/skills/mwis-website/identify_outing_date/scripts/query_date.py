@@ -12,19 +12,21 @@ import datetime
 import parsedatetime
 from typing import Optional
 
+
 def get_reference_date() -> datetime.date:
     """Determine the reference date for all calculations, defaulting to today.
 
     Returns:
         datetime.date: The reference date.
     """
-    ref_env = os.environ.get('MWIS_REFERENCE_DATE')
+    ref_env = os.environ.get("MWIS_REFERENCE_DATE")
     if ref_env:
         try:
             return datetime.datetime.strptime(ref_env.strip(), "%Y-%m-%d").date()
         except ValueError:
             pass
     return datetime.date.today()
+
 
 def _parse_formatted_date(text: str, ref_year: int) -> datetime.date:
     """Parse DD/MM or DD/MM/YYYY formatted dates.
@@ -36,13 +38,14 @@ def _parse_formatted_date(text: str, ref_year: int) -> datetime.date:
     Returns:
         datetime.date: The parsed date.
     """
-    m = re.match(r'^(\d{1,2})/(\d{1,2})(?:/(\d{4}))?$', text)
+    m = re.match(r"^(\d{1,2})/(\d{1,2})(?:/(\d{4}))?$", text)
     if not m:
         raise ValueError()
     day = int(m.group(1))
     month = int(m.group(2))
     year = int(m.group(3)) if m.group(3) else ref_year
     return datetime.date(year, month, day)
+
 
 def _parse_fuzzy_date(text: str, ref_date: datetime.date) -> datetime.date:
     """Parse relative/fuzzy date descriptions using parsedatetime.
@@ -61,6 +64,7 @@ def _parse_fuzzy_date(text: str, ref_date: datetime.date) -> datetime.date:
         return datetime.date(struct.tm_year, struct.tm_mon, struct.tm_mday)
     raise ValueError(f"Could not parse date: '{text}'")
 
+
 def parse_single_date(text: str, ref_date: datetime.date) -> datetime.date:
     """Parse a single date string using DD/MM/YYYY, DD/MM, or parsedatetime.
 
@@ -77,6 +81,7 @@ def parse_single_date(text: str, ref_date: datetime.date) -> datetime.date:
     except ValueError:
         return _parse_fuzzy_date(text, ref_date)
 
+
 def _resolve_weekend(ref_date: datetime.date) -> list[datetime.date]:
     """Calculate the dates for the upcoming weekend.
 
@@ -88,7 +93,10 @@ def _resolve_weekend(ref_date: datetime.date) -> list[datetime.date]:
     """
     weekday = ref_date.weekday()
     if weekday == 4:
-        return [ref_date + datetime.timedelta(days=1), ref_date + datetime.timedelta(days=2)]
+        return [
+            ref_date + datetime.timedelta(days=1),
+            ref_date + datetime.timedelta(days=2),
+        ]
     elif weekday == 5:
         return [ref_date, ref_date + datetime.timedelta(days=1)]
     elif weekday == 6:
@@ -97,7 +105,10 @@ def _resolve_weekend(ref_date: datetime.date) -> list[datetime.date]:
     sun = ref_date + datetime.timedelta(days=6 - weekday)
     return [sat, sun]
 
-def _resolve_range(start_str: str, end_str: str, ref_date: datetime.date) -> list[datetime.date]:
+
+def _resolve_range(
+    start_str: str, end_str: str, ref_date: datetime.date
+) -> list[datetime.date]:
     """Generate all dates between start and end query strings.
 
     Args:
@@ -119,6 +130,7 @@ def _resolve_range(start_str: str, end_str: str, ref_date: datetime.date) -> lis
         curr += datetime.timedelta(days=1)
     return dates
 
+
 def resolve_query_to_dates(query: str, ref_date: datetime.date) -> list[datetime.date]:
     """Resolve a date query string into a list of dates.
 
@@ -132,14 +144,15 @@ def resolve_query_to_dates(query: str, ref_date: datetime.date) -> list[datetime
     normalized = query.lower().strip()
     if "weekend" in normalized:
         return _resolve_weekend(ref_date)
-    
-    m_range = re.split(r'\s+(?:to|through)\s+', normalized)
+
+    m_range = re.split(r"\s+(?:to|through)\s+", normalized)
     if len(m_range) == 2:
         return _resolve_range(m_range[0], m_range[1], ref_date)
 
-    parts = re.split(r'\s+and\s+|,\s*', normalized)
+    parts = re.split(r"\s+and\s+|,\s*", normalized)
     dates = [parse_single_date(p, ref_date) for p in parts if p.strip()]
     return sorted(list(set(dates)))
+
 
 def map_date_to_code(target: datetime.date, ref_date: datetime.date) -> str:
     """Map a target date to the corresponding MWIS forecast coverage code.
@@ -166,7 +179,10 @@ def map_date_to_code(target: datetime.date, ref_date: datetime.date) -> str:
         return "Doutlook"
     return "Dfuture"
 
-def resolve_date_query(query: str, ref_date: Optional[datetime.date] = None) -> list[str]:
+
+def resolve_date_query(
+    query: str, ref_date: Optional[datetime.date] = None
+) -> list[str]:
     """Resolve a query to unique chronological MWIS coverage codes.
 
     Args:
@@ -189,6 +205,7 @@ def resolve_date_query(query: str, ref_date: Optional[datetime.date] = None) -> 
             codes.append(code)
     return codes
 
+
 def main():
     """Main CLI entry point."""
     if len(sys.argv) < 2:
@@ -203,5 +220,6 @@ def main():
         sys.stderr.write(f"Error parsing date query: {e}\n")
         sys.exit(1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

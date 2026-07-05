@@ -2,6 +2,7 @@
 """
 Utility script to parse GPX boundary trackpoints and regenerate the MWIS region boundaries JSON file.
 """
+
 import os
 import json
 import glob
@@ -10,8 +11,10 @@ from typing import List, Dict, Any, Optional, Tuple
 
 # Path Configuration relative to this script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-GPX_DIR = os.path.join(SCRIPT_DIR, '..', 'resources', 'gpx_files', 'mwis_areas')
-OUTPUT_JSON_PATH = os.path.join(SCRIPT_DIR, '..', 'assets', 'mwis-region-boundaries.json')
+GPX_DIR = os.path.join(SCRIPT_DIR, "..", "resources", "gpx_files", "mwis_areas")
+OUTPUT_JSON_PATH = os.path.join(
+    SCRIPT_DIR, "..", "assets", "mwis-region-boundaries.json"
+)
 
 # Official Region Code to Name mapping
 REGION_NAMES = {
@@ -24,14 +27,15 @@ REGION_NAMES = {
     "YD": "Yorkshire Dales & North Pennines",
     "PD": "Peak District",
     "SD": "Snowdonia & North Wales",
-    "BB": "Brecon Beacons"
+    "BB": "Brecon Beacons",
 }
 
 # Constants
-XML_TRKPT_TAG = 'trkpt'
-LAT_ATTR = 'lat'
-LON_ATTR = 'lon'
+XML_TRKPT_TAG = "trkpt"
+LAT_ATTR = "lat"
+LON_ATTR = "lon"
 JSON_INDENT = 2
+
 
 def _parse_trackpoint(elem: ET.Element) -> Optional[List[float]]:
     try:
@@ -40,6 +44,7 @@ def _parse_trackpoint(elem: ET.Element) -> Optional[List[float]]:
         return [lat, lon]
     except (KeyError, ValueError):
         return None
+
 
 def parse_gpx_coordinates(filepath: str) -> List[List[float]]:
     """
@@ -51,18 +56,19 @@ def parse_gpx_coordinates(filepath: str) -> List[List[float]]:
     except Exception as e:
         print(f"Error parsing XML file {filepath}: {e}")
         return []
-    
+
     coordinates = []
     for elem in root.iter():
-        tag_local = elem.tag.split('}')[-1]
+        tag_local = elem.tag.split("}")[-1]
         if tag_local == XML_TRKPT_TAG:
             pt = _parse_trackpoint(elem)
             if pt:
                 coordinates.append(pt)
             else:
                 print(f"Skipping invalid trackpoint in {filepath}")
-                
+
     return coordinates
+
 
 def _process_gpx_file(filepath: str) -> Optional[Tuple[str, Dict[str, Any]]]:
     filename = os.path.basename(filepath)
@@ -74,10 +80,8 @@ def _process_gpx_file(filepath: str) -> Optional[Tuple[str, Dict[str, Any]]]:
     if not coords:
         print(f"Warning: No coordinates found in {filename}")
         return None
-    return code, {
-        "name": REGION_NAMES[code],
-        "coordinates": coords
-    }
+    return code, {"name": REGION_NAMES[code], "coordinates": coords}
+
 
 def update_boundaries(gpx_dir: str, output_path: str) -> None:
     if not os.path.isdir(gpx_dir):
@@ -87,21 +91,25 @@ def update_boundaries(gpx_dir: str, output_path: str) -> None:
     if not gpx_files:
         print(f"No GPX files found in: {gpx_dir}")
         return
-        
+
     new_data: Dict[str, Any] = {}
     for filepath in gpx_files:
         res = _process_gpx_file(filepath)
         if res:
             code, val = res
             new_data[code] = val
-            print(f"Processed {code} ({val['name']}): {len(val['coordinates'])} coordinates")
-        
+            print(
+                f"Processed {code} ({val['name']}): {len(val['coordinates'])} coordinates"
+            )
+
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, 'w') as f:
+    with open(output_path, "w") as f:
         json.dump(new_data, f, indent=JSON_INDENT)
+
 
 def main() -> None:
     update_boundaries(GPX_DIR, OUTPUT_JSON_PATH)
+
 
 if __name__ == "__main__":
     main()

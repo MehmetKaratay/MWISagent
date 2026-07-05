@@ -24,7 +24,7 @@ HEADING_MAPPING = {
     "chance of cloud free": "chance_cloud_free",
     "sunshine and air clarity?": "sun_clarity",
     "how cold?": "cold_temp",
-    "freezing level": "freezing_level"
+    "freezing level": "freezing_level",
 }
 
 
@@ -44,7 +44,9 @@ def _find_date_row(day_div: Any) -> Optional[Any]:
     """Find the row containing 'Viewing Forecast For' inside a day's container."""
     for row in day_div.find_all("div", class_="row"):
         heading_div = row.find("div", class_=lambda c: c and "col-lg-5" in c)
-        if heading_div and "Viewing Forecast For" in heading_div.get_text(separator=" "):
+        if heading_div and "Viewing Forecast For" in heading_div.get_text(
+            separator=" "
+        ):
             return row
     for row in day_div.find_all("div", class_="row"):
         if "Viewing Forecast For" in row.get_text(separator=" "):
@@ -69,7 +71,7 @@ def _parse_last_updated(content_div: Any) -> str:
         return ""
     last_updated = " ".join(small_tag.get_text().split())
     if last_updated.lower().startswith("last updated"):
-        return last_updated[len("last updated"):].strip()
+        return last_updated[len("last updated") :].strip()
     return last_updated
 
 

@@ -1,0 +1,6 @@
+# Exclude test files from Semgrep analysis
+**/test_*.py
+**/tests/**
+
+# Exclude developer helper scripts
+**/update_boundaries.py

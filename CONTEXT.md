@@ -9,7 +9,7 @@ Create an agent that reads MWIS forecasts and interpretation of them for a given
 ## MVP
 The agent uses its "SKILL Categories" to identify the forecast url, the date, the location, fetch the forecast and present them to the user along with a link to the full forecast. The user interacts with the agent through a front end. Both agent and front end will be hosted on Google Cloud.
 
-Keep as much of the project determistic using python scripts as possible to ensure reliability. LLMs should be used to provide extra information and answers to user questions. 
+Keep as much of the project determistic using python scripts as possible to ensure reliability. LLMs should be used to provide extra information and answers to user questions.
 
 For elements that cannot be provided deterministically the LLM can use its knowledge to provide extra information, but it must make it clear the the LLM can and does make mistakes. The skills should be written so that they can be used by the LLM to provide extra information.
 
@@ -24,12 +24,12 @@ The MVP will include an agent and a front end to provide an interactive experien
 
 Security is a high priority. We want to minimise security leaks and make the agent secure against attacks, including prompt injection.
 
-The MVP should use only skills from the `skills-mwis-website` folder and the Coding Skills. This means: 
+The MVP should use only skills from the `skills-mwis-website` folder and the Coding Skills. This means:
   * Read the skills in `skills-mwis-website` folder
   * Read the `CONTEXT.md` file
   * Read the `~/.gemini/GEMINI.md` file
   * Identify what needs to be done to create the MVP
-  * Implement the MVP using the tdd cycle and clean code principles, etc. 
+  * Implement the MVP using the tdd cycle and clean code principles, etc.
 
 ### Architecture
 
@@ -98,7 +98,7 @@ Skills are dividing into categories to make it easier to identify and use skills
                                          - extract region to pass to query_region.py
                                          - extract date to pass to query_date.py
                                                     │
-                                                    ▼                                       
+                                                    ▼
                                          [Deterministic Python Scripts]
                                          - query_region.py
                                          - query_date.py
@@ -136,3 +136,7 @@ Skills are dividing into categories to make it easier to identify and use skills
   17. Framework debug modes enabled in production settings.
   18. Interface binding to all IP interfaces (`0.0.0.0`).
 
+- **Pre-commit Hooks**: Configured in `.pre-commit-config.yaml` to run on commit:
+  * `end-of-file-fixer` and `trailing-whitespace` for code cleanup.
+  * `ruff` for python code linting and formatting.
+  * Local `semgrep` scan targeting `.semgrep/rules.yaml` with the `--error` flag.
