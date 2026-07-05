@@ -27,7 +27,7 @@
 
 * Most forecasts contain a freezing level in the `freezing_level` field. YD and PD use this field to refer to valley temperature.
   - Freezing levels are not usually given for YD and PD
-  - Valley temps are occasionally given for other regions. This is usually mentioned in the `cold_temp` field.
+  - Valley temps are occasionally given for other regions. This is usually mentioned in the `temp` field.
 
 ## Forecast update timestamp
 Each forecast has a 'last updated' field. This does not necessarily refer to the issue time. For example, a forecast could be issued at 1630 one day, but updated at 0730 the following day. An update usually means

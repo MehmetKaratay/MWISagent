@@ -107,7 +107,7 @@ Output:
       "cloud_detail": "...",
       "chance_cloud_free": "...",
       "sun_clarity": "...",
-      "cold_temp": "...",
+      "temp": "...",
       "freezing_level": "..."
     }
   ],
