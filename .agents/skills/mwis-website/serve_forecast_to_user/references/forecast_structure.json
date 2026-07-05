@@ -16,7 +16,8 @@
       "chance_cloud_free": "30% at dawn, lowering to 10% afternoon",
       "sun_clarity": "Very good visibility out of cloud; sunshine occasionally.",
       "temp": "9C at 900m reference height.",
-      "freezing_level": "Above summits."
+      "freezing_level": "Above summits.",
+      "Dcode": "D0"
     },
     {
       "day_index": 1,
@@ -33,7 +34,8 @@
       "chance_cloud_free": "80%",
       "sun_clarity": "Excellent visibility.",
       "temp": "11C at 900m reference height.",
-      "freezing_level": "Above summits."
+      "freezing_level": "Above summits.",
+      "Dcode": "D1"
     },
     {
       "day_index": 2,
@@ -50,8 +52,12 @@
       "chance_cloud_free": "Less than 10%",
       "sun_clarity": "Poor in rain.",
       "temp": "8C at 900m reference height.",
-      "freezing_level": "Above summits."
+      "freezing_level": "Above summits.",
+      "Dcode": "D2"
     }
   ],
-  "outlook": "Settled weather returning later in the week with high pressure building from the south, temperatures rising and winds easing."
+  "outlook": {
+    "Dcode": "Doutlook",
+    "outlook": "Settled weather returning later in the week with high pressure building from the south, temperatures rising and winds easing."
+  }
 }
