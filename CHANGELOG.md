@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **2026-07-05 12:57**: Implemented strict input validation (Pydantic schemas), XML prompt isolation, security skill guidelines (`.agents/skills/security/SKILL.md`), and automated test suite in `tests/test_security.py`.
 - **2026-07-05 00:15**: Implemented `parse_forecast.py` HTML to JSON parser using BeautifulSoup, with comprehensive tests and mocked requests.
 - **2026-07-04 22:44**: Implemented `query_fl.py` and `query_refHeight.py` CLI utilities with strict CSV schema validations.
 
