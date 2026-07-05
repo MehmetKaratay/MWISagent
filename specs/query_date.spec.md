@@ -33,18 +33,16 @@ dependencies:
 ## Behavior & Parsing Logic
 
 - **Reference Time**: All calculations are relative to the current local system date.
-- **Forecast Publication Shifts**: The Mountain Weather Information Service publishes the new forecast cycle daily between 16:00 and 17:00 local time. Because of this:
-  - **Before Publication (Before 1600-1700)**:
-    - Today's date maps to code `D0`.
-    - Tomorrow's date maps to code `D1`.
-    - Tomorrow+1 maps to code `D2`.
-    - Tomorrow+2 maps to code `D3`.
-  - **After Publication (After 1600-1700)**:
-    - Tomorrow's date maps to code `D1` (which aligns with `day_index = 0` in the newly updated website).
-    - Tomorrow+1 maps to code `D2` (aligning with `day_index = 1`).
-    - Tomorrow+2 maps to code `D3` (aligning with `day_index = 2`).
-    - Today's date maps to code `Dold` (past/outdated).
-  - Downstream clients must compare the parsed JSON forecast `date` fields to verify correct alignment.
+- **Forecast Publication Shifts**: The Mountain Weather Information Service publishes the new forecast cycle daily (typically in the late afternoon, but occasionally as early as 11:00 AM). Because the timing is variable, clients must NOT rely on the system clock to map `day_index` to a D-code. Instead, calibrate the mapping by comparing the `"date"` string in `days[0]` with the current system date:
+  - **Case A: `days[0]["date"]` is today's date**:
+    - `D0` (today) corresponds to `days[0]` (`day_index == 0`)
+    - `D1` (tomorrow) corresponds to `days[1]` (`day_index == 1`)
+    - `D2` (day after tomorrow) corresponds to `days[2]` (`day_index == 2`)
+  - **Case B: `days[0]["date"]` is tomorrow's date**:
+    - `D1` (tomorrow) corresponds to `days[0]` (`day_index == 0`)
+    - `D2` (day after tomorrow) corresponds to `days[1]` (`day_index == 1`)
+    - `D3` (3 days ahead) corresponds to `days[2]` (`day_index == 2`)
+    - Today's date (`D0`) resolves to `Dold` (past/outdated).
 - **Fuzzy Parsing**: Employs the `parsedatetime` library to resolve relative dates.
 - **DD/MM standard**: If `parsedatetime` fails or parses incorrectly, fallback to parsing as `DD/MM` (using the current system year) or `DD/MM/YYYY`.
 - **Range Resolution**: For inputs spanning multiple days (e.g., "this weekend" or "today and tomorrow"):
