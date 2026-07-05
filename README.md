@@ -33,7 +33,7 @@ mwis-agent/
 │   └── query_region.py
 ├── assets/                 # Assets
 │   └── template.md
-├── requirements.txt        # Python dependencies
+├── pyproject.toml          # Python dependencies and metadata configuration
 ├── README.md               # This file
 └── Dockerfile              # Docker configuration
 

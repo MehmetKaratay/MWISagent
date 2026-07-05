@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - **2026-07-04 22:44**: Implemented `query_fl.py` and `query_refHeight.py` CLI utilities with strict CSV schema validations.
 
 ### Changed
+- **2026-07-05 13:33**: Migrated dependency and packaging configuration from `requirements.txt` to `pyproject.toml` (using setuptools backend) and updated documentation.
 - **2026-07-05 13:13**: Reorganized the security skill into a dedicated `input_validation` folder under `.agents/skills/security/input_validation/` using git mv, and updated all code, tests, and documentation references.
 - **2026-07-04 13:06**: Implemented `query_date.py` date resolver script with `parsedatetime` library and 12 unit tests.
 - **2026-07-04 13:06**: Created `requirements.txt` to manage Python dependencies.

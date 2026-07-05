@@ -6,7 +6,10 @@ The `query_date.py` command-line utility resolves formatted or natural language 
 
 Ensure dependencies are installed in your virtual environment:
 ```bash
-pip install -r requirements.txt
+# Install the package and its dependencies
+pip install .
+# Or using uv:
+uv pip install .
 ```
 
 ## CLI Usage
