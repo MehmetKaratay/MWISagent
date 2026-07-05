@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - **2026-07-04 22:44**: Implemented `query_fl.py` and `query_refHeight.py` CLI utilities with strict CSV schema validations.
 
 ### Changed
+- **2026-07-05 23:14**: Refactored CLI utility scripts to clean up type hints, simplify python duplicate removal/set conversions, and use robust subprocess arguments passing.
 - **2026-07-05 15:25**: Refactored all CLI scripts to expose programmatic functions for imports, while preserving full command-line interfaces.
 - **2026-07-05 13:33**: Migrated dependency and packaging configuration from `requirements.txt` to `pyproject.toml` (using setuptools backend) and updated documentation.
 - **2026-07-05 13:13**: Reorganized the security skill into a dedicated `input_validation` folder under `.agents/skills/security/input_validation/` using git mv, and updated all code, tests, and documentation references.

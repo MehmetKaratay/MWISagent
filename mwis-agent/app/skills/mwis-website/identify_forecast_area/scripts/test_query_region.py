@@ -1,9 +1,9 @@
 #!/usr/bin/env /usr/bin/python3
-import unittest
-import subprocess
 import json
 import os
+import subprocess
 import sys
+import unittest
 
 # Paths to the script under test
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -21,7 +21,7 @@ LONDON_COORDS = ["51.5074", "-0.1278"]
 
 class TestQueryRegionCLI(unittest.TestCase):
     def run_query(self, args):
-        cmd = [PYTHON_EXE, SCRIPT_PATH] + args
+        cmd = [PYTHON_EXE, SCRIPT_PATH, *args]
         # Run with timeout to prevent hang
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
         return res
@@ -114,7 +114,7 @@ class TestQueryRegionCLI(unittest.TestCase):
         self.assertIn("SU", res.stdout)
 
     def test_json_output_success(self):
-        res = self.run_query(SNOWDON_COORDS + ["--json"])
+        res = self.run_query([*SNOWDON_COORDS, "--json"])
         self.assertEqual(res.returncode, 0)
         data = json.loads(res.stdout)
         self.assertTrue(data.get("in_scope"))
@@ -122,7 +122,7 @@ class TestQueryRegionCLI(unittest.TestCase):
         self.assertIn("SD", data.get("regions", []))
 
     def test_json_output_out_of_scope(self):
-        res = self.run_query(PARIS_COORDS + ["--json"])
+        res = self.run_query([*PARIS_COORDS, "--json"])
         self.assertEqual(res.returncode, 2)
         data = json.loads(res.stdout)
         self.assertFalse(data.get("in_scope"))

@@ -4,13 +4,13 @@
 
 """Resolve input dates and ranges to MWIS forecast coverage codes."""
 
-import sys
+import datetime
+import json
 import os
 import re
-import json
-import datetime
+import sys
+
 import parsedatetime
-from typing import Optional
 
 
 def get_reference_date() -> datetime.date:
@@ -151,7 +151,7 @@ def resolve_query_to_dates(query: str, ref_date: datetime.date) -> list[datetime
 
     parts = re.split(r"\s+and\s+|,\s*", normalized)
     dates = [parse_single_date(p, ref_date) for p in parts if p.strip()]
-    return sorted(list(set(dates)))
+    return sorted(set(dates))
 
 
 def map_date_to_code(target: datetime.date, ref_date: datetime.date) -> str:
@@ -180,9 +180,7 @@ def map_date_to_code(target: datetime.date, ref_date: datetime.date) -> str:
     return "Dfuture"
 
 
-def resolve_date_query(
-    query: str, ref_date: Optional[datetime.date] = None
-) -> list[str]:
+def resolve_date_query(query: str, ref_date: datetime.date | None = None) -> list[str]:
     """Resolve a query to unique chronological MWIS coverage codes.
 
     Args:

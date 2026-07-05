@@ -3,12 +3,12 @@
 
 """Unit tests for the query_url.py CLI tool."""
 
-import unittest
-import os
-import tempfile
-import subprocess
 import json
+import os
+import subprocess
 import sys
+import tempfile
+import unittest
 
 # Paths to the script under test
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -39,7 +39,7 @@ class TestQueryUrlCLI(unittest.TestCase):
         self.temp_dir.cleanup()
 
     def run_cli(
-        self, query: str, stdout_flag: str = None
+        self, query: str, stdout_flag: str | None = None
     ) -> subprocess.CompletedProcess:
         """Helper to execute the script in a subprocess."""
         cmd = [PYTHON_EXE, SCRIPT_PATH, query, self.csv_path]

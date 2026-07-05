@@ -3,8 +3,8 @@
 
 """Helper utilities for querying MWIS region CSV databases."""
 
-import os
 import csv
+import os
 import re
 
 
@@ -68,7 +68,7 @@ def find_region_row(csv_path: str, query: str) -> dict[str, str]:
     ensure_csv_file_exists(csv_path)
     q_norm = validate_non_empty_query(query).lower()
     with open(  # nosemgrep: detect-path-traversal
-        csv_path, mode="r", encoding="utf-8"
+        csv_path, encoding="utf-8"
     ) as f:
         reader = csv.DictReader(f)
         for row in reader:

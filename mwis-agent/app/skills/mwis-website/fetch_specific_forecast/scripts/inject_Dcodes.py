@@ -9,7 +9,7 @@ import json
 import os
 import re
 import sys
-from typing import Any, Dict, Optional
+from typing import Any
 
 # Set up path to import parse_Dcodes from identify_outing_date skill
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -36,8 +36,8 @@ def parse_forecast_date(date_str: str) -> datetime.date:
 
 
 def _inject_day_d_code(
-    day: Dict[str, Any], ref_date: Optional[datetime.date]
-) -> Dict[str, Any]:
+    day: dict[str, Any], ref_date: datetime.date | None
+) -> dict[str, Any]:
     """Resolve and inject the Dcode field into a single day's dictionary."""
     new_day = day.copy()
     if "date" in new_day:
@@ -52,7 +52,7 @@ def _inject_day_d_code(
     return new_day
 
 
-def _format_outlook_object(outlook: Any) -> Dict[str, Any]:
+def _format_outlook_object(outlook: Any) -> dict[str, Any]:
     """Transform the outlook field into a structured object."""
     if isinstance(outlook, dict):
         return outlook
@@ -63,8 +63,8 @@ def _format_outlook_object(outlook: Any) -> Dict[str, Any]:
 
 
 def inject_d_codes(
-    forecast_data: Dict[str, Any], ref_date: Optional[datetime.date] = None
-) -> Dict[str, Any]:
+    forecast_data: dict[str, Any], ref_date: datetime.date | None = None
+) -> dict[str, Any]:
     """Inject resolved D-codes into days array and format outlook as an object.
 
     Args:
@@ -94,7 +94,7 @@ def _parse_cli_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _parse_reference_date(date_str: Optional[str]) -> Optional[datetime.date]:
+def _parse_reference_date(date_str: str | None) -> datetime.date | None:
     """Parse the reference date CLI option."""
     if not date_str:
         return None
@@ -105,7 +105,7 @@ def _parse_reference_date(date_str: Optional[str]) -> Optional[datetime.date]:
         sys.exit(1)
 
 
-def _load_forecast_json(source: Optional[str]) -> Dict[str, Any]:
+def _load_forecast_json(source: str | None) -> dict[str, Any]:
     """Load forecast JSON data from file or stdin."""
     if not source:
         return json.load(sys.stdin)
@@ -113,7 +113,7 @@ def _load_forecast_json(source: Optional[str]) -> Dict[str, Any]:
         sys.stderr.write(f"Error: File not found: {source}\n")
         sys.exit(3)
     with open(  # nosemgrep: detect-path-traversal
-        source, "r", encoding="utf-8"
+        source, encoding="utf-8"
     ) as f:
         return json.load(f)
 

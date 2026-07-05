@@ -5,7 +5,6 @@
 
 import datetime
 import os
-from typing import Optional
 
 
 def _get_reference_date() -> datetime.date:
@@ -24,7 +23,7 @@ def _get_reference_date() -> datetime.date:
 
 
 def get_d_code_for_date(
-    target: datetime.date, ref_date: Optional[datetime.date] = None
+    target: datetime.date, ref_date: datetime.date | None = None
 ) -> str:
     """Resolve a target date to its MWIS forecast coverage code.
 

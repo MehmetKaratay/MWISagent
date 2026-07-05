@@ -3,12 +3,12 @@
 
 """Unit tests for the query_refHeight.py CLI tool."""
 
-import unittest
-import os
-import tempfile
-import subprocess
 import json
+import os
+import subprocess
 import sys
+import tempfile
+import unittest
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_PATH = os.path.join(SCRIPT_DIR, "query_refHeight.py")

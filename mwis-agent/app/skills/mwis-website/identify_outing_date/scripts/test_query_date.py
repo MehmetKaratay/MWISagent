@@ -4,11 +4,11 @@
 
 """Unit tests for the query_date.py CLI script."""
 
-import unittest
-import subprocess
 import json
 import os
+import subprocess
 import sys
+import unittest
 
 # Paths to the script under test
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,7 +20,7 @@ class TestQueryDateCLI(unittest.TestCase):
     """Test suite for checking the functionality of the query_date.py command-line tool."""
 
     def run_query(
-        self, query: str, ref_date: str = None
+        self, query: str, ref_date: str | None = None
     ) -> subprocess.CompletedProcess:
         """Run the query_date.py script with the given query and optional reference date.
 
@@ -130,8 +130,9 @@ class TestQueryDateCLI(unittest.TestCase):
         """Verify that resolve_date_query can be imported and executed programmatically."""
         if SCRIPT_DIR not in sys.path:
             sys.path.insert(0, SCRIPT_DIR)
-        from query_date import resolve_date_query
         import datetime
+
+        from query_date import resolve_date_query
 
         ref = datetime.date(2026, 7, 4)
         self.assertEqual(

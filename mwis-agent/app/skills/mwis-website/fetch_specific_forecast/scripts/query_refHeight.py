@@ -3,11 +3,11 @@
 
 """CLI tool to query the reference height (RefHeight) of a region."""
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
-from typing import Optional
+
 from query_utils import find_region_row
 
 DEFAULT_CSV_PATH = os.path.join(
@@ -17,7 +17,7 @@ DEFAULT_CSV_PATH = os.path.join(
 )
 
 
-def resolve_ref_height(query: str, csv_path: Optional[str] = None) -> str:
+def resolve_ref_height(query: str, csv_path: str | None = None) -> str:
     """Resolve the RefHeight field of a region.
 
     Args:

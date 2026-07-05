@@ -6,11 +6,12 @@
 Parser module and CLI to convert MWIS text forecast HTML pages into JSON.
 """
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -36,11 +37,11 @@ def fetch_forecast_html(source: str) -> str:
         return res.text
     if not os.path.exists(source):
         raise FileNotFoundError(f"Local file not found: {source}")
-    with open(source, "r", encoding="utf-8") as f:
+    with open(source, encoding="utf-8") as f:
         return f.read()
 
 
-def _find_date_row(day_div: Any) -> Optional[Any]:
+def _find_date_row(day_div: Any) -> Any | None:
     """Find the row containing 'Viewing Forecast For' inside a day's container."""
     for row in day_div.find_all("div", class_="row"):
         heading_div = row.find("div", class_=lambda c: c and "col-lg-5" in c)
@@ -75,7 +76,7 @@ def _parse_last_updated(content_div: Any) -> str:
     return last_updated
 
 
-def _extract_date_metadata(day_div: Any) -> Tuple[str, str]:
+def _extract_date_metadata(day_div: Any) -> tuple[str, str]:
     """Extract the date and last updated fields from a day's forecast container."""
     row = _find_date_row(day_div)
     if not row:
@@ -86,7 +87,7 @@ def _extract_date_metadata(day_div: Any) -> Tuple[str, str]:
     return _parse_date_text(content_div), _parse_last_updated(content_div)
 
 
-def _extract_row_content(row: Any) -> Optional[Tuple[str, Any]]:
+def _extract_row_content(row: Any) -> tuple[str, Any] | None:
     """Extract heading text and content column div from a row if they exist."""
     h4 = row.find("h4")
     if not h4:
@@ -98,7 +99,7 @@ def _extract_row_content(row: Any) -> Optional[Tuple[str, Any]]:
     return heading_text, cols[-1]
 
 
-def _parse_day_forecast(day_div: Any, idx: int) -> Dict[str, Any]:
+def _parse_day_forecast(day_div: Any, idx: int) -> dict[str, Any]:
     """Parse a single day's forecast div container."""
     date, last_updated = _extract_date_metadata(day_div)
     fields = {
@@ -196,7 +197,7 @@ def _extract_outlook(soup: BeautifulSoup) -> str:
     return " ".join(text.split()).strip()
 
 
-def parse_forecast_html(html_content: str) -> Dict[str, Any]:
+def parse_forecast_html(html_content: str) -> dict[str, Any]:
     """Parse MWIS forecast HTML content into a structured dictionary."""
     soup = BeautifulSoup(html_content, "html.parser")
     region = _extract_region_name(soup)
@@ -211,7 +212,7 @@ def parse_forecast_html(html_content: str) -> Dict[str, Any]:
     return {"region": region, "days": days_data, "outlook": _extract_outlook(soup)}
 
 
-def get_forecast_data(source: str) -> Dict[str, Any]:
+def get_forecast_data(source: str) -> dict[str, Any]:
     """Orchestrates forecast fetching and parsing."""
     html = fetch_forecast_html(source)
     return parse_forecast_html(html)

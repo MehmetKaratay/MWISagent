@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-import sys
-import os
 import json
 import math
-import urllib.request
+import os
+import sys
 import urllib.parse
+import urllib.request
 from dataclasses import dataclass
-from typing import List, Tuple, Dict, Optional, Any
+from typing import Any
 
 # Path Configuration
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -65,9 +65,9 @@ class OutOfScopeError(Exception):
 
 class BoundariesLoader:
     @staticmethod
-    def load() -> Dict[str, Any]:
+    def load() -> dict[str, Any]:
         try:
-            with open(BOUNDARIES_PATH, "r") as f:
+            with open(BOUNDARIES_PATH) as f:
                 return json.load(f)
         except Exception as e:
             print(f"Error loading boundaries file: {e}", file=sys.stderr)
@@ -80,7 +80,7 @@ class ConfigLoader:
         if not os.path.exists(CONFIG_PATH):
             return DEFAULT_OVERLAP_TOLERANCE_PCT
         try:
-            with open(CONFIG_PATH, "r") as f:
+            with open(CONFIG_PATH) as f:
                 config = json.load(f)
                 return float(
                     config.get("overlap_tolerance_pct", DEFAULT_OVERLAP_TOLERANCE_PCT)
@@ -118,11 +118,11 @@ class GeoMath:
         return CARDINAL_DIRS[idx]
 
     @staticmethod
-    def _project_point(pt: Point, scale_x: float) -> Tuple[float, float]:
+    def _project_point(pt: Point, scale_x: float) -> tuple[float, float]:
         return pt.lon * scale_x, pt.lat * EARTH_RADIUS_KM
 
     @staticmethod
-    def point_to_segment_distance(pt: Point, seg: Segment) -> Tuple[float, Point]:
+    def point_to_segment_distance(pt: Point, seg: Segment) -> tuple[float, Point]:
         avg_lat = (pt.lat + seg.start.lat + seg.end.lat) / 3.0
         scale_x = EARTH_RADIUS_KM * math.cos(math.radians(avg_lat))
         px, py = GeoMath._project_point(pt, scale_x)
@@ -142,7 +142,7 @@ class GeoMath:
         return dist, Point(closest_lat, closest_lon)
 
     @staticmethod
-    def point_in_polygon(pt: Point, polygon: List[List[float]]) -> bool:
+    def point_in_polygon(pt: Point, polygon: list[list[float]]) -> bool:
         if len(polygon) > 1 and polygon[0] == polygon[-1]:
             polygon = polygon[:-1]
         n = len(polygon)
@@ -160,7 +160,7 @@ class GeoMath:
         return inside
 
     @staticmethod
-    def polygon_distance(pt: Point, polygon: List[List[float]]) -> Tuple[float, Point]:
+    def polygon_distance(pt: Point, polygon: list[list[float]]) -> tuple[float, Point]:
         min_dist = float("inf")
         closest_pt = Point(0, 0)
         for i in range(len(polygon) - 1):
@@ -176,19 +176,19 @@ class GeoMath:
 
 
 class RegionFinder:
-    def __init__(self, boundaries: Dict[str, Any]):
+    def __init__(self, boundaries: dict[str, Any]):
         self.boundaries = boundaries
 
-    def get_matching_regions(self, pt: Point) -> List[str]:
+    def get_matching_regions(self, pt: Point) -> list[str]:
         matches = []
         for code, info in self.boundaries.items():
             if GeoMath.point_in_polygon(pt, info["coordinates"]):
                 matches.append(code)
-        return sorted(list(set(matches)))
+        return sorted(set(matches))
 
     def get_nearest_regions(
         self, pt: Point, tolerance_pct: float
-    ) -> List[RegionDistance]:
+    ) -> list[RegionDistance]:
         distances = []
         for code, info in self.boundaries.items():
             dist, c_pt = GeoMath.polygon_distance(pt, info["coordinates"])
@@ -208,7 +208,7 @@ class RegionFinder:
 
 class InputResolver:
     @staticmethod
-    def _fetch_nominatim_data(name: str) -> Optional[Dict[str, Any]]:
+    def _fetch_nominatim_data(name: str) -> dict[str, Any] | None:
         params = urllib.parse.urlencode(
             {"q": name, "format": "json", "addressdetails": 1, "limit": 1}
         )
@@ -222,11 +222,11 @@ class InputResolver:
             return None
 
     @staticmethod
-    def search_munros(name: str) -> Optional[str]:
+    def search_munros(name: str) -> str | None:
         if not os.path.exists(MUNROS_PATH):
             return None
         try:
-            with open(MUNROS_PATH, "r") as f:
+            with open(MUNROS_PATH) as f:
                 for line in f:
                     parts = line.strip().split(",")
                     if len(parts) >= 3 and parts[1].lower() == name.lower():
@@ -236,7 +236,7 @@ class InputResolver:
         return None
 
     @staticmethod
-    def query_nominatim(name: str) -> Optional[Point]:
+    def query_nominatim(name: str) -> Point | None:
         if len(name) > 100:
             return None
         data = InputResolver._fetch_nominatim_data(name)
@@ -254,7 +254,7 @@ class InputResolver:
     @staticmethod
     def _get_grid_square_base(
         first: str, second: str
-    ) -> Optional[Tuple[int, int, int, int]]:
+    ) -> tuple[int, int, int, int] | None:
         try:
             f_idx = GRID_ALPHABET.index(first)
             s_idx = GRID_ALPHABET.index(second)
@@ -267,7 +267,7 @@ class InputResolver:
         return e500, n500, e100, n100
 
     @staticmethod
-    def parse_grid_reference(grid_ref: str) -> Optional[Point]:
+    def parse_grid_reference(grid_ref: str) -> Point | None:
         grid_ref = grid_ref.replace(" ", "").upper()
         if len(grid_ref) < 2 or not grid_ref[:2].isalpha():
             return None
@@ -288,7 +288,7 @@ class InputResolver:
         return Point(lat, lon)
 
     @staticmethod
-    def resolve_args(args: List[str]) -> Tuple[Optional[Point], Optional[str]]:
+    def resolve_args(args: list[str]) -> tuple[Point | None, str | None]:
         if len(args) == 1:
             grid_pt = InputResolver.parse_grid_reference(args[0])
             if grid_pt:
@@ -308,11 +308,11 @@ class InputResolver:
 
 
 class ResultFormatter:
-    def format_success(self, regions: List[str], boundaries: Dict[str, Any]) -> None:
+    def format_success(self, regions: list[str], boundaries: dict[str, Any]) -> None:
         raise NotImplementedError
 
     def format_nearest(
-        self, nearest: List[RegionDistance], boundaries: Dict[str, Any]
+        self, nearest: list[RegionDistance], boundaries: dict[str, Any]
     ) -> None:
         raise NotImplementedError
 
@@ -321,7 +321,7 @@ class ResultFormatter:
 
 
 class JsonFormatter(ResultFormatter):
-    def format_success(self, regions: List[str], boundaries: Dict[str, Any]) -> None:
+    def format_success(self, regions: list[str], boundaries: dict[str, Any]) -> None:
         out = {
             "in_scope": True,
             "in_area": True,
@@ -331,7 +331,7 @@ class JsonFormatter(ResultFormatter):
         print(json.dumps(out))
 
     def format_nearest(
-        self, nearest: List[RegionDistance], boundaries: Dict[str, Any]
+        self, nearest: list[RegionDistance], boundaries: dict[str, Any]
     ) -> None:
         out = {
             "in_scope": True,
@@ -357,14 +357,14 @@ class JsonFormatter(ResultFormatter):
 
 
 class TextFormatter(ResultFormatter):
-    def format_success(self, regions: List[str], boundaries: Dict[str, Any]) -> None:
+    def format_success(self, regions: list[str], boundaries: dict[str, Any]) -> None:
         names = [boundaries[code]["name"] for code in regions]
         print(f"Region(s): {', '.join(regions)} ({', '.join(names)})")
         if len(regions) > 1:
             print("Note: Overlap zone detected.")
 
     def format_nearest(
-        self, nearest: List[RegionDistance], boundaries: Dict[str, Any]
+        self, nearest: list[RegionDistance], boundaries: dict[str, Any]
     ) -> None:
         print("The location is not in an MWIS area.")
         print("Nearest area(s):")
@@ -380,7 +380,7 @@ class TextFormatter(ResultFormatter):
 
 
 def _process_location(
-    pt: Point, boundaries: Dict[str, Any], formatter: ResultFormatter
+    pt: Point, boundaries: dict[str, Any], formatter: ResultFormatter
 ) -> None:
     finder = RegionFinder(boundaries)
     regions = finder.get_matching_regions(pt)

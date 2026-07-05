@@ -3,11 +3,11 @@
 
 """Unit tests for the parse_forecast.py parser script."""
 
-import unittest
-import os
-import sys
-import subprocess
 import json
+import os
+import subprocess
+import sys
+import unittest
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_PATH = os.path.join(SCRIPT_DIR, "parse_forecast.py")
@@ -26,7 +26,7 @@ class TestParseForecast(unittest.TestCase):
         from parse_forecast import parse_forecast_html
 
         eh_path = os.path.join(RESOURCES_DIR, "eh-forecast.html")
-        with open(eh_path, "r", encoding="utf-8") as f:
+        with open(eh_path, encoding="utf-8") as f:
             html = f.read()
 
         data = parse_forecast_html(html)
@@ -103,10 +103,11 @@ class TestParseForecast(unittest.TestCase):
 
     def test_fetch_forecast_html_network_error(self):
         """Verify network error exits with code 2."""
+        import sys
         from unittest.mock import patch
+
         import requests
         from parse_forecast import main
-        import sys
 
         with patch("requests.get") as mock_get:
             mock_get.side_effect = requests.RequestException("Network Error")
@@ -119,13 +120,14 @@ class TestParseForecast(unittest.TestCase):
 
     def test_fetch_forecast_html_network_success(self):
         """Verify successful network fetch parses correctly."""
-        from unittest.mock import patch
-        from parse_forecast import main
         import sys
         from io import StringIO
+        from unittest.mock import patch
+
+        from parse_forecast import main
 
         eh_path = os.path.join(RESOURCES_DIR, "eh-forecast.html")
-        with open(eh_path, "r", encoding="utf-8") as f:
+        with open(eh_path, encoding="utf-8") as f:
             html = f.read()
 
         with patch("requests.get") as mock_get:

@@ -3,11 +3,11 @@
 Utility script to parse GPX boundary trackpoints and regenerate the MWIS region boundaries JSON file.
 """
 
-import os
-import json
 import glob
+import json
+import os
 import xml.etree.ElementTree as ET
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Any
 
 # Path Configuration relative to this script
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -37,7 +37,7 @@ LON_ATTR = "lon"
 JSON_INDENT = 2
 
 
-def _parse_trackpoint(elem: ET.Element) -> Optional[List[float]]:
+def _parse_trackpoint(elem: ET.Element) -> list[float] | None:
     try:
         lat = float(elem.attrib[LAT_ATTR])
         lon = float(elem.attrib[LON_ATTR])
@@ -46,7 +46,7 @@ def _parse_trackpoint(elem: ET.Element) -> Optional[List[float]]:
         return None
 
 
-def parse_gpx_coordinates(filepath: str) -> List[List[float]]:
+def parse_gpx_coordinates(filepath: str) -> list[list[float]]:
     """
     Parses a GPX file and extracts coordinates [lat, lon] from trackpoints (<trkpt>).
     """
@@ -70,7 +70,7 @@ def parse_gpx_coordinates(filepath: str) -> List[List[float]]:
     return coordinates
 
 
-def _process_gpx_file(filepath: str) -> Optional[Tuple[str, Dict[str, Any]]]:
+def _process_gpx_file(filepath: str) -> tuple[str, dict[str, Any]] | None:
     filename = os.path.basename(filepath)
     code = os.path.splitext(filename)[0]
     if code not in REGION_NAMES:
@@ -92,7 +92,7 @@ def update_boundaries(gpx_dir: str, output_path: str) -> None:
         print(f"No GPX files found in: {gpx_dir}")
         return
 
-    new_data: Dict[str, Any] = {}
+    new_data: dict[str, Any] = {}
     for filepath in gpx_files:
         res = _process_gpx_file(filepath)
         if res:

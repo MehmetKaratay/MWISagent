@@ -4,11 +4,11 @@
 
 """Utility script to extract the MWIS area forecast URL from a regions CSV reference."""
 
+import argparse
+import json
 import os
 import sys
-import json
-import argparse
-from typing import Optional
+
 from query_utils import find_region_row
 
 DEFAULT_CSV_PATH = os.path.join(
@@ -18,7 +18,7 @@ DEFAULT_CSV_PATH = os.path.join(
 )
 
 
-def get_forecast_url(query: str, csv_path: Optional[str] = None) -> str:
+def get_forecast_url(query: str, csv_path: str | None = None) -> str:
     """Get the forecast URL for the given query.
 
     Args:
@@ -34,11 +34,11 @@ def get_forecast_url(query: str, csv_path: Optional[str] = None) -> str:
         return row["Url"].strip()
     except ValueError as err:
         if "No matching MWIS region found" in str(err):
-            raise ValueError(f"No matching MWIS region found for: '{query}'")
+            raise ValueError(f"No matching MWIS region found for: '{query}'") from err
         raise
 
 
-def resolve_url(query: str, csv_path: Optional[str] = None) -> str:
+def resolve_url(query: str, csv_path: str | None = None) -> str:
     """Resolve the forecast URL for the given query.
 
     Args:
