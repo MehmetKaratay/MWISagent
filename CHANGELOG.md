@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **2026-07-05 20:25**: Updated `serve_forecast_to_user/SKILL.md` and `specs/query_date.spec.md` to use calendar-date calibration rather than system-clock time calibration.
+- **2026-07-05 19:30**: Created `forecast_structure.json` to act as the schema reference representation for the daily JSON forecasts.
+- **2026-07-05 18:22**: Renamed the forecast JSON field `cold_temp` to `temp` across all codebase files, specifications, references, and documentation.
+- **2026-07-05 18:10**: Split `precipitation` into `precip_headline`/`precip_detail` and `cloud_hills` into `cloud_headline`/`cloud_detail` based on dual paragraph tag extraction in parsed HTML files.
 - **2026-07-05 12:57**: Implemented strict input validation (Pydantic schemas), XML prompt isolation, security skill guidelines (`.agents/skills/security/SKILL.md`), and automated test suite in `tests/test_security.py`.
 - **2026-07-05 00:15**: Implemented `parse_forecast.py` HTML to JSON parser using BeautifulSoup, with comprehensive tests and mocked requests.
 - **2026-07-04 22:44**: Implemented `query_fl.py` and `query_refHeight.py` CLI utilities with strict CSV schema validations.
