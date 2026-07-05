@@ -8,7 +8,6 @@
  * Carry on with CONTEXT.md to explain the overall goal, so agent knows int include scope for interpreting weather features and their impact.
     - Add note to say that we will be fetching forecast from website but in future we may access db directly. The code should be designed to make this swap trivial.
     - Work on Security rules in particular
- * Reset AGENTS.md file
 
 
 
@@ -22,6 +21,7 @@
    - Simple box for ID forecast region (to test features)
    - Simple box for ID forecast date (to test features)
 
-
+## Far future
+* Add Met Office Weather Warnings. See DEV-NOTES.md
 
 ## Draft prompts
