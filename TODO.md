@@ -1,7 +1,10 @@
 # MWIS Agent TODO
 
 ## In Progress
+* **Genreate the MVP agent!** P2 is complete but we need a new implemenation plan because of the internet crash forcing computer reboot without LLM interaction to save session.
+
 * Catching layer to minimise API/website-scraping calls
+
 
 ## Next time
  * Improve serve_forecast_to_user skills definition (perhaps)
