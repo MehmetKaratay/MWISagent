@@ -76,6 +76,11 @@ Skills are dividing into categories to make it easier to identify and use skills
    - These skills will explain the impact of weather on mountain safety.
    - The agent will use this skill to provide mountain safety advice based on the weather conditions.
    - This will be mostly based on LLM understanding.
+6. Local knowledge
+   - **No skills in the `./agents/skills/local-knowledge` folder currently exist.**
+   - These skills will be used to provide local knowledge about specific mountain areas.
+   - The agent will use this skill to provide local knowledge about specific mountain areas to be able to add more value to the forecast.
+
 
 ## Component Inventory
 - **Forecast Area Query**: `skills-mwis-website/identify_forecast_area/scripts/query_region.py` (determines region from location name, coords, or grid reference).
