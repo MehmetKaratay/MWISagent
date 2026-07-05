@@ -8,9 +8,7 @@ import os
 import pytest
 from pydantic import ValidationError
 
-# Add skills-mwis-website to path so we can import security
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "skills-mwis-website"))
-
+# Import from local security module
 from security import (
     validate_region_query,
     validate_date_query,

@@ -81,8 +81,8 @@ Skills are dividing into categories to make it easier to identify and use skills
 - **Forecast Fetcher**: [[Provide script name/path if exists, e.g., fetch_mwis_forecast.py]]
 
 ## Security & Input Validation Controls
-- **Input Filtering**: Implemented strict validation using Pydantic models in `skills-mwis-website/security.py`. Region/location queries are restricted to 100 characters max matching `^[a-zA-Z0-9 &-]+$` or 2 uppercase characters (`^[A-Z]{2}$`). Date queries are restricted to 50 characters max matching `^[a-zA-Z0-9 &-]+$`.
-- **Prompt Injection Mitigations**: Implemented prompt isolation formatting in `skills-mwis-website/security.py` via `isolate_user_input`. User input is wrapped in `<user_input>` XML-like tags, coupled with strict system instructions directing the model to treat tags' content as untrusted data and refuse embedded directives. Guidelines are documented in `.agents/skills/security/SKILL.md`.
+- **Input Filtering**: Implemented strict validation using Pydantic models in `.agents/skills/security/input_validation/scripts/security.py`. Region/location queries are restricted to 100 characters max matching `^[a-zA-Z0-9 &-]+$` or 2 uppercase characters (`^[A-Z]{2}$`). Date queries are restricted to 50 characters max matching `^[a-zA-Z0-9 &-]+$`.
+- **Prompt Injection Mitigations**: Implemented prompt isolation formatting in `.agents/skills/security/input_validation/scripts/security.py` via `isolate_user_input`. User input is wrapped in `<user_input>` XML-like tags, coupled with strict system instructions directing the model to treat tags' content as untrusted data and refuse embedded directives. Guidelines are documented in `.agents/skills/security/input_validation/SKILL.md`.
 
 ## Data Flow & Architecture Pipeline
 ```
