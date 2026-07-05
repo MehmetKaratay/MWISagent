@@ -81,7 +81,8 @@ Skills are dividing into categories to make it easier to identify and use skills
 - **Forecast Area Query**: `skills-mwis-website/identify_forecast_area/scripts/query_region.py` (determines region from location name, coords, or grid reference).
 - **Date Query**: `skills-mwis-website/identify_outing_date/scripts/query_date.py` (resolves query dates/ranges to MWIS codes).
 - **Fetch Specific Forecast URL**: `skills-mwis-website/fetch_specific_forecast/scripts/query_url.py` (resolves region code/name to MWIS URL).
-- **Forecast Fetcher**: [[Provide script name/path if exists, e.g., fetch_mwis_forecast.py]]
+- **Forecast Fetcher**: `skills-mwis-website/fetch_specific_forecast/scripts/parse_forecast.py` (fetches/parses forecast HTML to JSON).
+
 
 ## Security & Input Validation Controls
 All inputs, sanitization logic, and prompt isolation schemas are detailed in the [Security Specification](file:///home/karatay/Repositories/weather/MWISagent/specs/security.spec.md).
@@ -114,9 +115,13 @@ All inputs, sanitization logic, and prompt isolation schemas are detailed in the
                                               [User Response]
 ```
 
+## Caching & State
+- **Conversation State**: The individual chat conversations will be stateless.
+- **Caching Layer**: A backend caching layer will cache fetched forecasts so multiple conversations can refer to the same forecast without re-fetching. Forecasts are fetched once daily at 5:00 PM (after new forecasts are issued).
+
 ## Google Cloud Deployment
-- **Hosting Service**: [[Specify GCP hosting, e.g., Cloud Run for backend, Cloud Storage for frontend static files]]
-- **Authentication / IAM**: [[Specify backend authentication or access rules if needed]]
+- **Hosting Service**: Specific GCP hosting services will be finalized later.
+
 
 ## Environment & Tooling Setup
 Local linters, custom security scanners (Semgrep), and pre-commit hook policies are detailed in the [Security Specification](file:///home/karatay/Repositories/weather/MWISagent/specs/security.spec.md).
