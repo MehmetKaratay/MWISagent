@@ -41,14 +41,8 @@ def get_d_code_for_date(
     delta = (target - ref_date).days
     if delta < 0:
         return "Dold"
-    elif delta == 0:
-        return "D0"
-    elif delta == 1:
-        return "D1"
-    elif delta == 2:
-        return "D2"
-    elif delta == 3:
-        return "D3"
-    elif 4 <= delta <= 7:
+    if 0 <= delta <= 3:
+        return f"D{delta}"
+    if 4 <= delta <= 7:
         return "Doutlook"
     return "Dfuture"

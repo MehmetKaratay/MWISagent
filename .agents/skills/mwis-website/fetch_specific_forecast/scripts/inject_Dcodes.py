@@ -35,6 +35,33 @@ def parse_forecast_date(date_str: str) -> datetime.date:
     return datetime.datetime.strptime(clean_str, "%A %d %B %Y").date()
 
 
+def _inject_day_d_code(
+    day: Dict[str, Any], ref_date: Optional[datetime.date]
+) -> Dict[str, Any]:
+    """Resolve and inject the Dcode field into a single day's dictionary."""
+    new_day = day.copy()
+    if "date" in new_day:
+        try:
+            target_date = parse_forecast_date(new_day["date"])
+            new_day["Dcode"] = get_d_code_for_date(target_date, ref_date)
+        except Exception as err:
+            sys.stderr.write(
+                f"Warning: Could not resolve date '{new_day.get('date')}': {err}\n"
+            )
+            new_day["Dcode"] = "Dunresolved"
+    return new_day
+
+
+def _format_outlook_object(outlook: Any) -> Dict[str, Any]:
+    """Transform the outlook field into a structured object."""
+    if isinstance(outlook, dict):
+        return outlook
+    return {
+        "Dcode": "Doutlook",
+        "outlook": str(outlook),
+    }
+
+
 def inject_d_codes(
     forecast_data: Dict[str, Any], ref_date: Optional[datetime.date] = None
 ) -> Dict[str, Any]:
@@ -48,36 +75,10 @@ def inject_d_codes(
         Dict[str, Any]: The updated forecast dictionary.
     """
     updated = forecast_data.copy()
-
-    # Process days array
     if "days" in updated and isinstance(updated["days"], list):
-        new_days = []
-        for day in updated["days"]:
-            new_day = day.copy()
-            if "date" in new_day:
-                try:
-                    target_date = parse_forecast_date(new_day["date"])
-                    new_day["Dcode"] = get_d_code_for_date(target_date, ref_date)
-                except Exception as err:
-                    sys.stderr.write(
-                        f"Warning: Could not resolve date '{new_day.get('date')}': {err}\n"
-                    )
-                    new_day["Dcode"] = "Dunresolved"
-            new_days.append(new_day)
-        updated["days"] = new_days
-
-    # Process outlook
+        updated["days"] = [_inject_day_d_code(d, ref_date) for d in updated["days"]]
     if "outlook" in updated:
-        outlook_text = updated["outlook"]
-        if isinstance(outlook_text, dict):
-            # Already processed
-            pass
-        else:
-            updated["outlook"] = {
-                "Dcode": "Doutlook",
-                "outlook": str(outlook_text),
-            }
-
+        updated["outlook"] = _format_outlook_object(updated["outlook"])
     return updated
 
 
@@ -93,29 +94,36 @@ def _parse_cli_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _parse_reference_date(date_str: Optional[str]) -> Optional[datetime.date]:
+    """Parse the reference date CLI option."""
+    if not date_str:
+        return None
+    try:
+        return datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        sys.stderr.write(f"Error: Invalid reference date format: {date_str}\n")
+        sys.exit(1)
+
+
+def _load_forecast_json(source: Optional[str]) -> Dict[str, Any]:
+    """Load forecast JSON data from file or stdin."""
+    if not source:
+        return json.load(sys.stdin)
+    if not os.path.exists(source):
+        sys.stderr.write(f"Error: File not found: {source}\n")
+        sys.exit(3)
+    with open(  # nosemgrep: detect-path-traversal
+        source, "r", encoding="utf-8"
+    ) as f:
+        return json.load(f)
+
+
 def main() -> None:
     """Main CLI entry point."""
     args = _parse_cli_args()
-    ref_date = None
-    if args.ref_date:
-        try:
-            ref_date = datetime.datetime.strptime(args.ref_date, "%Y-%m-%d").date()
-        except ValueError:
-            sys.stderr.write(f"Error: Invalid reference date format: {args.ref_date}\n")
-            sys.exit(1)
-
+    ref_date = _parse_reference_date(args.ref_date)
     try:
-        if args.source:
-            if not os.path.exists(args.source):
-                sys.stderr.write(f"Error: File not found: {args.source}\n")
-                sys.exit(3)
-            with open(  # nosemgrep: detect-path-traversal
-                args.source, "r", encoding="utf-8"
-            ) as f:
-                data = json.load(f)
-        else:
-            data = json.load(sys.stdin)
-
+        data = _load_forecast_json(args.source)
         updated = inject_d_codes(data, ref_date)
         print(json.dumps(updated, indent=2))
         sys.exit(0)
