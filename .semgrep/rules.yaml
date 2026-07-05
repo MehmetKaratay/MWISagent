@@ -1,0 +1,20 @@
+rules:
+  - id: detect-hardcoded-google-api-key
+    patterns:
+      - pattern-regex: "AIzaSy[A-Za-z0-9_\\-]*"
+    message: "Security Warning: A hardcoded Google API Key was detected. Please load credentials dynamically from environment variables or a secure secret manager."
+    languages:
+      - python
+    severity: ERROR
+
+  - id: detect-insecure-subprocess-shell
+    patterns:
+      - pattern-either:
+          - pattern: subprocess.run(..., shell=True, ...)
+          - pattern: subprocess.Popen(..., shell=True, ...)
+          - pattern: subprocess.call(..., shell=True, ...)
+          - pattern: os.system(...)
+    message: "Security Warning: Insecure shell execution detected (shell=True). Use direct argument arrays in subprocess execution to prevent command injection."
+    languages:
+      - python
+    severity: ERROR

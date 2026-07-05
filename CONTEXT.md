@@ -115,3 +115,8 @@ Skills are dividing into categories to make it easier to identify and use skills
 - **Hosting Service**: [[Specify GCP hosting, e.g., Cloud Run for backend, Cloud Storage for frontend static files]]
 - **Authentication / IAM**: [[Specify backend authentication or access rules if needed]]
 
+## Environment & Tooling Setup
+- **Semgrep Security Scanning**: Configured local custom security rules in `.semgrep/rules.yaml` to detect:
+  1. Hardcoded Google API keys matching pattern `AIzaSy[A-Za-z0-9_\-]*`.
+  2. Insecure shell execution (`shell=True` in subprocess calls or `os.system`).
+
