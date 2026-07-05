@@ -36,6 +36,18 @@ def get_forecast_url(query: str, csv_path: Optional[str] = None) -> str:
             raise ValueError(f"No matching MWIS region found for: '{query}'")
         raise
 
+def resolve_url(query: str, csv_path: Optional[str] = None) -> str:
+    """Resolve the forecast URL for the given query.
+
+    Args:
+        query: Query string (RegionCode or RegionName).
+        csv_path: Optional custom CSV file path.
+
+    Returns:
+        The forecast URL.
+    """
+    return get_forecast_url(query, csv_path)
+
 def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(description="Extract MWIS forecast URL.")

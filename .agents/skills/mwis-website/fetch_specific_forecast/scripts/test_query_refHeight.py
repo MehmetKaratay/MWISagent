@@ -76,5 +76,13 @@ class TestQueryRefHeightCLI(unittest.TestCase):
         self.assertEqual(res.returncode, 1)
         self.assertIn("Error:", res.stderr)
 
+    def test_programmatic_resolve_ref_height(self):
+        """Verify that resolve_ref_height can be imported and executed programmatically."""
+        from query_refHeight import resolve_ref_height
+        self.assertEqual(resolve_ref_height("WH", self.csv_path), "900m")
+        self.assertEqual(resolve_ref_height("peak district", self.csv_path), "600m")
+        with self.assertRaises(ValueError):
+            resolve_ref_height("InvalidRegion", self.csv_path)
+
 if __name__ == "__main__":
     unittest.main()

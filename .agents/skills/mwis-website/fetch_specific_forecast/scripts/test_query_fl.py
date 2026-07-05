@@ -76,5 +76,13 @@ class TestQueryFLCLI(unittest.TestCase):
         self.assertEqual(res.returncode, 1)
         self.assertIn("Error:", res.stderr)
 
+    def test_programmatic_resolve_fl(self):
+        """Verify that resolve_fl can be imported and executed programmatically."""
+        from query_fl import resolve_fl
+        self.assertEqual(resolve_fl("WH", self.csv_path), "FL")
+        self.assertEqual(resolve_fl("peak district", self.csv_path), "Valley")
+        with self.assertRaises(ValueError):
+            resolve_fl("InvalidRegion", self.csv_path)
+
 if __name__ == "__main__":
     unittest.main()

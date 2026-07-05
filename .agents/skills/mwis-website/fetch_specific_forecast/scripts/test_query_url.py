@@ -82,5 +82,13 @@ class TestQueryUrlCLI(unittest.TestCase):
         self.assertEqual(res.returncode, 1)
         self.assertIn("Error:", res.stderr)
 
+    def test_programmatic_resolve_url(self):
+        """Verify that resolve_url can be imported and executed programmatically."""
+        from query_url import resolve_url
+        self.assertEqual(resolve_url("WH", self.csv_path), "https://mwis.org.uk/forecasts/scottish/west-highlands/text")
+        self.assertEqual(resolve_url("eastern highlands", self.csv_path), "https://mwis.org.uk/forecasts/scottish/cairngorms/text")
+        with self.assertRaises(ValueError):
+            resolve_url("InvalidRegion", self.csv_path)
+
 if __name__ == "__main__":
     unittest.main()

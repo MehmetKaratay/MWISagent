@@ -10,6 +10,7 @@ import re
 import json
 import datetime
 import parsedatetime
+from typing import Optional
 
 def get_reference_date() -> datetime.date:
     """Determine the reference date for all calculations, defaulting to today.
@@ -165,23 +166,24 @@ def map_date_to_code(target: datetime.date, ref_date: datetime.date) -> str:
         return "Doutlook"
     return "Dfuture"
 
-def _resolve_codes(query: str, ref_date: datetime.date) -> list[str]:
+def resolve_date_query(query: str, ref_date: Optional[datetime.date] = None) -> list[str]:
     """Resolve a query to unique chronological MWIS coverage codes.
 
     Args:
         query (str): Date query.
-        ref_date (datetime.date): Reference date.
+        ref_date (datetime.date, optional): Reference date. Defaults to current date.
 
     Returns:
         list[str]: Unique forecast codes.
     """
-    dates = resolve_query_to_dates(query, ref_date)
+    reference = ref_date if ref_date is not None else get_reference_date()
+    dates = resolve_query_to_dates(query, reference)
     if not dates:
         raise ValueError("No dates resolved.")
     codes = []
     seen = set()
     for d in dates:
-        code = map_date_to_code(d, ref_date)
+        code = map_date_to_code(d, reference)
         if code not in seen:
             seen.add(code)
             codes.append(code)
@@ -194,7 +196,7 @@ def main():
         sys.exit(1)
 
     try:
-        codes = _resolve_codes(sys.argv[1], get_reference_date())
+        codes = resolve_date_query(sys.argv[1], get_reference_date())
         print(json.dumps(codes))
         sys.exit(0)
     except Exception as e:

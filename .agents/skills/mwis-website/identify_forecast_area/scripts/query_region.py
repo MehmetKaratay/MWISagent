@@ -346,23 +346,90 @@ def _process_location(pt: Point, boundaries: Dict[str, Any], formatter: ResultFo
         nearest = finder.get_nearest_regions(pt, tol)
         formatter.format_nearest(nearest, boundaries)
 
-def main():
-    args = [a for a in sys.argv[1:] if a != '--json']
-    as_json = '--json' in sys.argv
-    formatter = JsonFormatter() if as_json else TextFormatter()
-    
-    pt, munro_code = InputResolver.resolve_args(args)
+def find_regions_by_location(location_args: list[str]) -> dict:
+    """Find regions for a given location, coordinate, or grid reference.
+
+    Args:
+        location_args: Location query arguments (e.g. ['Ben Nevis'] or ['53.0685', '-4.0763']).
+
+    Returns:
+        A dictionary containing keys:
+            - in_scope (bool)
+            - in_area (bool)
+            - regions (list of str, optional)
+            - error (str, optional)
+            - nearest (list, optional)
+    """
+    pt, munro_code = InputResolver.resolve_args(location_args)
     boundaries = BoundariesLoader.load()
     
     if munro_code:
-        formatter.format_success([munro_code], boundaries)
-        sys.exit(0)
+        return {
+            "in_scope": True,
+            "in_area": True,
+            "regions": [munro_code]
+        }
         
     if pt is None or not GeoMath.is_in_gb(pt):
-        formatter.format_out_of_scope()
-        sys.exit(2)
+        return {
+            "in_scope": False,
+            "in_area": False,
+            "error": "OUT_OF_SCOPE"
+        }
         
-    _process_location(pt, boundaries, formatter)
+    finder = RegionFinder(boundaries)
+    regions = finder.get_matching_regions(pt)
+    if regions:
+        return {
+            "in_scope": True,
+            "in_area": True,
+            "regions": regions
+        }
+    else:
+        tol = ConfigLoader.get_overlap_tolerance()
+        nearest = finder.get_nearest_regions(pt, tol)
+        # Convert nearest regions to list of dicts/names if needed or return directly
+        nearest_serialized = []
+        for reg_code, dist in nearest:
+            nearest_serialized.append({"code": reg_code, "distance_km": dist})
+        return {
+            "in_scope": True,
+            "in_area": False,
+            "error": "NOT_IN_AREA",
+            "nearest": nearest_serialized
+        }
+
+
+def main():
+    args = [a for a in sys.argv[1:] if a != '--json']
+    as_json = '--json' in sys.argv
+    
+    if as_json:
+        data = find_regions_by_location(args)
+        print(json.dumps(data))
+        if not data.get('in_scope'):
+            sys.exit(2)
+        sys.exit(0)
+    else:
+        formatter = TextFormatter()
+        pt, munro_code = InputResolver.resolve_args(args)
+        boundaries = BoundariesLoader.load()
+        if munro_code:
+            formatter.format_success([munro_code], boundaries)
+            sys.exit(0)
+        if pt is None or not GeoMath.is_in_gb(pt):
+            formatter.format_out_of_scope()
+            sys.exit(2)
+        
+        finder = RegionFinder(boundaries)
+        regions = finder.get_matching_regions(pt)
+        if regions:
+            formatter.format_success(regions, boundaries)
+        else:
+            tol = ConfigLoader.get_overlap_tolerance()
+            nearest = finder.get_nearest_regions(pt, tol)
+            formatter.format_nearest(nearest, boundaries)
+
 
 if __name__ == '__main__':
     main()

@@ -123,5 +123,16 @@ class TestQueryDateCLI(unittest.TestCase):
         self.assertEqual(res.returncode, 0)
         self.assertEqual(json.loads(res.stdout), ["D0", "D1"])
 
+    def test_programmatic_resolve_date_query(self):
+        """Verify that resolve_date_query can be imported and executed programmatically."""
+        if SCRIPT_DIR not in sys.path:
+            sys.path.insert(0, SCRIPT_DIR)
+        from query_date import resolve_date_query
+        import datetime
+        ref = datetime.date(2026, 7, 4)
+        self.assertEqual(resolve_date_query("today and tomorrow", ref_date=ref), ["D0", "D1"])
+        with self.assertRaises(ValueError):
+            resolve_date_query("invalid-query-string", ref_date=ref)
+
 if __name__ == '__main__':
     unittest.main()

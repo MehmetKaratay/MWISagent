@@ -135,5 +135,18 @@ class TestQueryRegionCLI(unittest.TestCase):
         self.assertEqual(res.returncode, 0)
         self.assertIn('not in an mwis area', res.stdout.lower())
 
+    def test_programmatic_find_regions_by_location(self):
+        """Verify that find_regions_by_location can be imported and executed programmatically."""
+        if SCRIPT_DIR not in sys.path:
+            sys.path.insert(0, SCRIPT_DIR)
+        from query_region import find_regions_by_location
+        data = find_regions_by_location(SNOWDON_COORDS)
+        self.assertTrue(data.get('in_scope'))
+        self.assertTrue(data.get('in_area'))
+        self.assertIn('SD', data.get('regions', []))
+        
+        data_paris = find_regions_by_location(PARIS_COORDS)
+        self.assertFalse(data_paris.get('in_scope'))
+
 if __name__ == '__main__':
     unittest.main()
