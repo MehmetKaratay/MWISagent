@@ -1,20 +1,15 @@
 # MWIS Agent TODO
 
+## In Progress
+* Catching layer to minimise API/website-scraping calls
+
 ## Next time
  * Improve serve_forecast_to_user skills definition (perhaps)
     - Work on spec for the full agent
     - Work on forecast_information.md so agent has better understanding of forecast.
 
- * Carry on with CONTEXT.md to explain the overall goal, so agent knows int include scope for interpreting weather features and their impact.
-    - Add note to say that we will be fetching forecast from website but in future we may access db directly. The code should be designed to make this swap trivial.
-    - Work on Security rules in particular
-
-
-
-
 ## Future
-* Catching layer to minimise API/website-scraping calls
-* Refactor python scripts to send data directly instead of through command line (if this is more efficient for LLM)
+
 * Generate the main agent to run on Google Cloud
 * Check how we did security on Kaggle course
 * Create a front end
@@ -31,4 +26,6 @@
 ## Draft prompts
 
 ### Toekn Spend
-Summarise current state of project and archive unnecessary logs
+Summarise current state of project and archive unnecessary logs. Re-read `~/.gemini/GEMINI.md`, load relevant skills, and ask if you have any questions.`
+
+NOTE: This made the agent forget a lot of how we were working together and I had to remind it of our various 'rules'. Better to do that than to hallucinate. I added the second instruction to try to overcome this barrier.
