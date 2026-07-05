@@ -33,7 +33,7 @@ class TestParseForecast(unittest.TestCase):
         self.assertIn("Cairngorms", data["region"])
         self.assertEqual(len(data["days"]), 3)
         for day in data["days"]:
-            self.assertIn("day_index", day)
+            self.assertIn("forecast_index", day)
             self.assertIsNotNone(day["date"])
             self.assertIsNotNone(day["last_updated"])
             self.assertIsNotNone(day["wind_headline"])

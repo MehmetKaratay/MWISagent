@@ -94,7 +94,7 @@ Output:
   "region": "Cairngorms NP and Monadhliath",
   "days": [
     {
-      "day_index": 0,
+      "forecast_index": 0,
       "date": "Sunday 5th July 2026",
       "last_updated": "Sat 4th Jul 26 at 4:17PM",
       "uk_summary": "...",

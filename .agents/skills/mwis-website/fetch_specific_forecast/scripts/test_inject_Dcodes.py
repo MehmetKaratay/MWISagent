@@ -30,12 +30,12 @@ class TestInjectDCodes(unittest.TestCase):
             "region": "Eastern Highlands",
             "days": [
                 {
-                    "day_index": 0,
+                    "forecast_index": 0,
                     "date": "Sunday 5th July 2026",
                     "uk_summary": "Summary...",
                 },
                 {
-                    "day_index": 1,
+                    "forecast_index": 1,
                     "date": "Monday 6th July 2026",
                     "uk_summary": "Summary...",
                 },

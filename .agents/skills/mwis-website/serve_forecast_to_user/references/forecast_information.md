@@ -11,7 +11,7 @@ Example of stucture: [forecast_structure.json](file:///home/karatay/Repositories
 
 * Forecasts are issued once a day, typically in the late afternoon (usually between 1600 and 1700 British Time), but can occasionally be published as early as 1100. There is no fixed time since it is based on forecaster behavior.
 
-* The first forecast (`day_index == 0`) will refer either to today or to tomorrow depending on when it was issued. The date string in the forecast's `"date"` field is the definitive source to calibrate this mapping. Compare it to the current calendar date to determine whether `day_index == 0` corresponds to today (D0) or tomorrow (D1).
+* The first forecast (`forecast_index == 0`) will refer either to today or to tomorrow depending on when it was issued. The date string in the forecast's `"date"` field is the definitive source to calibrate this mapping. Compare it to the current calendar date to determine whether `forecast_index == 0` corresponds to today (D0) or tomorrow (D1).
 
 * The timespan of the outlook varies depending on confidence of the forecaster. It is usually around a 7 to 10 days ahead.
 

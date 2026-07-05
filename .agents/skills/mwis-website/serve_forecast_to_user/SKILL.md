@@ -38,19 +38,19 @@ This skills 'glues' the other skills in `MWISagent/.agent/skills/mwis-website/` 
        - Because new forecasts can be issued at variable times (sometimes as early as 11:00 AM), do NOT rely on system time to determine the mapping.
        - Instead, compare the parsed `"date"` field in `days[0]` with the current system/local calendar date to calibrate:
          - **If `days[0]["date"]` is today's date**:
-           - `D0` (today) maps to `days` element with `day_index == 0`
-           - `D1` (tomorrow) maps to `days` element with `day_index == 1`
-           - `D2` (day after tomorrow) maps to `days` element with `day_index == 2`
+           - `D0` (today) maps to `days` element with `forecast_index == 0`
+           - `D1` (tomorrow) maps to `days` element with `forecast_index == 1`
+           - `D2` (day after tomorrow) maps to `days` element with `forecast_index == 2`
          - **If `days[0]["date"]` is tomorrow's date**:
-           - `D1` (tomorrow) maps to `days` element with `day_index == 0`
-           - `D2` (day after tomorrow) maps to `days` element with `day_index == 1`
-           - `D3` (3 days ahead) maps to `days` element with `day_index == 2`
+           - `D1` (tomorrow) maps to `days` element with `forecast_index == 0`
+           - `D2` (day after tomorrow) maps to `days` element with `forecast_index == 1`
+           - `D3` (3 days ahead) maps to `days` element with `forecast_index == 2`
        - **Outlook Mapping**:
          - Date codes representing dates not covered by the 3 elements in the `days` array (e.g. `D3` when `days[0]` is today, or any `Doutlook` spanning offset days 4 to 7) map to the root-level `"outlook"` string field in the JSON file.
        - Always verify the `"date"` field value in each day's dictionary against your target date to ensure exact alignment.
      - **Filtering Examples**:
        - If a forecast is requested for 5 days time (`Doutlook`), only return the `outlook`.
-       - If a forecast is requested only for 'Saturday' and the request is made on Thursday evening (resolving to `D2`), only return that specific day's dictionary (where `day_index` aligns with Saturday's date); ignore other days.
+       - If a forecast is requested only for 'Saturday' and the request is made on Thursday evening (resolving to `D2`), only return that specific day's dictionary (where `forecast_index` aligns with Saturday's date); ignore other days.
        - If a forecast is requested for 'Saturday to Wednesday' on a Friday (resolving to `D1, D2, D3, Doutlook`), only return those matching days and the overall outlook.
 
 ## Examples

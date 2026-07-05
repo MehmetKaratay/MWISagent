@@ -55,7 +55,7 @@ The root-level `"outlook"` string property is transformed into a dictionary cont
   "region": "Eastern Highlands",
   "days": [
     {
-      "day_index": 0,
+      "forecast_index": 0,
       "date": "Sunday 5th July 2026",
       "Dcode": "D0",
       ...

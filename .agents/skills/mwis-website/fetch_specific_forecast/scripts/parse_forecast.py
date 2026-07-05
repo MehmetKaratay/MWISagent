@@ -173,7 +173,7 @@ def _parse_day_forecast(day_div: Any, idx: int) -> Dict[str, Any]:
         elif "freezing level" in heading:
             fields["freezing_level"] = " ".join(content_col.get_text().split()).strip()
 
-    day_dict = {"day_index": idx, "date": date, "last_updated": last_updated}
+    day_dict = {"forecast_index": idx, "date": date, "last_updated": last_updated}
     day_dict.update(fields)
     return day_dict
 
