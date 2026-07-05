@@ -63,3 +63,56 @@ rules:
     languages:
       - python
     severity: ERROR
+
+  - id: detect-insecure-xml-parsing
+    patterns:
+      - pattern-either:
+          - pattern: import xml.etree.ElementTree
+          - pattern: import xml.dom.minidom
+          - pattern: import lxml
+    message: "Security Warning: Standard XML parsers are vulnerable to XXE. Use defusedxml instead."
+    languages:
+      - python
+    severity: ERROR
+
+  - id: detect-assert-in-production
+    patterns:
+      - pattern: assert ...
+      - pattern-not-inside: |
+          def test_$FUNC(...):
+              ...
+      - pattern-not-inside: |
+          class Test$CLASS(...):
+              ...
+    message: "Security Warning: Assert statements are removed in optimized execution mode. Use explicit conditional checks for security validation."
+    languages:
+      - python
+    severity: WARNING
+
+  - id: detect-log-injection
+    patterns:
+      - pattern-either:
+          - pattern: print(..., $INPUT, ...)
+          - pattern: sys.stdout.write(..., $INPUT, ...)
+          - pattern: sys.stderr.write(..., $INPUT, ...)
+      - metavariable-regex:
+          metavariable: $INPUT
+          regex: (?i)(query|args|input|text|content|body)
+    message: "Security Warning: Potential log injection. Unescaped inputs printed or logged directly."
+    languages:
+      - python
+    severity: WARNING
+
+  - id: detect-sql-injection
+    patterns:
+      - pattern-either:
+          - pattern: $DB.execute(f"...")
+          - pattern: $DB.execute("..." % ...)
+          - pattern: $DB.execute("...".format(...))
+      - metavariable-regex:
+          metavariable: $DB
+          regex: (?i)(db|conn|cursor|session|execute)
+    message: "Security Warning: Constructing raw SQL query via string interpolation. Use parameterized queries instead."
+    languages:
+      - python
+    severity: ERROR

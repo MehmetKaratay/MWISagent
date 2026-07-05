@@ -123,4 +123,8 @@ Skills are dividing into categories to make it easier to identify and use skills
   4. Pydantic validation schema bypass on raw CLI inputs.
   5. Hardcoded secret assignments (`password`, `secret`, `api_key`, `token`).
   6. Insecure temporary file creation (`tempfile.mktemp`).
+  7. Insecure XML Parsing (standard xml/lxml libraries vulnerable to XXE).
+  8. Use of assert statement validations in production code files.
+  9. Potential log/output injection from unescaped raw inputs.
+  10. SQL Injection (constructing raw query string interpolations).
 
