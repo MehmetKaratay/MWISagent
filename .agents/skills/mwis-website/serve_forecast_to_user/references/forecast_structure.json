@@ -1,0 +1,57 @@
+{
+  "region": "Eastern Highlands",
+  "days": [
+    {
+      "day_index": 0,
+      "date": "Sunday 5th July 2026",
+      "last_updated": "Sat 4th Jul 26 at 4:17PM",
+      "uk_summary": "Rain sets in through afternoon widely.",
+      "region_headline": "Drizzly tops at dawn, then persistent rain later.",
+      "wind_headline": "Southwesterly 20 to 30mph, active buffeting on tops.",
+      "wind_effect": "Strenuous walking conditions forming over high plateau.",
+      "precip_headline": "Rain sets in through afternoon",
+      "precip_detail": "Drizzly on the high tops at dawn, a few spots of light rain from the west, but several hours of largely dry conditions. Rain arrives from the west as midday approaches, spreading widely and setting in persistently through afternoon.",
+      "cloud_headline": "Becoming extensive through afternoon",
+      "cloud_detail": "Bases start 700-1000m, lowest western hills but also some early breaks (though high Cairngorm plateau likely stays shrouded). Cloud fills in from the west from midday onward, bases to 500-600m near and west of Strathspey with lower ragged patches.",
+      "chance_cloud_free": "30% at dawn, lowering to 10% afternoon",
+      "sun_clarity": "Very good visibility out of cloud; sunshine occasionally.",
+      "temp": "9C at 900m reference height.",
+      "freezing_level": "Above summits."
+    },
+    {
+      "day_index": 1,
+      "date": "Monday 6th July 2026",
+      "last_updated": "Sat 4th Jul 26 at 4:17PM",
+      "uk_summary": "",
+      "region_headline": "",
+      "wind_headline": "Westerly 15 to 25mph.",
+      "wind_effect": "Relatively minor wind interference.",
+      "precip_headline": "Mainly dry; local drizzle",
+      "precip_detail": "A largely dry day, though patches of light drizzle or mist may affect western summits early on.",
+      "cloud_headline": "Summits mostly clear",
+      "cloud_detail": "Low cloud banks clearing the summits by mid-morning to leave summits mostly clear.",
+      "chance_cloud_free": "80%",
+      "sun_clarity": "Excellent visibility.",
+      "temp": "11C at 900m reference height.",
+      "freezing_level": "Above summits."
+    },
+    {
+      "day_index": 2,
+      "date": "Tuesday 7th July 2026",
+      "last_updated": "Sat 4th Jul 26 at 4:17PM",
+      "uk_summary": "",
+      "region_headline": "",
+      "wind_headline": "Southwesterly 30 to 45mph.",
+      "wind_effect": "Walking strenuous, balance affected on ridges.",
+      "precip_headline": "Heavy rain developing",
+      "precip_detail": "Persistent, heavy rain arriving from the west in the afternoon, potentially torrential.",
+      "cloud_headline": "Extensive low cloud",
+      "cloud_detail": "Summits continuously shrouded in low cloud, bases lowering to 400m in rain.",
+      "chance_cloud_free": "Less than 10%",
+      "sun_clarity": "Poor in rain.",
+      "temp": "8C at 900m reference height.",
+      "freezing_level": "Above summits."
+    }
+  ],
+  "outlook": "Settled weather returning later in the week with high pressure building from the south, temperatures rising and winds easing."
+}
