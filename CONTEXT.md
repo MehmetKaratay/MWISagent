@@ -24,13 +24,6 @@ The MVP will include an agent and a front end to provide an interactive experien
 
 Security is a high priority. We want to minimise security leaks and make the agent secure against attacks, including prompt injection.
 
-The MVP should use only skills from the `skills-mwis-website` folder and the Coding Skills. This means:
-  * Read the skills in `skills-mwis-website` folder
-  * Read the `CONTEXT.md` file
-  * Read the `~/.gemini/GEMINI.md` file
-  * Identify what needs to be done to create the MVP
-  * Implement the MVP using the tdd cycle and clean code principles, etc.
-
 ### Architecture
 
 #### Backend
