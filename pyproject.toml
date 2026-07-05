@@ -16,7 +16,9 @@ dependencies = [
     "parsedatetime>=2.6",
     "beautifulsoup4>=4.12.3",
     "requests>=2.31.0",
-    "pydantic>=2.0.0"
+    "pydantic>=2.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.22.0"
 ]
 
 [dependency-groups]

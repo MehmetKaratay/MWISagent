@@ -130,3 +130,11 @@ All inputs, sanitization logic, and prompt isolation schemas are detailed in the
 
 ## Environment & Tooling Setup
 Local linters, custom security scanners (Semgrep), and pre-commit hook policies are detailed in the [Security Specification](file:///home/karatay/Repositories/weather/MWISagent/specs/security.spec.md).
+
+### Local Environment Setup
+To replicate this setup in your local sandbox:
+1. Ensure Python 3.10 is active.
+2. Install dependencies locally (including `fastapi` and `uvicorn`) in editable mode:
+   ```bash
+   uv pip install -e .
+   ```
