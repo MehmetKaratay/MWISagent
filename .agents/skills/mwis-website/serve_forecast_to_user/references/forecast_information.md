@@ -7,7 +7,7 @@
 * The first forecast will either refer to today or tomorrow. The date of the forecast will clarify this.
 
 * Each forecast JSON file contains a 3-day forecast and an outlook.
-  - Example of stucture: [structure.json](file:///home/karatay/Repositories/weather/MWISagent/.agents/skills/mwis-website/serve_forecast_to_user/references/structure.json)
+  - Example of stucture: [forecast_structure.json](file:///home/karatay/Repositories/weather/MWISagent/.agents/skills/mwis-website/serve_forecast_to_user/references/forecast_structure.json)
 
 * The timespan of the outlook varies depending on confidence of the forecaster. It is usually around a 7 to 10 days ahead.
 
@@ -28,6 +28,10 @@
 * Most forecasts contain a freezing level in the `freezing_level` field. YD and PD use this field to refer to valley temperature.
   - Freezing levels are not usually given for YD and PD
   - Valley temps are occasionally given for other regions. This is usually mentioned in the `temp` field.
+
+  * `*cloud*` fields refer to whether the mountain will be in cloud. The sky could be overcast but mountain cloud free.
+
+  * `sun_clarity` refers to air visibility _out of cloud_ and to the chance of sunshine coming through the clouds.
 
 ## Forecast update timestamp
 Each forecast has a 'last updated' field. This does not necessarily refer to the issue time. For example, a forecast could be issued at 1630 one day, but updated at 0730 the following day. An update usually means
