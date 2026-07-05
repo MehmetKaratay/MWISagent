@@ -140,3 +140,5 @@ Skills are dividing into categories to make it easier to identify and use skills
   * `end-of-file-fixer` and `trailing-whitespace` for code cleanup.
   * `ruff` for python code linting and formatting.
   * Local `semgrep` scan targeting `.semgrep/rules.yaml` with the `--error` flag.
+
+- **Agent Hook Interception**: Configured in `.agents/hooks.json` to execute a `PreToolUse` hook on `run_command` executions. It runs the `validate_tool_call.py` command validation script with a 10-second timeout to block malicious/destructive shell operations.
