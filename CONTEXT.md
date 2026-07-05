@@ -84,6 +84,11 @@ Skills are dividing into categories to make it easier to identify and use skills
 - **Input Filtering**: Implemented strict validation using Pydantic models in `.agents/skills/security/input_validation/scripts/security.py`. Region/location queries are restricted to 100 characters max matching `^[a-zA-Z0-9 &-]+$` or 2 uppercase characters (`^[A-Z]{2}$`). Date queries are restricted to 50 characters max matching `^[a-zA-Z0-9 &-]+$`.
 - **Prompt Injection Mitigations**: Implemented prompt isolation formatting in `.agents/skills/security/input_validation/scripts/security.py` via `isolate_user_input`. User input is wrapped in `<user_input>` XML-like tags, coupled with strict system instructions directing the model to treat tags' content as untrusted data and refuse embedded directives. Guidelines are documented in `.agents/skills/security/input_validation/SKILL.md`.
 
+## Core Paved Roads
+1. **Tool Input Validation**: All tool parameters must validate against strict Pydantic schemas.
+2. **No Shell Execution**: Never use raw shell execution tools unless approved by `hooks.json`.
+3. **Pre-Commit Remediation Loop**: If git commit fails due to pre-commit hook violations (e.g. Semgrep), treat as refactoring, apply fixes, verify with tests, and re-commit.
+
 ## Data Flow & Architecture Pipeline
 ```
 [User Input] ──> [Frontend (Alpine.js)] ──> [FastAPI Backend]
