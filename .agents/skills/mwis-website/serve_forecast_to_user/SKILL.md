@@ -31,11 +31,26 @@ This skills 'glues' the other skills in `MWISagent/.agent/skills/mwis-website/` 
     - If a user gives a date such as "02/07" clarify that you are interpreting this as "DD/MM/YYYY" and that this is 02nd July 2007. Allow the user to override the date specified if needed but do not proactively give them that option.
     - Use the `identify_outing_date` skill to check which forecast date(s) are available
     - If user requests a forecast that we do not have access to, for example because it is too far in the future, inform the user that we do not have access to that forecast and ask if they would like the closest available forecast instead. If they agree proceed to fetch the closest available forecast. If they do not agree, do not fetch any forecast and inform the user that you cannot help with their request
- 3. Fetch the forecast for the region and date range using the `fetch_mwis_forecast` tool.
- 4. Pass the relevant dates back to the agent
-    - If a forecast is requested for 5 days time, only pass the `outlook`.
-    - If a forecast is requested only for 'Saturday' and the request is made on Thursday evening only return D2 forecast; ignore the other days in the JSON file.
-    - If a forecast is requested for 'Saturday to Wednesday' on a Friday only return D1, D2, D3, and Doutlook.
+  3. Fetch the forecast for the region and date range using the `fetch_specific_forecast` tool.
+  4. Pass the relevant dates back to the agent:
+     - Map the resolved date codes (`D0`, `D1`, `D2`, etc.) to the parsed JSON days or outlook.
+     - **Mapping & Timing Shift Rules**:
+       - The forecast is usually issued between 16:00 and 17:00 British Time.
+       - **Before Issue Time**:
+         - `D0` (today) maps to `days` element with `day_index == 0`
+         - `D1` (tomorrow) maps to `days` element with `day_index == 1`
+         - `D2` (day after tomorrow) maps to `days` element with `day_index == 2`
+       - **After Issue Time** (when the new forecast is published):
+         - `D1` (tomorrow) maps to `days` element with `day_index == 0`
+         - `D2` (day after tomorrow) maps to `days` element with `day_index == 1`
+         - `D3` (3 days ahead) maps to `days` element with `day_index == 2`
+       - **Outlook Mapping**:
+         - Date codes `D3` (before issue time) or `Doutlook` (offset 4 to 7 days) map to the root-level `"outlook"` string field in the JSON file.
+       - Always cross-reference the `"date"` field in each day's dictionary with your target date to verify correct alignment.
+     - **Filtering Examples**:
+       - If a forecast is requested for 5 days time (`Doutlook`), only return the `outlook`.
+       - If a forecast is requested only for 'Saturday' and the request is made on Thursday evening (resolving to `D2`), only return that specific day's dictionary (where `day_index == 2` or matches the target date); ignore other days.
+       - If a forecast is requested for 'Saturday to Wednesday' on a Friday (resolving to `D1, D2, D3, Doutlook`), only return those matching days and the overall outlook.
 
 ## Examples
- - Input: "Currrent forecast for the Cairngorms" → Output: [forecast_structure.json](file:///serve_forecast_to_user/references/forecast_structure.json)
+ - Input: "Current forecast for the Cairngorms" → Output: [forecast_structure.json](file:references/forecast_structure.json)
