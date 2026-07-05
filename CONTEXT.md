@@ -3,6 +3,14 @@
 ## Note for GEMINI
 This document is a draft items with [[double square brackets]] are TBC.
 
+> [!IMPORTANT]
+> Before starting any new task, scan the `specs/` directory to identify the relevant feature requirement. Use these specs as the primary source of truth for implementation logic. If a requirement is unclear, ask the user to clarify the spec before proceeding.
+
+## Documentation Responsibility Divide
+To avoid context rot, the project's documentation has a strict division of responsibility:
+- **`CONTEXT.md`**: Guide the "how" and "why" the agent should work (architectural structure, developer paved roads, integration data-flows, deployment boundaries).
+- **`specs/` (Spec Files)**: Explain the "what" to the agent (exact parameter formats, logic schemas, verification requirements, security checks, dependency lists). Do not store implementation specifics or validation details in `CONTEXT.md`.
+
 ## Goal
 Create an agent that reads MWIS forecasts and interpretation of them for a given date and location. The agent will be used to provide mountain weather information to users on an interactive website.
 
@@ -74,8 +82,8 @@ Skills are dividing into categories to make it easier to identify and use skills
 - **Forecast Fetcher**: [[Provide script name/path if exists, e.g., fetch_mwis_forecast.py]]
 
 ## Security & Input Validation Controls
-- **Input Filtering**: Implemented strict validation using Pydantic models in `.agents/skills/security/input_validation/scripts/security.py`. Region/location queries are restricted to 100 characters max matching `^[a-zA-Z0-9 &-]+$` or 2 uppercase characters (`^[A-Z]{2}$`). Date queries are restricted to 50 characters max matching `^[a-zA-Z0-9 &-]+$`.
-- **Prompt Injection Mitigations**: Implemented prompt isolation formatting in `.agents/skills/security/input_validation/scripts/security.py` via `isolate_user_input`. User input is wrapped in `<user_input>` XML-like tags, coupled with strict system instructions directing the model to treat tags' content as untrusted data and refuse embedded directives. Guidelines are documented in `.agents/skills/security/input_validation/SKILL.md`.
+All inputs, sanitization logic, and prompt isolation schemas are detailed in the [Security Specification](file:///home/karatay/Repositories/weather/MWISagent/specs/security.spec.md).
+
 
 ## Core Paved Roads
 1. **Tool Input Validation**: All tool parameters must validate against strict Pydantic schemas.
@@ -109,29 +117,4 @@ Skills are dividing into categories to make it easier to identify and use skills
 - **Authentication / IAM**: [[Specify backend authentication or access rules if needed]]
 
 ## Environment & Tooling Setup
-- **Semgrep Security Scanning**: Configured local custom security rules in `.semgrep/rules.yaml` to detect:
-  1. Hardcoded Google API keys matching pattern `AIzaSy[A-Za-z0-9_\-]*`.
-  2. Insecure shell execution (`shell=True` in subprocess calls or `os.system`).
-  3. Insecure HTTP SSL verification bypass (`verify=False` in requests).
-  4. Pydantic validation schema bypass on raw CLI inputs.
-  5. Hardcoded secret assignments (`password`, `secret`, `api_key`, `token`).
-  6. Insecure temporary file creation (`tempfile.mktemp`).
-  7. Insecure XML Parsing (standard xml/lxml libraries vulnerable to XXE).
-  8. Use of assert statement validations in production code files.
-  9. Potential log/output injection from unescaped raw inputs.
-  10. SQL Injection (constructing raw query string interpolations).
-  11. Unsafe YAML loading (using `yaml.load` without safe loaders).
-  12. Arbitrary code evaluation (use of `eval` or `exec`).
-  13. Insecure object deserialization (use of `pickle.load` / `pickle.loads`).
-  14. Path traversal vulnerabilities (opening files with dynamically interpolated user inputs).
-  15. Cryptographically weak hashing algorithms (MD5 / SHA1).
-  16. Predictable random number generation for security variables.
-  17. Framework debug modes enabled in production settings.
-  18. Interface binding to all IP interfaces (`0.0.0.0`).
-
-- **Pre-commit Hooks**: Configured in `.pre-commit-config.yaml` to run on commit:
-  * `end-of-file-fixer` and `trailing-whitespace` for code cleanup.
-  * `ruff` for python code linting and formatting.
-  * Local `semgrep` scan targeting `.semgrep/rules.yaml` with the `--error` flag.
-
-- **Agent Hook Interception**: Configured in `.agents/hooks.json` to execute a `PreToolUse` hook on `run_command` executions. It runs the `validate_tool_call.py` command validation script with a 10-second timeout to block malicious/destructive shell operations.
+Local linters, custom security scanners (Semgrep), and pre-commit hook policies are detailed in the [Security Specification](file:///home/karatay/Repositories/weather/MWISagent/specs/security.spec.md).

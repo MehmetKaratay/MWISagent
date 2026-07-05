@@ -51,3 +51,28 @@ When constructing system/user prompts for the LLM:
 | Region Code | `WHA` | Invalid (schema failure) |
 | Location | `Peak District; DROP TABLE region;` | Invalid (regex pattern mismatch) |
 | Location | `A` * 105 | Invalid (max length exceeded) |
+
+## Automated Security Scanning (Semgrep)
+Semgrep is configured via local custom rules in `.semgrep/rules.yaml` to detect and block the following:
+1. **Google API Keys**: Patterns matching `AIzaSy[A-Za-z0-9_\-]*`.
+2. **Insecure Shell execution**: `shell=True` in subprocess calls or `os.system` use.
+3. **Insecure HTTP SSL verification bypass**: `verify=False` in requests calls.
+4. **Pydantic Validation bypass**: Initializing schemas using bypass parameters on raw inputs.
+5. **Hardcoded secrets/tokens**: Dynamic assignments using variables like `password`, `secret`, `api_key`, `token`.
+6. **Insecure temporary file creation**: Calls to `tempfile.mktemp`.
+7. **Insecure XML Parsing**: Use of standard libraries vulnerable to XML Entity Expansion.
+8. **Assert statements in production**: Production file assertions (use explicit validations instead).
+9. **Log injection**: Potential logging injection from unescaped raw user inputs.
+10. **SQL Injection**: Constructing queries using raw string formatting/interpolations.
+11. **Unsafe YAML loading**: Using `yaml.load` without safe loader settings.
+12. **Arbitrary execution**: `eval` or `exec` commands.
+13. **Insecure deserialization**: Use of `pickle.load` / `pickle.loads`.
+14. **Path traversal vulnerabilities**: File access using dynamically interpolated unvalidated inputs.
+15. **Cryptographically weak hashes**: Use of weak hashing algorithms (MD5 / SHA1).
+16. **Predictable random generation**: Use of predictable pseudo-random values for security configurations.
+17. **Framework debug modes**: Enabling server debug flags in production.
+18. **All-interfaces binding**: Spawning listeners bound to `0.0.0.0`.
+
+## Tool Interception & Commit Checks
+* **Pre-commit Hooks**: Configured in `.pre-commit-config.yaml` to run standard file cleanup, Ruff formatting, and local Semgrep scan with the `--error` flag.
+* **Agent Tool Call Interception**: Configured in `.agents/hooks.json` to execute a `PreToolUse` hook intercepting `run_command` and redirecting it to `.agents/scripts/validate_tool_call.py` under a 10-second timeout.
