@@ -29,8 +29,15 @@ The interactive agent resides in the `mwis-agent/` sub-directory and runs in an 
 
 ---
 
-## 3. Testing
-To run the full unit and integration test suite inside the agent's virtual environment:
-```bash
-mwis-agent/.venv/bin/pytest mwis-agent/
-```
+## 3. Testing & Evaluation
+You do **not** need to manually activate a virtual environment when running tests from a standard terminal. Our commands leverage `uv run` to automatically execute inside the isolated `.venv`.
+
+* **Unit & Integration Tests:**
+  ```bash
+  mwis-agent/.venv/bin/pytest mwis-agent/
+  ```
+* **Automated Agent Evaluation:**
+  ```bash
+  make eval
+  ```
+  *Note on Rate Limits:* Running `make eval` executes multiple agent trajectories against the Gemini API. If using a **Free Tier** API key (`GEMINI_API_KEY`), you are limited to 5 requests per minute (RPM), which may cause `429 RESOURCE_EXHAUSTED` errors during multi-case evaluation runs. See [docs/evaluation.md](file:///home/karatay/Repositories/weather/MWISagent/docs/evaluation.md#troubleshooting--environment-setup) for workarounds and billing setup instructions.

@@ -132,7 +132,7 @@ All inputs, sanitization logic, and prompt isolation schemas are detailed in the
 Local linters, custom security scanners (Semgrep), and pre-commit hook policies are detailed in the [Security Specification](file:///home/karatay/Repositories/weather/MWISagent/specs/security.spec.md).
 
 ### Local Environment Setup
-Instructions on setting up Python versions, repository dependencies, ADK agent installation, and testing commands are detailed in [env_setup.md](file:///home/karatay/Repositories/weather/MWISagent/docs/env_setup.md).
+Instructions on setting up Python versions, repository dependencies, ADK agent installation, and testing commands are detailed in [env_setup.md](file:///home/karatay/Repositories/weather/MWISagent/docs/env_setup.md). For automated evaluation setup, gcloud authentication requirements, and handling API rate limits (such as Free Tier 429 Quota errors), see [evaluation.md](file:///home/karatay/Repositories/weather/MWISagent/docs/evaluation.md#troubleshooting--environment-setup).
 
 > [!NOTE]
 > The `GEMINI_API_KEY` is always configured and present in the local `.env` file for this project. It is used for all API interactions, including the ADK evaluation judge.

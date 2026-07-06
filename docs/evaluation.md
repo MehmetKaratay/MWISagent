@@ -28,3 +28,25 @@ make eval
 1. **Generate**: The CLI generates a conversation trajectory for each test case in the dataset. Because the `make eval` target passes `MWIS_ENV=development`, the agent will use static HTML dumps rather than performing live web fetches.
 2. **Grade**: The CLI uses the Gemini API as an LLM judge to grade the generated trajectories against the metrics defined in `eval_config.yaml`.
 3. **Report**: You can view the final grading results as an HTML report inside the `mwis-agent/artifacts/grade_results/` directory.
+
+---
+
+## Troubleshooting & Environment Setup
+
+### Running from a Terminal (Virtual Environment Isolation)
+You do **not** need to manually activate a virtual environment (`source .venv/bin/activate`) before running `make eval`. The `Makefile` invokes `uv run`, which automatically locates, manages, and executes all commands inside the isolated virtual environment (`mwis-agent/.venv`). You only need `uv` and `make` installed on your system PATH.
+
+### Resolving `429 RESOURCE_EXHAUSTED` (Quota Exceeded) Errors
+If `make eval` fails with an error resembling:
+```
+429 RESOURCE_EXHAUSTED: You exceeded your current quota...
+Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-2.5-flash
+```
+**Why this happens:**
+When running the full test suite, `agents-cli eval generate` executes all 4 evaluation scenarios concurrently or in rapid succession. Because each test case triggers multiple LLM agent turns (such as input parsing and response synthesis), the evaluation pipeline attempts 12+ API requests within seconds. If your `GEMINI_API_KEY` is on Google AI Studio's **Free Tier**, you are limited to **5 requests per minute (RPM)**. Exceeding this immediately aborts the evaluation.
+
+#### How to run successfully:
+1. **Option 1: Free Tier Workaround (Single Test Execution)**
+   To stay under the 5 RPM Free Tier limit, test scenarios individually by creating a smaller dataset containing only 1 test case at a time, or wait 60 seconds between individual evaluation runs.
+2. **Option 2: Pay-As-You-Go / Vertex AI Billing (Recommended for CI/CD)**
+   Upgrade the Google AI Studio project associated with your `GEMINI_API_KEY` to Pay-As-You-Go (or use a billing-enabled Google Cloud / Vertex AI project). This raises the quota to 1000+ RPM, allowing `make eval` to execute the full test suite concurrently without rate-limiting errors.
