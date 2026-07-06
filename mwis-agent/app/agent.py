@@ -32,9 +32,9 @@ from app.cache import get_forecast
 
 class WorkflowState(BaseModel):
     raw_query: str
-    location: Optional[str] = None
+    locations: list[str] = Field(default_factory=list)
     date: Optional[str] = None
-    region_code: Optional[str] = None
+    region_codes: list[str] = Field(default_factory=list)
     forecast_data: Optional[dict[str, Any]] = None
     needs_physics: bool = False
     needs_impact: bool = False
@@ -43,21 +43,27 @@ class WorkflowState(BaseModel):
 
 
 class ParseOutput(BaseModel):
-    location: Optional[str] = Field(description="The mountain or region queried")
+    locations: list[str] = Field(
+        default_factory=list, description="The mountain or regions queried"
+    )
     date: Optional[str] = Field(
-        description="The date queried, e.g., 'today', 'tomorrow', 'Saturday'"
+        default=None,
+        description="The date queried, e.g., 'today', 'tomorrow', 'Saturday'",
     )
     is_ambiguous: bool = Field(
-        description="True if location or date is too vague to resolve"
+        default=False, description="True if location or date is too vague to resolve"
     )
     needs_physics: bool = Field(
-        description="True if the query asks about elevation, temperature gradients, or physical causes"
+        default=False,
+        description="True if the query asks about elevation, temperature gradients, or physical causes",
     )
     needs_impact: bool = Field(
-        description="True if the query asks about safety, hiking plans, or hazards"
+        default=False,
+        description="True if the query asks about safety, hiking plans, or hazards",
     )
     needs_local_knowledge: bool = Field(
-        description="True if the query asks about specific micro-locations"
+        default=False,
+        description="True if the query asks about specific micro-locations",
     )
 
 
@@ -65,116 +71,169 @@ parse_input = LlmAgent(
     name="parse_input",
     model=Gemini(model="gemini-2.5-flash"),
     instruction="""
-    Extract location, date, and user intent flags from the weather query.
-    Set is_ambiguous to True if the location is completely missing or unclear.
+    Extract locations, date, and user intent flags from the weather query.
+    If no locations are provided, leave locations empty.
+    If no date is provided, leave date null.
+    Set is_ambiguous to True if the query is extremely vague and cannot be parsed.
     """,
     output_schema=ParseOutput,
     output_key="parsed_info",
 )
 
 
-@node
-def check_ambiguity(ctx: Context, node_input: dict[str, Any]) -> Event:
+def _check_ambiguity_logic(node_input: dict[str, Any]) -> Event:
+    locations = node_input.get("locations", [])
+    date_val = node_input.get("date")
     is_ambiguous = node_input.get("is_ambiguous", False)
     state_updates = {
-        "location": node_input.get("location"),
-        "date": node_input.get("date"),
+        "locations": locations,
+        "date": date_val,
         "needs_physics": node_input.get("needs_physics", False),
         "needs_impact": node_input.get("needs_impact", False),
         "needs_local_knowledge": node_input.get("needs_local_knowledge", False),
     }
-    if is_ambiguous:
-        return Event(output=node_input, route="yes", state=state_updates)
+
+    if is_ambiguous or not locations:
+        return Event(output=node_input, route="missing_location", state=state_updates)
+    if not date_val:
+        return Event(output=node_input, route="missing_date", state=state_updates)
+    if len(locations) > 5:
+        return Event(output=node_input, route="too_many_locations", state=state_updates)
+
     return Event(output=node_input, route="no", state=state_updates)
 
 
+@node
+def check_ambiguity(ctx: Context, node_input: dict[str, Any]) -> Event:
+    return _check_ambiguity_logic(node_input)
+
+
 @node(rerun_on_resume=False)
-async def clarify_input(ctx: Context, node_input: Any) -> Event:
-    interrupt_id = f"clarify_{ctx.state.get('loop_count', 0)}"
+async def clarify_location(ctx: Context, node_input: Any) -> Event:
+    interrupt_id = f"clarify_loc_{ctx.state.get('loop_count', 0)}"
     if not ctx.resume_inputs or interrupt_id not in ctx.resume_inputs:
         yield RequestInput(
             interrupt_id=interrupt_id,
-            message="Could you clarify the location and date you are asking about?",
+            message="Do you want a forecast for a specific location, or a comparison of up to 5 regions (e.g., 'Scottish areas')?",
         )
         return
 
     clarification = ctx.resume_inputs[interrupt_id]
-    state_updates = {
-        "location": clarification,
-        "date": "today",
-    }  # Simplification for now
+    state_updates = {"locations": [clarification]}
     yield Event(output=clarification, state=state_updates)
+
+
+@node(rerun_on_resume=False)
+async def clarify_date(ctx: Context, node_input: Any) -> Event:
+    interrupt_id = f"clarify_date_{ctx.state.get('loop_count', 0)}"
+    if not ctx.resume_inputs or interrupt_id not in ctx.resume_inputs:
+        yield RequestInput(
+            interrupt_id=interrupt_id,
+            message="Do you want the forecast for a specific date, or the full three-day forecast with outlook?",
+        )
+        return
+
+    clarification = ctx.resume_inputs[interrupt_id]
+    state_updates = {"date": clarification}
+    yield Event(output=clarification, state=state_updates)
+
+
+@node(rerun_on_resume=False)
+async def clarify_too_many_locations(ctx: Context, node_input: Any) -> Event:
+    interrupt_id = f"clarify_many_{ctx.state.get('loop_count', 0)}"
+    if not ctx.resume_inputs or interrupt_id not in ctx.resume_inputs:
+        yield RequestInput(
+            interrupt_id=interrupt_id,
+            message="Only 5 regions can be compared. Which regions do you wish to choose? (Reminder: Scotland has 5 regions, England has 3, and Wales has 2).",
+        )
+        return
+
+    clarification = ctx.resume_inputs[interrupt_id]
+    state_updates = {"locations": [clarification]}
+    yield Event(output=clarification, state=state_updates)
+
+
+import importlib.util
+import os
+import asyncio
+
+
+def load_query_country():
+    script_path = os.path.join(
+        os.path.dirname(__file__),
+        "skills",
+        "mwis-website",
+        "fetch_specific_forecast",
+        "scripts",
+        "query_country.py",
+    )
+    spec = importlib.util.spec_from_file_location("query_country", script_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.get_regions_for_countries
 
 
 @node
 def resolve_and_fetch(ctx: Context, node_input: Any) -> Event:
-    location = ctx.state.get("location", "")
+    locations = ctx.state.get("locations", [])
 
-    # Very basic region mapping (would ideally be a more robust mapping tool)
-    region_map = {
-        "nw": "NW",
-        "northwest": "NW",
-        "ben nevis": "WH",
-        "wh": "WH",
-        "west highlands": "WH",
-        "cairngorms": "EH",
-        "eh": "EH",
-        "snowdonia": "SD",
-        "sd": "SD",
-        "lake district": "LD",
-        "ld": "LD",
-        "yorkshire dales": "YD",
-        "yd": "YD",
-        "peak district": "PD",
-        "pd": "PD",
-        "brecon beacons": "BB",
-        "bb": "BB",
-        "southern highlands": "SH",
-        "sh": "SH",
-        "southern uplands": "SU",
-        "su": "SU",
-    }
-
-    matched_region = None
-    if location:
-        for key, code in region_map.items():
-            if key in location.lower():
-                matched_region = code
-                break
-
-    if not matched_region:
-        matched_region = "NW"  # Default for now
-
+    get_regions_for_countries = load_query_country()
     try:
-        forecast = get_forecast(matched_region)
+        matched_regions = get_regions_for_countries(locations)
+    except ValueError as e:
+        # > 5 regions error
+        return Event(output=node_input, route="too_many_locations")
 
-        # Hazard detection override
-        needs_impact = ctx.state.get("needs_impact", False)
-        # Simplified hazard detection: if the forecast contains strong wind words
-        if forecast and forecast.get("days"):
-            day0_wind = forecast["days"][0].get("wind_headline", "").lower()
-            if "gale" in day0_wind or "storm" in day0_wind or "hurricane" in day0_wind:
-                needs_impact = True
+    if not matched_regions:
+        matched_regions = ["NW"]  # Default if unable to resolve
 
-        return Event(
-            output=forecast,
-            state={
-                "region_code": matched_region,
-                "forecast_data": forecast,
-                "needs_impact": needs_impact,
-            },
-        )
-    except Exception as e:
-        return Event(output={"error": str(e)}, state={"region_code": matched_region})
+    forecasts = {}
+    needs_impact = ctx.state.get("needs_impact", False)
+
+    # We fetch sequentially for simplicity or we could use asyncio, but node is sync.
+    for region in matched_regions:
+        try:
+            forecast = get_forecast(region)
+            forecasts[region] = forecast
+
+            # Simplified hazard detection
+            if forecast and forecast.get("days"):
+                day0_wind = forecast["days"][0].get("wind_headline", "").lower()
+                if (
+                    "gale" in day0_wind
+                    or "storm" in day0_wind
+                    or "hurricane" in day0_wind
+                ):
+                    needs_impact = True
+        except Exception as e:
+            forecasts[region] = {"error": str(e)}
+
+    return Event(
+        output=forecasts,
+        state={
+            "region_codes": matched_regions,
+            "forecast_data": forecasts,
+            "needs_impact": needs_impact,
+        },
+    )
 
 
 @node
 def validate_coverage(ctx: Context, node_input: Any) -> Event:
-    date_str = ctx.state.get("date", "").lower()
+    date_str = ctx.state.get("date", "")
+    if date_str:
+        date_str = date_str.lower()
+    else:
+        date_str = ""
+
     if date_str == "dold" or "past" in date_str:
         return Event(output=node_input, route="dold")
-    if "france" in ctx.state.get("location", "").lower():
+
+    # Check if any location is out of scope
+    locations = ctx.state.get("locations", [])
+    if any("france" in loc.lower() for loc in locations):
         return Event(output=node_input, route="out_of_scope")
+
     return Event(output=node_input, route="valid")
 
 
@@ -295,9 +354,22 @@ edges = [
     Edge(from_node=START, to_node=set_raw_query),
     Edge(from_node=set_raw_query, to_node=parse_input),
     Edge(from_node=parse_input, to_node=check_ambiguity),
-    Edge(from_node=check_ambiguity, to_node=clarify_input, route="yes"),
-    Edge(from_node=clarify_input, to_node=resolve_and_fetch),
+    Edge(from_node=check_ambiguity, to_node=clarify_location, route="missing_location"),
+    Edge(from_node=check_ambiguity, to_node=clarify_date, route="missing_date"),
+    Edge(
+        from_node=check_ambiguity,
+        to_node=clarify_too_many_locations,
+        route="too_many_locations",
+    ),
+    Edge(from_node=clarify_location, to_node=resolve_and_fetch),
+    Edge(from_node=clarify_date, to_node=resolve_and_fetch),
+    Edge(from_node=clarify_too_many_locations, to_node=resolve_and_fetch),
     Edge(from_node=check_ambiguity, to_node=resolve_and_fetch, route="no"),
+    Edge(
+        from_node=resolve_and_fetch,
+        to_node=clarify_too_many_locations,
+        route="too_many_locations",
+    ),
     Edge(from_node=resolve_and_fetch, to_node=validate_coverage),
     Edge(from_node=validate_coverage, to_node=historic_lookup, route="dold"),
     Edge(from_node=validate_coverage, to_node=out_of_scope_msg, route="out_of_scope"),

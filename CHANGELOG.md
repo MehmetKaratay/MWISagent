@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **2026-07-06 23:07**: Implemented Agent multi-region forecast comparison logic (up to 5 regions), adding missing location/date routing nodes and integrating the `query_country.py` guardrail.
 - **2026-07-06 19:14**: Implemented ADK 2.0 Graph Workflow in `mwis-agent/app/agent.py` to route user queries through physical weather, impact, and local knowledge nodes with a follow-up HITL loop.
 - **2026-07-06 15:52**: Created check_forecast_issued weather agent caching system utilizing transactional SQLite storage and BST-aware scheduling rules, clean-code refactored into sub-15-line functions.
 - **2026-07-05 20:25**: Updated `serve_forecast_to_user/SKILL.md` and `specs/query_date.spec.md` to use calendar-date calibration rather than system-clock time calibration.

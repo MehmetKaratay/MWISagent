@@ -11,13 +11,19 @@ graph TD
     START([START]) --> parse_input[parse_input: LLM extracts location/date/flags]
     parse_input --> check_ambiguity{Is input vague?}
 
-    %% Ambiguity route
-    check_ambiguity -- Yes --> clarify_input[clarify_input: RequestInput HITL]
-    clarify_input --> resolve_and_fetch
+    %% Ambiguity routes
+    check_ambiguity -- missing_location --> clarify_location[clarify_location: RequestInput HITL]
+    check_ambiguity -- missing_date --> clarify_date[clarify_date: RequestInput HITL]
+    check_ambiguity -- too_many_locations --> clarify_too_many_locations[clarify_too_many_locations: RequestInput HITL]
+
+    clarify_location --> resolve_and_fetch
+    clarify_date --> resolve_and_fetch
+    clarify_too_many_locations --> resolve_and_fetch
 
     %% Clear route
-    check_ambiguity -- No --> resolve_and_fetch[resolve_and_fetch: Runs query scripts & checks hazards]
+    check_ambiguity -- no --> resolve_and_fetch[resolve_and_fetch: Runs query scripts & checks hazards]
 
+    resolve_and_fetch -- too_many_locations --> clarify_too_many_locations
     resolve_and_fetch --> validate_coverage[validate_coverage: Checks UK scope & date codes D0-Doutlook]
 
     validate_coverage --> check_valid{Is UK and D0-Doutlook?}
@@ -62,16 +68,25 @@ graph TD
 * **Type:** `LlmAgent` (model: `gemini-2.5-flash`)
 * **Behavior:** Extracts `location` and `date` parameters, and evaluates whether the query requires `needs_physics`, `needs_impact`, or `needs_local_knowledge` annotations.
 
-### Node 2: `clarify_input`
+### Node 2: `clarify_location`
 * **Type:** `RequestInput` (HITL interruption)
-* **Behavior:** Suspends workflow execution to request the location or date from the user if missing or ambiguous in `parse_input`.
+* **Behavior:** Suspends workflow execution to request the location from the user if completely missing or ambiguous.
+
+### Node 2b: `clarify_date`
+* **Type:** `RequestInput` (HITL interruption)
+* **Behavior:** Suspends workflow execution to request the date from the user if missing.
+
+### Node 2c: `clarify_too_many_locations`
+* **Type:** `RequestInput` (HITL interruption)
+* **Behavior:** Suspends workflow execution and prompts the user to select up to 5 explicit regions if they ask to compare more than 5.
 
 ### Node 3: `resolve_and_fetch`
 * **Type:** `FunctionNode` (determinstic Python code)
 * **Behavior:**
-  * Resolves `location` and `date` using the relocated modules in `app/skills/mwis-website/`.
-  * Fetches the corresponding forecast from the local caching layer.
-  * Scans forecast values: if wind speed is >40mph or temperature is <-5°C, sets `needs_impact = True`.
+  * Resolves `locations` (up to 5 regions max via `query_country.py`) and `date` using the modules in `app/skills/mwis-website/`.
+  * If the resolved region count > 5, routes to `clarify_too_many_locations`.
+  * Fetches the corresponding forecasts sequentially from the local caching layer.
+  * Scans forecast values: if wind speed is >40mph or temperature is <-5°C in any forecast, sets `needs_impact = True`.
 
 ### Node 4: `validate_coverage`
 * **Type:** `FunctionNode`
