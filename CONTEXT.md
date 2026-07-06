@@ -132,23 +132,4 @@ All inputs, sanitization logic, and prompt isolation schemas are detailed in the
 Local linters, custom security scanners (Semgrep), and pre-commit hook policies are detailed in the [Security Specification](file:///home/karatay/Repositories/weather/MWISagent/specs/security.spec.md).
 
 ### Local Environment Setup
-To replicate this setup in your local sandbox:
-
-#### Parent Repository Setup
-1. Ensure Python >= 3.10 is active.
-2. Install root dependencies in editable mode:
-   ```bash
-   uv pip install -e .
-   ```
-
-#### ADK Agent App Setup (Inside `mwis-agent/`)
-1. Ensure Python >= 3.11 (e.g. 3.13) is active.
-2. Navigate to `mwis-agent/` and run the install command with a high timeout to download all ADK, GCP, and skill packages:
-   ```bash
-   cd mwis-agent
-   UV_HTTP_TIMEOUT=1200 uvx google-agents-cli install
-   ```
-3. To run the test suite within the agent's virtual environment:
-   ```bash
-   mwis-agent/.venv/bin/pytest mwis-agent/
-   ```
+Instructions on setting up Python versions, repository dependencies, ADK agent installation, and testing commands are detailed in [env_setup.md](file:///home/karatay/Repositories/weather/MWISagent/docs/env_setup.md).
