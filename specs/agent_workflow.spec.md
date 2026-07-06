@@ -24,7 +24,7 @@ Provides interactive mountain weather forecast synthesis and elevation/region ad
 1. **Inputs:** Accepts free-text user query.
 2. **Ambiguity Handling:** Suspends execution using `RequestInput` if location or date is ambiguous, prompting the user for clarification.
 3. **Data Fetching:** Programmatically invokes the 4 `mwis-website` scripts to parse forecast HTML and inject D-codes.
-4. **Caching Layer:** The backend will have a caching layer to store the 10 MWIS forecasts. The front end will have no memory layer. The forecast cache will be updated with the `mwis-website` `check_forecast_issued` skill.
+4. **Caching Layer:** The backend caching layer is implemented via the `check_forecast_issued` skill and the `sqlite3` database to store the 10 MWIS forecasts. The front end will have no memory layer.
 5. **Conditional Routing:**
    * Run `weather_physics` if `needs_physics` is set (triggered by queries on elevation, temperature gradients, or physical causes).
    * Run `weather_impact` if `needs_impact` is set (triggered by questions on safety, hiking plans, or presence of significant hazards like high winds/heavy rain).
