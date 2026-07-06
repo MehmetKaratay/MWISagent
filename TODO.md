@@ -1,18 +1,19 @@
 # MWIS Agent TODO
 
 ## In Progress
+* Catching layer to minimise API/website-scraping calls
+
 * **Genreate the MVP agent!** P2 is complete but we need a new implemenation plan because of the internet crash forcing computer reboot without LLM interaction to save session.
 
-* Catching layer to minimise API/website-scraping calls
 
 
 ## Next time
- * Improve serve_forecast_to_user skills definition (perhaps)
-    - Work on spec for the full agent
-    - Work on forecast_information.md so agent has better understanding of forecast.
+ * Make sure no `/home/karatay` before going live.
 
 ## Future
 
+* Tiding: `fetch_specific_forecast` used `../mocks/` instead of `tests/resources/`.
+* Should `mwis-regions.csv` and its query scripts be moved to mwis-website dir so other skills have access?
 * Generate the main agent to run on Google Cloud
 * Check how we did security on Kaggle course
 * Create a front end
