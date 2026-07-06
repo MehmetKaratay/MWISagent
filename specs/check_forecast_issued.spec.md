@@ -69,10 +69,9 @@ Then the check is skipped, and check_forecast_issued returns "already_updated_to
 * **Files likely affected:** `mwis-agent/app/skills/mwis-website/check_forecast_issued/scripts/check_forecast.py`
 * **Acceptance criteria:** Returns expected status codes for updated / no-update conditions.
 * **Dependencies:** Task 1
-
 ---
 
-## Assumptions to review
+## Agreed Decisions
 
-1. [ASSUMPTION: British Time (BST/GMT) timezone offsets will be calculated correctly using zoneinfo] — Impact: HIGH
-2. [ASSUMPTION: SQLite file will be located inside the app workspace to avoid permissions issues] — Impact: HIGH
+1. **Timezone Handling**: British Time (BST/GMT) offsets will be calculated using Python's standard `zoneinfo` module (`Europe/London`), rather than `pytz`.
+2. **SQLite Path**: The database file will default to `mwis-agent/app/cache/mwis_forecasts.db` relative to the workspace root to avoid local sandbox directory permission issues.
