@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+### Added
+- Created `tests/eval/datasets/mwis_eval.json` with 4 test scenarios (direct, ambiguous, location out-of-scope, date out-of-scope).
+- Configured ADK built-in evaluation metrics in `tests/eval/eval_config.yaml`.
+- Added a `Makefile` with a `make eval` target for deterministic on-demand testing using static HTML caches.
+
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]

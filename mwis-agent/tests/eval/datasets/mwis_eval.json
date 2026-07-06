@@ -1,0 +1,32 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "direct_query",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "What's the weather like on Ben Nevis today?"}]
+      }
+    },
+    {
+      "eval_case_id": "ambiguous_query",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "Is it going to rain?"}]
+      }
+    },
+    {
+      "eval_case_id": "out_of_scope_location",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "What is the weather in London?"}]
+      }
+    },
+    {
+      "eval_case_id": "out_of_scope_date",
+      "prompt": {
+        "role": "user",
+        "parts": [{"text": "What was the weather like yesterday?"}]
+      }
+    }
+  ]
+}
