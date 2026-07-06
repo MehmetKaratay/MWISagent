@@ -20,9 +20,11 @@
 * `fetch_specific_forecast` uses `../mocks/` instead of `tests/resources/`.
 * Specs into subdirs
 * Check: docs and specs for everything?
+* Anything in Context that could be extracted to a separate file with clean link to keep context window cleaner?
 
-#### Refactgoring
+#### Refactoring
 * Should `mwis-regions.csv` and its query scripts be moved to mwis-website dir so other skills have access?
+* Out of MWIS region in UK should provide distance and direction to nearest MWIS region. If multiple within a set % of each other, then all options should be provided.
 
 #### Features
 * Generate the main agent to run on Google Cloud
