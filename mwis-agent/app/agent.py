@@ -32,6 +32,7 @@ from app.cache import get_forecast
 
 class WorkflowState(BaseModel):
     raw_query: str
+    parsed_info: Optional[dict[str, Any]] = None
     locations: list[str] = Field(default_factory=list)
     date: Optional[str] = None
     region_codes: list[str] = Field(default_factory=list)
