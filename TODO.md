@@ -8,14 +8,24 @@
 
 
 ## Next time
+
+## Before deployment
  * Make sure no `/home/karatay` before going live.
+ * Final security assessment
+ * License headers on all files
 
 ## Future
 
-* Tiding: `fetch_specific_forecast` used `../mocks/` instead of `tests/resources/`.
+#### Tiding
+* `fetch_specific_forecast` uses `../mocks/` instead of `tests/resources/`.
+* Specs into subdirs
+* Check: docs and specs for everything?
+
+#### Refactgoring
 * Should `mwis-regions.csv` and its query scripts be moved to mwis-website dir so other skills have access?
+
+#### Features
 * Generate the main agent to run on Google Cloud
-* Check how we did security on Kaggle course
 * Create a front end
    - Interaction with full agent
    - Simple box for ID forecast region (to test features)
