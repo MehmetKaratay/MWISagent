@@ -133,8 +133,22 @@ Local linters, custom security scanners (Semgrep), and pre-commit hook policies 
 
 ### Local Environment Setup
 To replicate this setup in your local sandbox:
-1. Ensure Python 3.10 is active.
-2. Install dependencies locally (including `fastapi` and `uvicorn`) in editable mode:
+
+#### Parent Repository Setup
+1. Ensure Python >= 3.10 is active.
+2. Install root dependencies in editable mode:
    ```bash
    uv pip install -e .
+   ```
+
+#### ADK Agent App Setup (Inside `mwis-agent/`)
+1. Ensure Python >= 3.11 (e.g. 3.13) is active.
+2. Navigate to `mwis-agent/` and run the install command with a high timeout to download all ADK, GCP, and skill packages:
+   ```bash
+   cd mwis-agent
+   UV_HTTP_TIMEOUT=1200 uvx google-agents-cli install
+   ```
+3. To run the test suite within the agent's virtual environment:
+   ```bash
+   mwis-agent/.venv/bin/pytest mwis-agent/
    ```
