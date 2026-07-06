@@ -219,8 +219,7 @@ def resolve_and_fetch(ctx: Context, node_input: Any) -> Event:
     )
 
 
-@node
-def validate_coverage(ctx: Context, node_input: Any) -> Event:
+def _validate_coverage_logic(ctx: Context, node_input: Any) -> Event:
     date_str = ctx.state.get("date", "")
     if date_str:
         date_str = date_str.lower()
@@ -236,6 +235,11 @@ def validate_coverage(ctx: Context, node_input: Any) -> Event:
         return Event(output=node_input, route="out_of_scope")
 
     return Event(output=node_input, route="valid")
+
+
+@node
+def validate_coverage(ctx: Context, node_input: Any) -> Event:
+    return _validate_coverage_logic(ctx, node_input)
 
 
 @node
@@ -256,11 +260,15 @@ def out_of_scope_msg(ctx: Context, node_input: Any) -> Event:
     )
 
 
-@node
-def check_physics(ctx: Context, node_input: Any) -> Event:
+def _check_physics_logic(ctx: Context, node_input: Any) -> Event:
     if ctx.state.get("needs_physics", False):
         return Event(output=node_input, route="yes")
     return Event(output=node_input, route="no")
+
+
+@node
+def check_physics(ctx: Context, node_input: Any) -> Event:
+    return _check_physics_logic(ctx, node_input)
 
 
 @node
@@ -269,11 +277,15 @@ def weather_physics(ctx: Context, node_input: Any) -> Event:
     return Event(output=node_input)
 
 
-@node
-def check_impact(ctx: Context, node_input: Any) -> Event:
+def _check_impact_logic(ctx: Context, node_input: Any) -> Event:
     if ctx.state.get("needs_impact", False):
         return Event(output=node_input, route="yes")
     return Event(output=node_input, route="no")
+
+
+@node
+def check_impact(ctx: Context, node_input: Any) -> Event:
+    return _check_impact_logic(ctx, node_input)
 
 
 @node
@@ -282,11 +294,15 @@ def weather_impact(ctx: Context, node_input: Any) -> Event:
     return Event(output=node_input)
 
 
-@node
-def check_local(ctx: Context, node_input: Any) -> Event:
+def _check_local_logic(ctx: Context, node_input: Any) -> Event:
     if ctx.state.get("needs_local_knowledge", False):
         return Event(output=node_input, route="yes")
     return Event(output=node_input, route="no")
+
+
+@node
+def check_local(ctx: Context, node_input: Any) -> Event:
+    return _check_local_logic(ctx, node_input)
 
 
 @node
@@ -335,11 +351,15 @@ def process_follow_up(ctx: Context, node_input: Any) -> Event:
     )
 
 
-@node
-def check_loop_limit(ctx: Context, node_input: Any) -> Event:
+def _check_loop_limit_logic(ctx: Context, node_input: Any) -> Event:
     if ctx.state.get("loop_count", 0) < 5:
         return Event(output=node_input, route="yes")
     return Event(output=node_input, route="no")
+
+
+@node
+def check_loop_limit(ctx: Context, node_input: Any) -> Event:
+    return _check_loop_limit_logic(ctx, node_input)
 
 
 @node
