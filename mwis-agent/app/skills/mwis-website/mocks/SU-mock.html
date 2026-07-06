@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+
+    <link rel="apple-touch-icon-precomposed" sizes="57x57" href="/icon/apple-touch-icon-57x57.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/icon/apple-touch-icon-114x114.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/icon/apple-touch-icon-72x72.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/icon/apple-touch-icon-144x144.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="60x60" href="/icon/apple-touch-icon-60x60.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="/icon/apple-touch-icon-120x120.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="76x76" href="/icon/apple-touch-icon-76x76.png" />
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="/icon/apple-touch-icon-152x152.png" />
+    <link rel="icon" type="image/png" href="/icon/favicon-196x196.png" sizes="196x196" />
+    <link rel="icon" type="image/png" href="/icon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/png" href="/icon/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/icon/favicon-16x16.png" sizes="16x16" />
+    <link rel="icon" type="image/png" href="/icon/favicon-128.png" sizes="128x128" />
+    <meta name="application-name" content="&nbsp;" />
+    <meta name="msapplication-TileColor" content="#FFFFFF" />
+    <meta name="msapplication-TileImage" content="/icon/mstile-144x144.png" />
+    <meta name="msapplication-square70x70logo" content="/icon/mstile-70x70.png" />
+    <meta name="msapplication-square150x150logo" content="/icon/mstile-150x150.png" />
+    <meta name="msapplication-wide310x150logo" content="/icon/mstile-310x150.png" />
+    <meta name="msapplication-square310x310logo" content="/icon/mstile-310x310.png" />
+
+
+</head>
+<body>
+
+
+
+
+
+<div class="forecast-area">
+
+    <h1>Southern Uplands</h1>
+    <p>The Galloway hills eastward to the Lammermuir hills. The Cheviots (including higher hills within the adjacent Northumberland NP). </p>
+
+        <h4>
+Today's            Forecast
+        </h4>
+<div class="row">
+    <div class="col-xs-12" style="width:100%;">
+                <div id="modal-xs-0" class="icon-modal-content">
+                    <span class="close" id="cross-0" onclick="CloseIconModal()">&times;</span>
+                    <h3>Windy, walking impeded</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Wind-Impeded.jpg" height="200" width="200" title="Windy, walking impeded" alt="Windy, walking impeded" />
+                    <p>Blustery conditions enough to give buffeting on higher terrain or affect balance on exposed ridges. 25 to 40mph.</p>
+                </div>
+                <div id="modal-xs-1" class="icon-modal-content">
+                    <span class="close" id="cross-1" onclick="CloseIconModal()">&times;</span>
+                    <h3>Patchy rain or drizzle</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Precipitation-Drizzle.jpg" height="200" width="200" title="Patchy rain or drizzle" alt="Patchy rain or drizzle" />
+                    <p>Rain on and off, or generally drizzly - total amounts small, but may be persistently damp, especially where hills are shrouded in cloud.</p>
+                </div>
+                <div id="modal-xs-2" class="icon-modal-content">
+                    <span class="close" id="cross-2" onclick="CloseIconModal()">&times;</span>
+                    <h3>Poor visibility</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Visibility-Poor.jpg" height="200" width="200" title="Poor visibility" alt="Poor visibility" />
+                    <p>Murky conditions with areas of fog shrouding the hills, making navigation challenging. Map and compass essential.</p>
+                </div>
+                <div id="modal-xs-3" class="icon-modal-content">
+                    <span class="close" id="cross-3" onclick="CloseIconModal()">&times;</span>
+                    <h3>Warm</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Temperature-Warm.png" height="200" width="200" title="Warm" alt="Warm" />
+                    <p>Comfortable temperatures on the hills, 10 to 15C on tops, feeling pleasantly warm especially on lower ground. Beware of feeling cooler if exposed to wind on higher terrain.</p>
+                </div>
+    </div>
+    <div class="col-md-1"></div>
+        <ul style="list-style:none;display:inline;padding-inline-start:0px;">
+                    <li style="display:inline">
+                        <img class="icon-img" id="icon-0" data-icon="MW06-100002" src="https://www.mwis.org.uk/assets/weather-icons/Wind-Impeded.jpg" onclick="OpenIconModal('0')" height="110" width="110" title="Windy, walking impeded" alt="Windy, walking impeded" />
+                    </li>
+                    <li style="display:inline">
+                        <img class="icon-img" id="icon-1" data-icon="MW06-100009" src="https://www.mwis.org.uk/assets/weather-icons/Precipitation-Drizzle.jpg" onclick="OpenIconModal('1')" height="110" width="110" title="Patchy rain or drizzle" alt="Patchy rain or drizzle" />
+                    </li>
+                    <li style="display:inline">
+                        <img class="icon-img" id="icon-2" data-icon="MW06-100015" src="https://www.mwis.org.uk/assets/weather-icons/Visibility-Poor.jpg" onclick="OpenIconModal('2')" height="110" width="110" title="Poor visibility" alt="Poor visibility" />
+                    </li>
+                    <li style="display:inline">
+                        <img class="icon-img" id="icon-3" data-icon="MW06-100023" src="https://www.mwis.org.uk/assets/weather-icons/Temperature-Warm.png" onclick="OpenIconModal('3')" height="110" width="110" title="Warm" alt="Warm" />
+                    </li>
+        </ul>
+
+    <div class="col-md-1"></div>
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+        <p>Click an icon for more information or <a target="_blank" href="/information/icon-information">click here</a> for a key to all icons.</p>
+    </div>
+    <div class="col-md-1"></div>
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+                <div id="modal-0" class="icon-modal-content">
+                    <span class="close" id="cross-0" onclick="CloseIconModal()">&times;</span>
+                    <h3>Windy, walking impeded</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Wind-Impeded.jpg" height="200" width="200" title="Windy, walking impeded" alt="Windy, walking impeded" />
+                    <p>Blustery conditions enough to give buffeting on higher terrain or affect balance on exposed ridges. 25 to 40mph.</p>
+                </div>
+                <div id="modal-1" class="icon-modal-content">
+                    <span class="close" id="cross-1" onclick="CloseIconModal()">&times;</span>
+                    <h3>Patchy rain or drizzle</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Precipitation-Drizzle.jpg" height="200" width="200" title="Patchy rain or drizzle" alt="Patchy rain or drizzle" />
+                    <p>Rain on and off, or generally drizzly - total amounts small, but may be persistently damp, especially where hills are shrouded in cloud.</p>
+                </div>
+                <div id="modal-2" class="icon-modal-content">
+                    <span class="close" id="cross-2" onclick="CloseIconModal()">&times;</span>
+                    <h3>Poor visibility</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Visibility-Poor.jpg" height="200" width="200" title="Poor visibility" alt="Poor visibility" />
+                    <p>Murky conditions with areas of fog shrouding the hills, making navigation challenging. Map and compass essential.</p>
+                </div>
+                <div id="modal-3" class="icon-modal-content">
+                    <span class="close" id="cross-3" onclick="CloseIconModal()">&times;</span>
+                    <h3>Warm</h3>
+                    <img class="icon-img" src="https://www.mwis.org.uk/assets/weather-icons/Temperature-Warm.png" height="200" width="200" title="Warm" alt="Warm" />
+                    <p>Comfortable temperatures on the hills, 10 to 15C on tops, feeling pleasantly warm especially on lower ground. Beware of feeling cooler if exposed to wind on higher terrain.</p>
+                </div>
+    </div>
+    <div class="col-md-1"></div>
+</div>
+
+
+
+
+
+    <div class="row forecast-area--downloads">
+        <div class="col-md-6">
+            <div class="media">
+                <div class="align-self-center mr-3 ml-2"><a href="/assets/forecasts/su-mwi-wm14533_2026-07-05_160033_3861.pdf" target="_blank"><i class="fas fa-2x fa-file-pdf"></i></a></div>
+                <div class="media-body">
+                    <a href="/assets/forecasts/su-mwi-wm14533_2026-07-05_160033_3861.pdf" target="_blank">Click here to download the latest PDF</a>
+                    <small class="d-none d-md-block d-xl-none">
+                        Last Updated Sun 5th Jul 26 at
+                        4:00PM
+                    </small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="media">
+                <div class="align-self-center mr-3 ml-2"><a href="/forecasts/scottish/southern-uplands/text"><i class="fas fa-2x fa-file-alt"></i></a></div>
+                <div class="media-body">
+                        <a href="/forecasts/scottish/southern-uplands">View our detailed version</a>
+                        <small class="d-none d-md-block d-xl-none">
+                            Last Updated Sun 5th Jul 26 at
+                            4:00PM
+                        </small>
+                    </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <style>
+
+        .category-end {
+            border-bottom: 1px solid #c4c2c2
+        }
+
+        .icon-img {
+            border-radius: 20%;
+            margin: 15px;
+        }
+
+        .icon-modal {
+            position: fixed; /* Stay in place */
+            z-index: 30; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            text-align: center;
+        }
+
+        /* Modal Content/Box */
+        .icon-modal-content {
+            display: none;
+            position: center;
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #888;
+            text-align: center;
+            margin: auto;
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+            .close:hover,
+            .close:focus {
+                color: black;
+                text-decoration: none;
+                cursor: pointer;
+            }
+    </style>
+
+
+    <ul class="nav nav-tabs flex-grow-1 flex-nowrap" role="tablist">
+        <li class="nav-item mr-auto pt-2 pl-3 tab-title">
+            <strong>Forecast information for&hellip;</strong>
+        </li>
+
+
+
+
+
+            <li class="nav-item">
+                <a class="nav-link active" href="#Forecast0" role="tab" data-toggle="tab" aria-selected=&quot;true&quot;>
+Today                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " href="#Forecast1" role="tab" data-toggle="tab" >
+Tuesday                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link " href="#Forecast2" role="tab" data-toggle="tab" >
+Wednesday                </a>
+            </li>
+
+
+
+
+    </ul>
+
+
+    <div class="tab-content">
+
+            <div id="Forecast0" class="forecast forecast-area tab-pane active" role="tabpanel">
+
+                <div class="forecast-area--forecast-details category-end">
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Viewing Forecast For<br /></h4></div>
+                        <div class="col">
+                            <p>
+                                <strong>Southern Uplands</strong><br />
+                                <strong>Monday 6th July 2026</strong><br />
+                                <small>
+                                    Last updated
+                                    Sun 5th Jul 26 at
+                                    4:00PM
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+
+                        <div class="row">
+                            <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Summary for all mountain areas</h4></div>
+                            <div class="col"><p>Windy and generally wet across Scottish hills, rain and drizzle most persistent in northwestern Highlands. Breezy, damp and drizzly too for northern England. Drier and lighter winds for Wales. Poor visibility with low cloud cloaking many hills through the day, best of any breaks toward east.</p></div>
+                        </div>
+
+                        <div class="row category-end">
+                            <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Headline for Southern Uplands</h4></div>
+                            <div class="col"><p>Gusts to gale-force over tops. Patchy rain, drizzle, low cloud.</p></div>
+                        </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How windy? (On the summits)</h4></div>
+                        <div class="col"><p>Westerly 25 to 40mph, variable and with stronger gusts over high tops, particularly early and late in the day.</p></div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Effect of the wind on you?</h4></div>
+                        <div class="col"><p>Walking strenuous in exposure most of the day with considerable wind chill, buffeting gusts challenging stability.</p></div>
+                    </div>
+
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How Wet?</h4></div>
+                        <div class="col">
+                            <p><strong>Rain mostly morning, drizzly west</strong></p>
+                            <p>Patchy rain drifts from the west at times, some extended steady light rain west of the M74 in morning, and a lingering fine drizzle over high tops during drier windows. Rain quite sparse to the east. Generally drier in afternoon.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Cloud on the hills?</h4></div>
+                        <div class="col">
+                            <p><strong>Fairly extensive, best breaks east</strong></p>
+                            <p>Western slopes shrouded above 600m likely all day, often lower with ragged patches into valleys in morning; low cloud towards Central Belt/Lothians too. Some breaks afternoon. Best chance higher breaks south and east.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Chance of cloud free summits?</h4></div>
+                        <div class="col">
+                            <p>10% rising to 30% west, to 50% Cheviots</p>
+                        </div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-md-6 col-lg-5 col-xl-4"><h4>Sunshine and air clarity?</h4></div>
+                        <div class="col">
+                            <p>Largely cloudy, dull to the west.
+Where out of cloud and rain east, very good visibility, brief sunny glimpses.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How Cold? (at 750m)</h4></div>
+                        <div class="col">
+                            <p>10 or 11C, rising slightly, locally 13C from the Borders eastward.
+Feeling near freezing in direct wind.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Freezing Level</h4></div>
+                        <div class="col">
+                            <p>Above the summits.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <div id="Forecast1" class="forecast forecast-area tab-pane " role="tabpanel">
+
+                <div class="forecast-area--forecast-details category-end">
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Viewing Forecast For<br /></h4></div>
+                        <div class="col">
+                            <p>
+                                <strong>Southern Uplands</strong><br />
+                                <strong>Tuesday 7th July 2026</strong><br />
+                                <small>
+                                    Last updated
+                                    Sun 5th Jul 26 at
+                                    4:00PM
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+
+
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How windy? (On the summits)</h4></div>
+                        <div class="col"><p>Westerly 30-45mph at dawn, strongest Lothians and east Borders with gusts approaching 55mph. Easing to 20-30mph.</p></div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Effect of the wind on you?</h4></div>
+                        <div class="col"><p>Arduous to challenging walking with considerable buffeting and wind chill early. Effects ease, but generally strenuous.</p></div>
+                    </div>
+
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How Wet?</h4></div>
+                        <div class="col">
+                            <p><strong>Patchy rain, mostly west</strong></p>
+                            <p>Rain here and there most of the day, light in nature with regular dry windows. Some chance of extended falls, greatest risk west of M74 where possibly briefly heavier.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Cloud on the hills?</h4></div>
+                        <div class="col">
+                            <p><strong>Fairly extensive but variable</strong></p>
+                            <p>From dawn, blanket cloud above the middle elevations, lowest Ayrshire/Central Belt hills where ragged patches reach lower elevations in rain. A general lifting trend, breaks to summits possible east, but banks returning too.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Chance of cloud free summits?</h4></div>
+                        <div class="col">
+                            <p>20%, rising to 50% easternmost summits</p>
+                        </div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-md-6 col-lg-5 col-xl-4"><h4>Sunshine and air clarity?</h4></div>
+                        <div class="col">
+                            <p>Few glimpses of sun but weakened by high cloud.
+Variable visibility, most often poor west, but very good out of cloud.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How Cold? (at 750m)</h4></div>
+                        <div class="col">
+                            <p>11C rising to 13C, always warmest east, possibly to 15C Cheviots.
+Feeling like 2 to 5C in direct wind.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Freezing Level</h4></div>
+                        <div class="col">
+                            <p>Above the summits.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <div id="Forecast2" class="forecast forecast-area tab-pane " role="tabpanel">
+
+                <div class="forecast-area--forecast-details category-end">
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Viewing Forecast For<br /></h4></div>
+                        <div class="col">
+                            <p>
+                                <strong>Southern Uplands</strong><br />
+                                <strong>Wednesday 8th July 2026</strong><br />
+                                <small>
+                                    Last updated
+                                    Sun 5th Jul 26 at
+                                    4:00PM
+                                </small>
+                            </p>
+                        </div>
+                    </div>
+
+
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How windy? (On the summits)</h4></div>
+                        <div class="col"><p>West to southwesterly 15 to 20mph, in places 25mph around high tops.</p></div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Effect of the wind on you?</h4></div>
+                        <div class="col"><p>Fairly small, some noticeable gustier spots.</p></div>
+                    </div>
+
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How Wet?</h4></div>
+                        <div class="col">
+                            <p><strong>Rain unlikely</strong></p>
+                            <p>Rare fine drizzle western hills if in early low cloud on windward slopes.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Cloud on the hills?</h4></div>
+                        <div class="col">
+                            <p><strong>Varied, mostly west, largely clearing</strong></p>
+                            <p>Banks of cloud perhaps fairly extensive Dumfries and Galloway in the morning. Tending to thin and disperse through middle of day to leave most or all hills clear. Western slopes near Merrick may keep patchy cloud.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Chance of cloud free summits?</h4></div>
+                        <div class="col">
+                            <p>30% rising to 60% west, 90% elsewhere.</p>
+                        </div>
+                    </div>
+
+                    <div class="row category-end">
+                        <div class="col-xs-12 col-md-6 col-lg-5 col-xl-4"><h4>Sunshine and air clarity?</h4></div>
+                        <div class="col">
+                            <p>Varied cloud and sun in morning, then increasingly sunny with fair-weather cloud, best toward east. Misty start in west, otherwise visibility very good.</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>How Cold? (at 750m)</h4></div>
+                        <div class="col">
+                            <p>11C rising to 16C afternoon, slightly cooler far west if cloud lingers.</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 col-lg-5 col-xl-4"><h4>Freezing Level</h4></div>
+                        <div class="col">
+                            <p>Above the summits.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+    </div>
+
+    <div class="forecast-area--planning-outlook">
+        <h3>Planning Outlook</h3>
+        <p class="mb-0">A damp start westerly pattern continues at the start of the week, particularly in Scotland, then a drier and warmer window builds into the middle of the week: very warm in England and Wales, spells of sunshine spread northward, and lighter wind. Some patchy rain continues through late week in western Scotland though detail is uncertain and more often dry. High pressure is indicated to expand across Scotland through next weekend bringing more widely dry and warm conditions in the extended outlook into mid July - easterly winds likely develop, particularly England and Wales; a chance of some thunderstorms.</p>
+    </div>
+
+</div>
+<script>
+
+    var infoOpen = ""
+
+    function CloseIconModal() {
+
+        var descriptions = document.getElementsByClassName("icon-modal-content");
+        for (var i = 0; i < descriptions.length; i++) {
+            descriptions[i].style.display = "none";
+        }
+        infoOpen = "";
+    }
+
+    function OpenIconModal(id) {
+
+        var modal = document.getElementById("modal-" + id)
+        if (window.screen.width <= 426) {
+            modal = document.getElementById("modal-xs-" + id)
+        }
+        var descriptions = document.getElementsByClassName("icon-modal-content");
+        for (var i = 0; i < descriptions.length; i++) {
+            descriptions[i].style.display = "none";
+        }
+        if (infoOpen == id) {
+            infoOpen = "";
+        } else {
+            modal.style.display = "block";
+            infoOpen = id;
+        }
+    }
+</script>
+
+
+</body>
+</html>
