@@ -17,7 +17,7 @@ output_type: "plain-text"
 Provides interactive mountain weather forecast synthesis and elevation/region adjustment loopbacks using an ADK 2.0 Graph Workflow.
 
 **Users and use cases**
-* As a hiker, I want to ask about weather forecasts in a specific mountain area so that I can plan my outing.
+* As a hiker, I want to ask about weather forecasts in a specific UK mountain area so that I can plan my outing.
 * As an active user, I want to ask follow-up questions to estimate conditions higher/lower or in a specific sub-region so that I can adapt my route safely.
 
 **Requirements**
