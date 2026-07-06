@@ -113,7 +113,7 @@ def _normalize_time(current_time: datetime.datetime | None) -> datetime.datetime
     if current_time is None:
         return datetime.datetime.now(ZoneInfo("Europe/London"))
     if current_time.tzinfo is None:
-        return current_time.replace(tzinfo=datetime.timezone.utc)
+        return current_time.replace(tzinfo=datetime.UTC)
     return current_time
 
 
