@@ -13,59 +13,317 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
-from zoneinfo import ZoneInfo
+import json
+from typing import Any, Optional
 
-from google.adk.agents import Agent
+from pydantic import BaseModel, Field
+
+from google.adk.agents import LlmAgent
+from google.adk.agents.context import Context
 from google.adk.apps import App
+from google.adk.events.event import Event
+from google.adk.events.request_input import RequestInput
 from google.adk.models import Gemini
+from google.adk.workflow import START, Edge, Workflow, node
 from google.genai import types
 
-
-def get_weather(query: str) -> str:
-    """Simulates a web search. Use it get information on weather.
-
-    Args:
-        query: A string containing the location to get weather information for.
-
-    Returns:
-        A string with the simulated weather information for the queried location.
-    """
-    if "sf" in query.lower() or "san francisco" in query.lower():
-        return "It's 60 degrees and foggy."
-    return "It's 90 degrees and sunny."
+from app.cache import get_forecast
 
 
-def get_current_time(query: str) -> str:
-    """Simulates getting the current time for a city.
+class WorkflowState(BaseModel):
+    raw_query: str
+    location: Optional[str] = None
+    date: Optional[str] = None
+    region_code: Optional[str] = None
+    forecast_data: Optional[dict[str, Any]] = None
+    needs_physics: bool = False
+    needs_impact: bool = False
+    needs_local_knowledge: bool = False
+    loop_count: int = 0
 
-    Args:
-        city: The name of the city to get the current time for.
 
-    Returns:
-        A string with the current time information.
-    """
-    if "sf" in query.lower() or "san francisco" in query.lower():
-        tz_identifier = "America/Los_Angeles"
+class ParseOutput(BaseModel):
+    location: Optional[str] = Field(description="The mountain or region queried")
+    date: Optional[str] = Field(
+        description="The date queried, e.g., 'today', 'tomorrow', 'Saturday'"
+    )
+    is_ambiguous: bool = Field(
+        description="True if location or date is too vague to resolve"
+    )
+    needs_physics: bool = Field(
+        description="True if the query asks about elevation, temperature gradients, or physical causes"
+    )
+    needs_impact: bool = Field(
+        description="True if the query asks about safety, hiking plans, or hazards"
+    )
+    needs_local_knowledge: bool = Field(
+        description="True if the query asks about specific micro-locations"
+    )
+
+
+parse_input = LlmAgent(
+    name="parse_input",
+    model=Gemini(model="gemini-2.5-flash"),
+    instruction="""
+    Extract location, date, and user intent flags from the weather query.
+    Set is_ambiguous to True if the location is completely missing or unclear.
+    """,
+    output_schema=ParseOutput,
+    output_key="parsed_info",
+)
+
+
+@node
+def check_ambiguity(ctx: Context, node_input: dict[str, Any]) -> Event:
+    is_ambiguous = node_input.get("is_ambiguous", False)
+    state_updates = {
+        "location": node_input.get("location"),
+        "date": node_input.get("date"),
+        "needs_physics": node_input.get("needs_physics", False),
+        "needs_impact": node_input.get("needs_impact", False),
+        "needs_local_knowledge": node_input.get("needs_local_knowledge", False),
+    }
+    if is_ambiguous:
+        return Event(output=node_input, route="yes", state=state_updates)
+    return Event(output=node_input, route="no", state=state_updates)
+
+
+@node(rerun_on_resume=False)
+async def clarify_input(ctx: Context, node_input: Any) -> Event:
+    interrupt_id = f"clarify_{ctx.state.get('loop_count', 0)}"
+    if not ctx.resume_inputs or interrupt_id not in ctx.resume_inputs:
+        yield RequestInput(
+            interrupt_id=interrupt_id,
+            message="Could you clarify the location and date you are asking about?",
+        )
+        return
+
+    clarification = ctx.resume_inputs[interrupt_id]
+    state_updates = {
+        "location": clarification,
+        "date": "today",
+    }  # Simplification for now
+    yield Event(output=clarification, state=state_updates)
+
+
+@node
+def resolve_and_fetch(ctx: Context, node_input: Any) -> Event:
+    location = ctx.state.get("location", "")
+
+    # Very basic region mapping (would ideally be a more robust mapping tool)
+    region_map = {
+        "nw": "NW",
+        "northwest": "NW",
+        "ben nevis": "WH",
+        "wh": "WH",
+        "west highlands": "WH",
+        "cairngorms": "EH",
+        "eh": "EH",
+        "snowdonia": "SD",
+        "sd": "SD",
+        "lake district": "LD",
+        "ld": "LD",
+        "yorkshire dales": "YD",
+        "yd": "YD",
+        "peak district": "PD",
+        "pd": "PD",
+        "brecon beacons": "BB",
+        "bb": "BB",
+        "southern highlands": "SH",
+        "sh": "SH",
+        "southern uplands": "SU",
+        "su": "SU",
+    }
+
+    matched_region = None
+    if location:
+        for key, code in region_map.items():
+            if key in location.lower():
+                matched_region = code
+                break
+
+    if not matched_region:
+        matched_region = "NW"  # Default for now
+
+    try:
+        forecast = get_forecast(matched_region)
+
+        # Hazard detection override
+        needs_impact = ctx.state.get("needs_impact", False)
+        # Simplified hazard detection: if the forecast contains strong wind words
+        if forecast and forecast.get("days"):
+            day0_wind = forecast["days"][0].get("wind_headline", "").lower()
+            if "gale" in day0_wind or "storm" in day0_wind or "hurricane" in day0_wind:
+                needs_impact = True
+
+        return Event(
+            output=forecast,
+            state={
+                "region_code": matched_region,
+                "forecast_data": forecast,
+                "needs_impact": needs_impact,
+            },
+        )
+    except Exception as e:
+        return Event(output={"error": str(e)}, state={"region_code": matched_region})
+
+
+@node
+def validate_coverage(ctx: Context, node_input: Any) -> Event:
+    date_str = ctx.state.get("date", "").lower()
+    if date_str == "dold" or "past" in date_str:
+        return Event(output=node_input, route="dold")
+    if "france" in ctx.state.get("location", "").lower():
+        return Event(output=node_input, route="out_of_scope")
+    return Event(output=node_input, route="valid")
+
+
+@node
+def historic_lookup(ctx: Context, node_input: Any) -> Event:
+    msg = "Historic lookup is not fully implemented yet, but we'd look up old forecasts here."
+    return Event(
+        content=types.Content(role="model", parts=[types.Part.from_text(text=msg)]),
+        output=msg,
+    )
+
+
+@node
+def out_of_scope_msg(ctx: Context, node_input: Any) -> Event:
+    msg = "Sorry, that location or date is outside the UK MWIS coverage scope."
+    return Event(
+        content=types.Content(role="model", parts=[types.Part.from_text(text=msg)]),
+        output=msg,
+    )
+
+
+@node
+def check_physics(ctx: Context, node_input: Any) -> Event:
+    if ctx.state.get("needs_physics", False):
+        return Event(output=node_input, route="yes")
+    return Event(output=node_input, route="no")
+
+
+@node
+def weather_physics(ctx: Context, node_input: Any) -> Event:
+    # Pass-through node for now
+    return Event(output=node_input)
+
+
+@node
+def check_impact(ctx: Context, node_input: Any) -> Event:
+    if ctx.state.get("needs_impact", False):
+        return Event(output=node_input, route="yes")
+    return Event(output=node_input, route="no")
+
+
+@node
+def weather_impact(ctx: Context, node_input: Any) -> Event:
+    # Pass-through node for now
+    return Event(output=node_input)
+
+
+@node
+def check_local(ctx: Context, node_input: Any) -> Event:
+    if ctx.state.get("needs_local_knowledge", False):
+        return Event(output=node_input, route="yes")
+    return Event(output=node_input, route="no")
+
+
+@node
+def local_knowledge(ctx: Context, node_input: Any) -> Event:
+    # Pass-through node for now
+    return Event(output=node_input)
+
+
+synthesis = LlmAgent(
+    name="synthesis",
+    model=Gemini(model="gemini-2.5-flash"),
+    instruction="""
+    You are a mountain weather forecaster. Using the provided state containing the MWIS forecast,
+    synthesize a plain-text response to the user's raw_query. Do not mention JSON or raw data structures.
+    """,
+)
+
+
+@node(rerun_on_resume=False)
+async def ask_follow_up(ctx: Context, node_input: Any) -> Event:
+    interrupt_id = f"follow_up_{ctx.state.get('loop_count', 0)}"
+    if not ctx.resume_inputs or interrupt_id not in ctx.resume_inputs:
+        yield RequestInput(
+            interrupt_id=interrupt_id,
+            message="Do you have any follow-up questions? (e.g. higher/lower elevation, specific part of the region, or 'no' to finish)",
+        )
+        return
+
+    reply = ctx.resume_inputs[interrupt_id]
+    yield Event(output=reply)
+
+
+@node
+def process_follow_up(ctx: Context, node_input: Any) -> Event:
+    reply = str(node_input).strip().lower()
+    if reply in ["no", "none", "no thanks", "exit", "quit", "stop"]:
+        # We can route to an exit, or just return and not route back.
+        # But according to graph, check_loop_limit decides if we route back.
+        # So we can just set loop_count high to force exit.
+        new_count = 999
     else:
-        return f"Sorry, I don't have timezone information for query: {query}."
+        new_count = ctx.state.get("loop_count", 0) + 1
 
-    tz = ZoneInfo(tz_identifier)
-    now = datetime.datetime.now(tz)
-    return f"The current time for query {query} is {now.strftime('%Y-%m-%d %H:%M:%S %Z%z')}"
+    return Event(
+        output=reply, state={"loop_count": new_count, "raw_query": str(node_input)}
+    )
 
 
-root_agent = Agent(
-    name="root_agent",
-    model=Gemini(
-        model="gemini-flash-latest",
-        retry_options=types.HttpRetryOptions(attempts=3),
-    ),
-    instruction="You are a helpful AI assistant designed to provide accurate and useful information.",
-    tools=[get_weather, get_current_time],
+@node
+def check_loop_limit(ctx: Context, node_input: Any) -> Event:
+    if ctx.state.get("loop_count", 0) < 5:
+        return Event(output=node_input, route="yes")
+    return Event(output=node_input, route="no")
+
+
+@node
+def set_raw_query(ctx: Context, node_input: Any) -> Event:
+    # Captures the initial raw query from START
+    content = ""
+    if hasattr(node_input, "parts") and node_input.parts:
+        content = node_input.parts[0].text
+    return Event(output=node_input, state={"raw_query": content})
+
+
+edges = [
+    Edge(from_node=START, to_node=set_raw_query),
+    Edge(from_node=set_raw_query, to_node=parse_input),
+    Edge(from_node=parse_input, to_node=check_ambiguity),
+    Edge(from_node=check_ambiguity, to_node=clarify_input, route="yes"),
+    Edge(from_node=clarify_input, to_node=resolve_and_fetch),
+    Edge(from_node=check_ambiguity, to_node=resolve_and_fetch, route="no"),
+    Edge(from_node=resolve_and_fetch, to_node=validate_coverage),
+    Edge(from_node=validate_coverage, to_node=historic_lookup, route="dold"),
+    Edge(from_node=validate_coverage, to_node=out_of_scope_msg, route="out_of_scope"),
+    Edge(from_node=validate_coverage, to_node=check_physics, route="valid"),
+    Edge(from_node=check_physics, to_node=weather_physics, route="yes"),
+    Edge(from_node=check_physics, to_node=check_impact, route="no"),
+    Edge(from_node=weather_physics, to_node=check_impact),
+    Edge(from_node=check_impact, to_node=weather_impact, route="yes"),
+    Edge(from_node=check_impact, to_node=check_local, route="no"),
+    Edge(from_node=weather_impact, to_node=check_local),
+    Edge(from_node=check_local, to_node=local_knowledge, route="yes"),
+    Edge(from_node=check_local, to_node=synthesis, route="no"),
+    Edge(from_node=local_knowledge, to_node=synthesis),
+    Edge(from_node=synthesis, to_node=ask_follow_up),
+    Edge(from_node=ask_follow_up, to_node=process_follow_up),
+    Edge(from_node=process_follow_up, to_node=check_loop_limit),
+    Edge(from_node=check_loop_limit, to_node=resolve_and_fetch, route="yes"),
+]
+
+root_agent = Workflow(
+    name="mwis_workflow",
+    edges=edges,
+    state_schema=WorkflowState,
 )
 
 app = App(
     root_agent=root_agent,
-    name="app",
+    name="mwis-agent",
 )

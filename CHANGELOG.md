@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **2026-07-06 19:14**: Implemented ADK 2.0 Graph Workflow in `mwis-agent/app/agent.py` to route user queries through physical weather, impact, and local knowledge nodes with a follow-up HITL loop.
 - **2026-07-06 15:52**: Created check_forecast_issued weather agent caching system utilizing transactional SQLite storage and BST-aware scheduling rules, clean-code refactored into sub-15-line functions.
 - **2026-07-05 20:25**: Updated `serve_forecast_to_user/SKILL.md` and `specs/query_date.spec.md` to use calendar-date calibration rather than system-clock time calibration.
 - **2026-07-05 19:30**: Created `forecast_structure.json` to act as the schema reference representation for the daily JSON forecasts.
@@ -15,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - **2026-07-04 22:44**: Implemented `query_fl.py` and `query_refHeight.py` CLI utilities with strict CSV schema validations.
 
 ### Changed
+- **2026-07-06 19:07**: Fixed caching logic in `mwis-agent/app/skills/mwis-website/check_forecast_issued/scripts/mwis_cache_db.py` to correctly extract `last_updated` from the first day array element instead of root JSON.
 - **2026-07-05 23:14**: Refactored CLI utility scripts to clean up type hints, simplify python duplicate removal/set conversions, and use robust subprocess arguments passing.
 - **2026-07-05 15:25**: Refactored all CLI scripts to expose programmatic functions for imports, while preserving full command-line interfaces.
 - **2026-07-05 13:33**: Migrated dependency and packaging configuration from `requirements.txt` to `pyproject.toml` (using setuptools backend) and updated documentation.
