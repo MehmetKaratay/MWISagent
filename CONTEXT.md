@@ -133,3 +133,6 @@ Local linters, custom security scanners (Semgrep), and pre-commit hook policies 
 
 ### Local Environment Setup
 Instructions on setting up Python versions, repository dependencies, ADK agent installation, and testing commands are detailed in [env_setup.md](file:///home/karatay/Repositories/weather/MWISagent/docs/env_setup.md).
+
+> [!NOTE]
+> The `GEMINI_API_KEY` is always configured and present in the local `.env` file for this project. It is used for all API interactions, including the ADK evaluation judge.
