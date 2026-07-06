@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 - **2026-07-04 22:44**: Implemented `query_fl.py` and `query_refHeight.py` CLI utilities with strict CSV schema validations.
 
 ### Changed
+- **2026-07-06 23:50**: Refactored monolithic `mwis-agent/app/agent.py` into modular files (`agent_state.py`, `agent_logic.py`, `agent_nodes.py`) adhering to Clean Code principles. Extracted complex logic into sub-15-line functions and added Google-style docstrings across all agent files.
 - **2026-07-06 19:07**: Fixed caching logic in `mwis-agent/app/skills/mwis-website/check_forecast_issued/scripts/mwis_cache_db.py` to correctly extract `last_updated` from the first day array element instead of root JSON.
 - **2026-07-05 23:14**: Refactored CLI utility scripts to clean up type hints, simplify python duplicate removal/set conversions, and use robust subprocess arguments passing.
 - **2026-07-05 15:25**: Refactored all CLI scripts to expose programmatic functions for imports, while preserving full command-line interfaces.

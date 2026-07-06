@@ -15,7 +15,7 @@
 Unit tests for downstream ADK workflow routing nodes.
 """
 
-from app.agent import (
+from app.agent_logic import (
     _check_impact_logic,
     _check_local_logic,
     _check_loop_limit_logic,

@@ -15,7 +15,7 @@
 Unit tests for ADK workflow ambiguity routing.
 """
 
-from app.agent import _check_ambiguity_logic
+from app.agent_logic import _check_ambiguity_logic
 
 
 def test_check_ambiguity_missing_location():
