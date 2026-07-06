@@ -36,6 +36,16 @@ DEFAULT_DB_PATH = os.path.abspath(
 )
 MOCKS_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "..", "mocks"))
 
+# Ingestion status constants
+STATUS_NO_UPDATE = "no_update"
+STATUS_UPDATED = "updated"
+STATUS_ALREADY_UPDATED = "already_updated_today"
+STATUS_ERROR = "error"
+
+# Anchor verification region and target Dcode
+ANCHOR_REGION = "NW"
+TARGET_NEW_DCODE = "D1"
+
 
 def get_all_region_codes() -> list[str]:
     """Return the hardcoded list of 10 MWIS region codes.
@@ -44,6 +54,23 @@ def get_all_region_codes() -> list[str]:
         list[str]: Region codes.
     """
     return ["NW", "WH", "EH", "SH", "SU", "LD", "YD", "PD", "SD", "BB"]
+
+
+def _load_mock_html(region_code: str) -> str:
+    """Load static mock HTML from disk.
+
+    Args:
+        region_code (str): The code of the region.
+
+    Returns:
+        str: Raw HTML content.
+    """
+    mock_file = os.path.join(MOCKS_DIR, f"{region_code}-mock.html")
+    if not os.path.exists(mock_file):
+        raise FileNotFoundError(f"Mock file not found: {mock_file}")
+    # nosemgrep: detect-path-traversal
+    with open(mock_file, encoding="utf-8") as f:
+        return f.read()
 
 
 def fetch_and_parse_region(
@@ -62,22 +89,130 @@ def fetch_and_parse_region(
         dict: Parsed and injected forecast dictionary.
     """
     if env == "development":
-        mock_file = os.path.join(MOCKS_DIR, f"{region_code}-mock.html")
-        if not os.path.exists(mock_file):
-            raise FileNotFoundError(f"Mock file not found: {mock_file}")
-        # nosemgrep: detect-path-traversal
-        with open(mock_file, encoding="utf-8") as f:
-            html = f.read()
+        html = _load_mock_html(region_code)
         parsed = parse_forecast_html(html)
     else:
         url = get_forecast_url(region_code)
         parsed = get_forecast_data(url)
 
-    # Inject Dcodes
     if ref_date is None:
         ref_date = datetime.datetime.now(ZoneInfo("Europe/London")).date()
 
     return inject_d_codes(parsed, ref_date)
+
+
+def _normalize_time(current_time: datetime.datetime | None) -> datetime.datetime:
+    """Coerce input datetime to have timezone info (defaults to Europe/London).
+
+    Args:
+        current_time: Datetime override or None.
+
+    Returns:
+        datetime: Timezone-aware datetime.
+    """
+    if current_time is None:
+        return datetime.datetime.now(ZoneInfo("Europe/London"))
+    if current_time.tzinfo is None:
+        return current_time.replace(tzinfo=datetime.timezone.utc)
+    return current_time
+
+
+def _has_update_run_today(db_path: str, today_str: str) -> bool:
+    """Query SQLite to verify if updates were committed today.
+
+    Args:
+        db_path (str): DB file path.
+        today_str (str): Date string format YYYY-MM-DD.
+
+    Returns:
+        bool: True if already updated today, False otherwise.
+    """
+    conn = sqlite3.connect(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT count(*) FROM forecast_cache
+            WHERE date(cached_at, 'localtime') = ?;
+            """,
+            (today_str,),
+        )
+        return cursor.fetchone()[0] > 0
+    finally:
+        conn.close()
+
+
+def _is_new_forecast_available(
+    env: str, ref_date: datetime.date, current_time: datetime.datetime
+) -> tuple[bool, dict[str, Any]]:
+    """Determine if a new forecast has been issued for the anchor region.
+
+    Args:
+        env (str): Environment name.
+        ref_date (date): Local date.
+        current_time (datetime): Current check timestamp.
+
+    Returns:
+        tuple[bool, dict]: Ingestion result details.
+    """
+    try:
+        nw_forecast = fetch_and_parse_region(ANCHOR_REGION, env, ref_date)
+    except Exception as err:
+        return False, {
+            "status": STATUS_ERROR,
+            "message": f"Failed checking NW forecast: {err}",
+            "timestamp": current_time.isoformat(),
+        }
+
+    days = nw_forecast.get("days", [])
+    if not days or days[0].get("Dcode") != TARGET_NEW_DCODE:
+        return False, {
+            "status": STATUS_NO_UPDATE,
+            "message": "Forecast is not newly issued.",
+            "timestamp": current_time.isoformat(),
+        }
+
+    return True, {}
+
+
+def _update_all_regions_cache(
+    db_path: str, env: str, ref_date: datetime.date, current_time: datetime.datetime
+) -> dict[str, Any]:
+    """Fetch all 10 forecasts and atomically commit to SQLite.
+
+    Args:
+        db_path (str): SQLite path.
+        env (str): Environment.
+        ref_date (date): Date offset.
+        current_time (datetime): Timestamp.
+
+    Returns:
+        dict: Ingestion result metadata.
+    """
+    all_forecasts = {}
+    for code in get_all_region_codes():
+        try:
+            all_forecasts[code] = fetch_and_parse_region(code, env, ref_date)
+        except Exception as err:
+            return {
+                "status": STATUS_ERROR,
+                "message": f"Aborting update. Failed fetching region {code}: {err}",
+                "timestamp": current_time.isoformat(),
+            }
+
+    success = db_update_forecasts(all_forecasts, db_path)
+    if not success:
+        return {
+            "status": STATUS_ERROR,
+            "message": "Transaction validation/insertion failed. Rolled back.",
+            "timestamp": current_time.isoformat(),
+        }
+
+    return {
+        "status": STATUS_UPDATED,
+        "message": "Successfully updated all 10 regions in cache.",
+        "timestamp": current_time.isoformat(),
+    }
 
 
 def check_forecast_issued(
@@ -98,101 +233,31 @@ def check_forecast_issued(
     if db_path is None:
         db_path = os.getenv("MWIS_DB_PATH", DEFAULT_DB_PATH)
 
-    # Initialize SQLite database file & schema
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     db_init(db_path)
 
-    # Determine execution time
-    if current_time is None:
-        current_time = datetime.datetime.now(ZoneInfo("Europe/London"))
-    else:
-        if current_time.tzinfo is None:
-            current_time = current_time.replace(tzinfo=datetime.timezone.utc)
+    current_time = _normalize_time(current_time)
 
-    # Step 1: Verify scheduler timeline bounds
     if not is_time_in_schedule(current_time):
         return {
-            "status": "no_update",
+            "status": STATUS_NO_UPDATE,
             "message": "Out of scheduled checking hours.",
             "timestamp": current_time.isoformat(),
         }
 
-    # Step 2: Verify if update has already run today
-    today_str = current_time.astimezone(ZoneInfo("Europe/London")).strftime("%Y-%m-%d")
-    conn = sqlite3.connect(db_path)
-    try:
-        cursor = conn.cursor()
-        # Check if we have cached records created today (in Europe/London local date)
-        cursor.execute(
-            """
-            SELECT count(*) FROM forecast_cache
-            WHERE date(cached_at, 'localtime') = ?;
-            """,
-            (today_str,),
-        )
-        already_updated = cursor.fetchone()[0]
-        if already_updated > 0:
-            return {
-                "status": "already_updated_today",
-                "message": "Forecast update has already been applied today.",
-                "timestamp": current_time.isoformat(),
-            }
-    finally:
-        conn.close()
+    london_dt = current_time.astimezone(ZoneInfo("Europe/London"))
+    today_str = london_dt.strftime("%Y-%m-%d")
+    ref_date = london_dt.date()
 
-    # Step 3: Fetch NW (North West Highlands) region to verify if it is new
-    try:
-        ref_date = current_time.astimezone(ZoneInfo("Europe/London")).date()
-        nw_forecast = fetch_and_parse_region("NW", env, ref_date)
-    except Exception as err:
+    if _has_update_run_today(db_path, today_str):
         return {
-            "status": "error",
-            "message": f"Failed checking NW forecast: {err}",
+            "status": STATUS_ALREADY_UPDATED,
+            "message": "Forecast update has already been applied today.",
             "timestamp": current_time.isoformat(),
         }
 
-    # Deterministic check: check if forecast_index == 0 Dcode is D1
-    days = nw_forecast.get("days", [])
-    if not days:
-        return {
-            "status": "no_update",
-            "message": "No forecast days found in parsed NW result.",
-            "timestamp": current_time.isoformat(),
-        }
+    is_new, err_result = _is_new_forecast_available(env, ref_date, current_time)
+    if not is_new:
+        return err_result
 
-    first_day = days[0]
-    dcode = first_day.get("Dcode")
-
-    if dcode != "D1":
-        return {
-            "status": "no_update",
-            "message": f"Forecast is not newly issued (Dcode={dcode}).",
-            "timestamp": current_time.isoformat(),
-        }
-
-    # Step 4: Fetch all 10 regions atomically
-    all_forecasts = {}
-    for code in get_all_region_codes():
-        try:
-            all_forecasts[code] = fetch_and_parse_region(code, env, ref_date)
-        except Exception as err:
-            return {
-                "status": "error",
-                "message": f"Aborting update. Failed fetching region {code}: {err}",
-                "timestamp": current_time.isoformat(),
-            }
-
-    # Commit all 10 regions atomically to SQLite cache
-    success = db_update_forecasts(all_forecasts, db_path)
-    if not success:
-        return {
-            "status": "error",
-            "message": "Transaction failed validation or insertion. Rolled back.",
-            "timestamp": current_time.isoformat(),
-        }
-
-    return {
-        "status": "updated",
-        "message": "Successfully updated all 10 regions in cache.",
-        "timestamp": current_time.isoformat(),
-    }
+    return _update_all_regions_cache(db_path, env, ref_date, current_time)

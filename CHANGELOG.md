@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **2026-07-06 15:52**: Created check_forecast_issued weather agent caching system utilizing transactional SQLite storage and BST-aware scheduling rules, clean-code refactored into sub-15-line functions.
 - **2026-07-05 20:25**: Updated `serve_forecast_to_user/SKILL.md` and `specs/query_date.spec.md` to use calendar-date calibration rather than system-clock time calibration.
 - **2026-07-05 19:30**: Created `forecast_structure.json` to act as the schema reference representation for the daily JSON forecasts.
 - **2026-07-05 18:22**: Renamed the forecast JSON field `cold_temp` to `temp` across all codebase files, specifications, references, and documentation.
