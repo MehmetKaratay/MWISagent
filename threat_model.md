@@ -1,67 +1,32 @@
-# STRIDE Threat Modeling Assessment - ADK 2.0 Graph Workflow
+# STRIDE Threat Model Assessment: Clarification Flows (Date & Location)
 
-This document outlines the security threat model for the Mountain Weather Information Service (MWIS) agent backend, utilizing the STRIDE methodology.
+## System Boundaries
+- **Entry Points:** The ADK user interface and LLM parsing nodes.
+- **Data Flow:** User input -> `parse_input` node -> `check_ambiguity` node -> `clarify_date` / `clarify_location` nodes -> `resolve_and_fetch` / `compare_regions` nodes.
+- **Data Dependencies:** `mwis-regions.csv` mapping for region and country resolution.
 
----
+## STRIDE Evaluation
 
-## 1. System Boundaries & Data Flow
+1. **Spoofing**
+   - *Threat:* A malicious actor spoofs user identities in the chat interface.
+   - *Mitigation:* ADK core handles session separation. The new clarification nodes rely on `ctx.resume_inputs` using unique `interrupt_id`s tied to the session state.
 
-```mermaid
-graph TD
-    User[User / Client] -- 1. Query --> API[FastAPI Backend]
-    API -- 2. State & Session --> Store[(Session Store)]
-    API -- 3. Execute Workflow --> Workflow[ADK 2.0 Graph Workflow]
-    Workflow -- 4. Parse Query --> LLM[Gemini 2.5 Flash]
-    Workflow -- 5. Fetch HTML --> MWIS[MWIS Website]
-    Workflow -- 6. Inject D-codes --> Parser[Python Parser]
-```
+2. **Tampering**
+   - *Threat:* The user provides a malicious prompt injection when asked for date/location clarification.
+   - *Mitigation:* Clarifications are injected as state updates. The LLM parsing logic mapping regions to `mwis-regions.csv` protects against arbitrary executable payloads passing through to backend APIs.
 
----
+3. **Repudiation**
+   - *Threat:* Changes in state (missing inputs to clarified inputs) are untraceable.
+   - *Mitigation:* ADK automatically traces all node transitions, state updates, and `RequestInput` yields. All interactions are logged in the trace directory.
 
-## 2. STRIDE Assessment
+4. **Information Disclosure**
+   - *Threat:* The clarification nodes leak internal state or API keys.
+   - *Mitigation:* The nodes only return static, pre-defined question strings. No dynamic sensitive data is exposed to the user.
 
-### Spoofing (Identity Spoofing)
-* **Threat**: An unauthorized user calls the backend API mimicking an authenticated developer or client session.
-* **Mitigation**:
-  * Enforce standard token-based authentication on all user-facing FastAPI endpoints.
-  * Restrict access to the ADK `playground` route to local development environments only.
+5. **Denial of Service (DoS)**
+   - *Threat:* A user requests a comparison of many areas (e.g., all 10 areas) at once, exhausting API rate limits or LLM context windows.
+   - *Mitigation (Applied):* A strict maximum of 5 regions per comparison is enforced at the extraction and routing layer. Bulk abstractions like "Scottish areas" correctly map to 5 regions, entirely eliminating the risk of large-scale fan-out DoS on the backend API or token overflow on the LLM.
 
-### Tampering (Data/State Tampering)
-* **Threat**:
-  * **Parameter Injection**: Users manipulate location or date parameters to cause directory traversal or arbitrary file parsing.
-  * **Prompt Injection**: Users embed system instructions in their queries to hijack the LLM nodes.
-  * **Session State Hijacking**: Users manipulate suspended session state IDs to access or modify other users' active workflows.
-* **Mitigation**:
-  * Strict regex and Pydantic validation on all input fields (location name, date format, region codes).
-  * Use custom tags (`<user_input>`) and prompt-isolation guidelines in all LLM node system prompts.
-  * Securely generate and cryptographically verify all workflow session IDs.
-
-### Repudiation
-* **Threat**: A user performs malicious actions or triggers high billing charges, but the backend lacks logs to audit the source.
-* **Mitigation**:
-  * Log all inbound queries, state transitions, API key usages, and execution errors with timestamped session tracking.
-  * Avoid logging any PII or raw API keys in audit logs.
-
-### Information Disclosure
-* **Threat**:
-  * Exposure of private environment credentials (`GEMINI_API_KEY`, GCP service account keys).
-  * Backend stack traces exposing directory structures or internal prompts in error responses.
-* **Mitigation**:
-  * Force `.env` exclusion in `.gitignore`.
-  * Return generalized user-facing error messages while logging the detailed trace internally.
-
-### Denial of Service (DoS)
-* **Threat**:
-  * Users spam expensive LLM synthesis calls or trigger infinite graph execution loops (using the interactive loopback feedback).
-  * Users feed extremely long inputs to cause memory exhaustion.
-* **Mitigation**:
-  * Set max length limits (e.g. 100 characters) on all string inputs.
-  * Set a workflow-level execution timeout (`timeout` parameter in `Workflow`).
-  * Enforce maximum iteration bounds on the workflow loopback edge to prevent infinite cycles.
-  * Implement rate-limiting on FastAPI query endpoints.
-
-### Elevation of Privilege
-* **Threat**: An unauthenticated user bypasses normal API flow to trigger privileged tool/script executions.
-* **Mitigation**:
-  * Restrict workflow permissions. The graph nodes must run under low-privilege runtime credentials with no write access to system directories.
-  * Strictly isolate all parser/injector scripts from shell execution environments.
+6. **Elevation of Privilege**
+   - *Threat:* Unauthenticated access to the backend `get_forecast` API through crafted inputs.
+   - *Mitigation:* `get_forecast` performs only READ operations on public endpoints. No privilege elevation is possible.

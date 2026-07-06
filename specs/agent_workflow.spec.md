@@ -3,7 +3,7 @@
 This spec defines the graph topology, node configurations, state management, and loopback routing rules for the MWIS weather forecast agent.
 
 ```yaml
-spec_version: "2.0"
+spec_version: "2.1"
 agent_framework: "google-adk>=2.0.0a0"
 model: "gemini-2.5-flash"
 output_type: "plain-text"
@@ -14,16 +14,19 @@ output_type: "plain-text"
 ### SECTION 1: SPEC
 
 **One-line purpose**
-Provides interactive mountain weather forecast synthesis and elevation/region adjustment loopbacks using an ADK 2.0 Graph Workflow.
+Provides interactive mountain weather forecast synthesis, resolving missing inputs gracefully, offering multi-region comparison (max 5 regions), and handling elevation/region adjustment loopbacks using an ADK 2.0 Graph Workflow.
 
 **Users and use cases**
 * As a hiker, I want to ask about weather forecasts in a specific UK mountain area so that I can plan my outing.
 * As an active user, I want to ask follow-up questions to estimate conditions higher/lower or in a specific sub-region so that I can adapt my route safely.
+* As an ADK user, I want the agent to ask me to clarify the date if I don't provide one, so that I don't accidentally receive a forecast for the wrong day.
+* As an ADK user, I want the agent to ask me to clarify the location if I don't provide one, and offer a regional comparison so I can find the best weather across multiple areas.
+* As an ADK user, I want to request a comparison of up to 5 explicit forecasts I choose.
 
 **Requirements**
 1. **Inputs:** Accepts free-text user query.
-2. **Ambiguity Handling:** Suspends execution using `RequestInput` if location or date is ambiguous, prompting the user for clarification.
-3. **Data Fetching:** Programmatically invokes the 4 `mwis-website` scripts to parse forecast HTML and inject D-codes.
+2. **Ambiguity Handling:** Suspends execution using `RequestInput` if location or date is completely missing or ambiguous, prompting the user for clarification.
+3. **Data Fetching:** Programmatically invokes the `mwis-website` scripts to parse forecast HTML and inject D-codes. It must support fetching up to 5 regions concurrently.
 4. **Caching Layer:** The backend caching layer is implemented via the `check_forecast_issued` skill and the `sqlite3` database to store the 10 MWIS forecasts. The front end will have no memory layer.
 5. **Conditional Routing:**
    * Run `weather_physics` if `needs_physics` is set (triggered by queries on elevation, temperature gradients, or physical causes).
@@ -33,7 +36,10 @@ Provides interactive mountain weather forecast synthesis and elevation/region ad
 7. **Follow-Up Loop:** Prompts the user with follow-up options ("higher or lower?", "specific part of the region?") using `RequestInput` and loops back to execute the corresponding nodes.
 
 **Edge cases & expected behavior**
-* *No Location/Date:* Suspend and ask user.
+* *No Location:* Suspend and yield `RequestInput` offering a comparison of up to 5 regions or a specific location.
+* *No Date:* Suspend and yield `RequestInput` asking for specific date or 3-day outlook.
+* *User requests >5 explicit regions:* Suspend and yield `RequestInput` reminding them of the 5-region cap and asking them to choose exactly which regions they want (Reminder: Scotland has 5, England has 3, Wales has 2).
+* *LLM parser omits optional fields:* Pydantic `ParseOutput` must correctly default `date` to `None` without raising a `ValidationError`.
 * *Out of Scope / Invalid:* If the location is outside the UK or the date is not between D0 and Doutlook, return a service limits message. If date is Dold, route to a historic lookup placeholder.
 * *Hazard Detection:* If forecast data contains winds > 40mph or temperatures < -5°C, dynamically override `needs_impact = True`.
 * *Infinite Loops:* Cap loopback iterations at 5 to prevent DoS.
@@ -46,11 +52,15 @@ Then the workflow parses "Ben Nevis" and "today", fetches the West Highlands for
 
 Given a vague query "Is it going to rain?"
 When execution starts
-Then the workflow suspends at clarify_input prompting for a location.
+Then the workflow suspends at clarify_location prompting for a location.
 
-Given a completed synthesis
-When the workflow prompts for a follow-up
-Then it suspends at ask_follow_up waiting for user feedback.
+Given a vague query "What is the weather on Ben Nevis?" (no date)
+When execution starts
+Then the workflow suspends at clarify_date prompting for a date.
+
+Given a query "Compare all areas"
+When execution starts
+Then the workflow suspends at clarify_location stating "Only 5 regions can be compared. Which regions do you wish to choose?"
 ```
 
 ---
@@ -60,8 +70,9 @@ Then it suspends at ask_follow_up waiting for user feedback.
 **Stack and architecture**
 * ADK 2.0 `Workflow` graph containing:
   * `parse_input` (LLM node)
-  * `clarify_input` (RequestInput node)
-  * `resolve_and_fetch` (Function node calling imported Python modules and checking cache)
+  * `clarify_location` (RequestInput node)
+  * `clarify_date` (RequestInput node)
+  * `resolve_and_fetch` (Function node calling imported Python modules and `query_countries.py` logic)
   * `validate_coverage` (Function node checking geographical and date limits)
   * `historic_lookup` (Function node dummy historic lookup placeholder)
   * `out_of_scope_msg` (Function node returning service limit message)
@@ -76,12 +87,14 @@ Then it suspends at ask_follow_up waiting for user feedback.
 **Mermaid Graph Topology**
 ```mermaid
 graph TD
-    START([START]) --> parse_input[parse_input: LLM extracts location/date/flags]
+    START([START]) --> parse_input[parse_input: LLM extracts locations/date/flags]
     parse_input --> check_ambiguity{Is input vague?}
 
     %% Ambiguity route
-    check_ambiguity -- Yes --> clarify_input[clarify_input: RequestInput HITL]
-    clarify_input --> resolve_and_fetch
+    check_ambiguity -- missing_location --> clarify_location[clarify_location: RequestInput HITL]
+    check_ambiguity -- missing_date --> clarify_date[clarify_date: RequestInput HITL]
+    clarify_location --> resolve_and_fetch
+    clarify_date --> resolve_and_fetch
 
     %% Clear route
     check_ambiguity -- No --> resolve_and_fetch[resolve_and_fetch: Runs query scripts & checks hazards]
@@ -127,38 +140,46 @@ graph TD
   ```python
   class WorkflowState(BaseModel):
       raw_query: str
-      location: Optional[str] = None
+      locations: list[str] = Field(default_factory=list) # Replaces location
       date: Optional[str] = None
-      region_code: Optional[str] = None
+      region_codes: list[str] = Field(default_factory=list) # Replaces region_code
       forecast_data: Optional[dict] = None
       needs_physics: bool = False
       needs_impact: bool = False
       needs_local_knowledge: bool = False
       loop_count: int = 0
   ```
+* `ParseOutput` must correctly specify `default=None` and `default=False` across all fields.
 
 **Testing strategy**
 * Eval dataset under `mwis-agent/tests/` evaluating location/date extraction and synthesis accuracy.
+* Unit tests validating `check_ambiguity` routing to `missing_location` and `missing_date`.
 
 ---
 
 ### SECTION 3: TASKS
 
 ## Task 1: Define State Schema and Nodes
-* **What to build:** Implement `WorkflowState` and define the graph node functions inside `mwis-agent/app/agent.py`.
+* **What to build:** Implement `WorkflowState` (with `locations` array) and `ParseOutput` Pydantic models. Fix schema default bugs.
 * **Files likely affected:** `mwis-agent/app/agent.py`
-* **Acceptance criteria:** Code compiles, node functions match parameter signature guidelines.
+* **Acceptance criteria:** Code compiles, instantiating `ParseOutput()` without arguments succeeds.
 * **Dependencies:** none
 
-## Task 2: Assemble Workflow Graph and Routing
-* **What to build:** Construct the `Workflow` graph using the edges list and conditional routers. Implement the `RequestInput` follow-up loop.
+## Task 2: Implement Ambiguity Routing & Clarification Nodes
+* **What to build:** Construct the `clarify_location` and `clarify_date` `RequestInput` nodes. Implement `check_ambiguity` to route appropriately. Handle >5 region prompts.
 * **Files likely affected:** `mwis-agent/app/agent.py`
-* **Acceptance criteria:** Workflow builds, `agents-cli playground` launches successfully.
+* **Acceptance criteria:** Missing inputs hit the correct clarification nodes instead of crashing.
 * **Dependencies:** Task 1
+
+## Task 3: Assemble Workflow Graph and Routing
+* **What to build:** Construct the `Workflow` graph using the edges list and conditional routers. Integrate `resolve_and_fetch` with `query_countries.py` logic and `asyncio.gather`.
+* **Files likely affected:** `mwis-agent/app/agent.py`
+* **Acceptance criteria:** Workflow builds, `agents-cli playground` launches successfully and correctly parses/aggregates up to 5 forecasts.
+* **Dependencies:** Task 2
 
 ---
 
 ## Assumptions to review
 
-1. [ASSUMPTION: The python packages path is configured correctly to import the relocated modules in app/skills/] — Impact: HIGH
+1. [ASSUMPTION: We check location ambiguity before date ambiguity in routing] — Impact: MEDIUM
 2. [ASSUMPTION: Capping follow-up iterations at 5 is acceptable to prevent DoS] — Impact: MEDIUM
