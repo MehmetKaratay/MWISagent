@@ -1,4 +1,11 @@
 {
   "remote_agent_runtime_id": "None",
-  "deployment_timestamp": "None"
+  "deployment_timestamp": "None",
+  "pending_operation": {
+    "operation_name": "projects/124959983474/locations/europe-west2/reasoningEngines/7638958189043515392/operations/3960579559153205248",
+    "project": "gen-lang-client-0727740856",
+    "location": "europe-west2",
+    "deployment_target": "agent_runtime",
+    "started_at": "2026-07-07T03:09:18.538288+00:00"
+  }
 }
