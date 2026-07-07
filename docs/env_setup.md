@@ -29,7 +29,16 @@ The interactive agent resides in the `mwis-agent/` sub-directory and runs in an 
 
 ---
 
-## 3. Testing & Evaluation
+## 3. Environment Variables
+Create a `.env` file inside the `mwis-agent/` directory with the following variables:
+
+* **`GEMINI_API_KEY`**: (Required) Your Gemini API key for the LLM.
+* **`GOOGLE_OAUTH_CLIENT_ID`**: (Required for API) The Google OAuth Client ID to explicitly validate the audience of incoming JWT tokens on the FastAPI server endpoints.
+* **`ALLOW_ORIGINS`**: (Optional) Comma-separated list of allowed frontend domains for CORS in production.
+
+---
+
+## 4. Testing & Evaluation
 You do **not** need to manually activate a virtual environment when running tests from a standard terminal. Our commands leverage `uv run` to automatically execute inside the isolated `.venv`.
 
 * **Unit & Integration Tests:**

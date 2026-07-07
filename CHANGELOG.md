@@ -9,9 +9,12 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
-
 ### Added
-- Implemented prompt injection defense using XML tagging and `is_malicious` tracking in `ParseOutput`. Added `check_security` router and `security_refusal` nodes to the workflow graph.
+- Added `OAuthJWTValidationMiddleware` to enforce Google OAuth JWT validation on A2A execution endpoints.
+- Bypass authentication for `.well-known/agent-card` and other public endpoints.
+- TDD unit tests for the OAuth middleware.
+- Implemented Prompt Injection Defense (XML tag wrapping and system prompt rules).
+- Integrated `is_malicious` state tracking. in `ParseOutput`. Added `check_security` router and `security_refusal` nodes to the workflow graph.
 - Configured backend caching architecture to store 10 MWIS forecasts locally to avoid multiple redundant downstream API calls and support lazy-loading.
 - **2026-07-06 23:07**: Implemented Agent multi-region forecast comparison logic (up to 5 regions), adding missing location/date routing nodes and integrating the `query_country.py` guardrail.
 - **2026-07-06 19:14**: Implemented ADK 2.0 Graph Workflow in `mwis-agent/app/agent.py` to route user queries through physical weather, impact, and local knowledge nodes with a follow-up HITL loop.

@@ -19,10 +19,14 @@ from collections.abc import AsyncIterator
 import google.auth
 from a2a.server.tasks import InMemoryTaskStore
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from google.adk.cli.fast_api import get_fast_api_app
 from google.adk.runners import Runner
+from google.auth.transport import requests as google_requests
 from google.cloud import logging as google_cloud_logging
+from google.oauth2 import id_token
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.app_utils import services
 from app.app_utils.a2a import attach_a2a_routes
@@ -39,6 +43,61 @@ allow_origins = (
 )
 
 AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+class OAuthJWTValidationMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware to intercept and validate OAuth JWT tokens for secure A2A execution endpoints.
+    """
+
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+
+        # Exempt paths from authentication
+        exempt_prefixes = [
+            "/docs",
+            "/openapi.json",
+            "/redoc",
+            "/feedback",
+            "/.well-known/agent-card",
+        ]
+
+        # Bypass authentication during E2E integration tests
+        if os.getenv("INTEGRATION_TEST") == "TRUE":
+            return await call_next(request)
+
+        if (
+            any(path.startswith(prefix) for prefix in exempt_prefixes)
+            or "/.well-known/" in path
+        ):
+            return await call_next(request)
+
+        # Protect A2A JSON-RPC endpoints (and potentially others)
+        if path.startswith("/a2a/app"):
+            auth_header = request.headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
+                return JSONResponse(
+                    status_code=401,
+                    content={
+                        "detail": "Missing or invalid Authorization header. Expected 'Bearer <token>'."
+                    },
+                )
+
+            token = auth_header.split(" ")[1]
+            client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
+
+            try:
+                # Verify the token against Google's public keys and check the audience
+                idinfo = id_token.verify_oauth2_token(
+                    token, google_requests.Request(), audience=client_id
+                )
+                request.state.user = idinfo
+            except ValueError as e:
+                return JSONResponse(
+                    status_code=401, content={"detail": f"Invalid token: {e}"}
+                )
+
+        return await call_next(request)
 
 
 @contextlib.asynccontextmanager
@@ -76,6 +135,9 @@ app: FastAPI = get_fast_api_app(
 )
 app.title = "mwis-agent"
 app.description = "API for interacting with the Agent mwis-agent"
+
+# Apply the OAuth JWT validation middleware
+app.add_middleware(OAuthJWTValidationMiddleware)
 
 
 @app.post("/feedback")
