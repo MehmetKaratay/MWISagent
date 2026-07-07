@@ -55,6 +55,40 @@ def test_query_region_missing_q():
     assert response.status_code == 422
 
 def test_query_date_missing_q():
-    """Test the /api/query_date endpoint with missing q parameter."""
+    """Test the /api/date endpoint with missing q parameter."""
     response = client.get("/api/query_date")
     assert response.status_code == 422
+
+@patch("os.environ.get")
+@patch("requests.post")
+def test_chat_api_local(mock_post, mock_getenv):
+    """Test the /api/chat endpoint using local fallback."""
+    mock_getenv.return_value = None
+    mock_post.return_value.json.return_value = {"outputs": {"output": "hello"}}
+    mock_post.return_value.raise_for_status.return_value = None
+    
+    response = client.post("/api/chat", json={"inputs": {"input": "hi"}})
+    assert response.status_code == 200
+    assert response.json() == {"outputs": {"output": "hello"}}
+    mock_post.assert_called_once_with("http://localhost:8080/a2a/mwis-agent", json={"inputs": {"input": "hi"}})
+
+@patch("os.environ.get")
+@patch("vertexai.init")
+@patch("vertexai.preview.reasoning_engines.ReasoningEngine")
+def test_chat_api_remote(mock_reasoning_engine, mock_init, mock_getenv):
+    """Test the /api/chat endpoint using remote Agent Runtime."""
+    # Mock AGENT_RUNTIME_ID
+    def mock_env(key, default=None):
+        if key == "AGENT_RUNTIME_ID":
+            return "projects/123/locations/europe-west2/reasoningEngines/456"
+        return default
+    mock_getenv.side_effect = mock_env
+    
+    mock_engine_instance = mock_reasoning_engine.return_value
+    mock_engine_instance.query.return_value = {"outputs": {"output": "remote hello"}}
+    
+    response = client.post("/api/chat", json={"inputs": {"input": "hi"}})
+    assert response.status_code == 200
+    assert response.json() == {"outputs": {"output": "remote hello"}}
+    mock_reasoning_engine.assert_called_once_with("projects/123/locations/europe-west2/reasoningEngines/456")
+    mock_engine_instance.query.assert_called_once_with(input="hi")

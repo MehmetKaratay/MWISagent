@@ -59,6 +59,32 @@ def query_date(q: str = Query(..., description="The date to query")):
     except json.JSONDecodeError:
         raise HTTPException(status_code=500, detail="Failed to parse script JSON output.")
 
+@app.post("/api/chat")
+def proxy_chat(req: dict):
+    """Proxies the chat request to the remote Agent Runtime or local ADK backend."""
+    # Assuming input is {"inputs": {"input": "message"}}
+    agent_id = os.environ.get("AGENT_RUNTIME_ID")
+    if agent_id:
+        try:
+            import vertexai
+            from vertexai.preview import reasoning_engines
+            vertexai.init(project=os.environ.get("GOOGLE_CLOUD_PROJECT", "gen-lang-client-0727740856"))
+            engine = reasoning_engines.ReasoningEngine(agent_id)
+            user_input = req.get("inputs", {}).get("input", "")
+            response = engine.query(input=user_input)
+            return response
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Remote agent failed: {e}")
+    else:
+        # Local ADK fallback
+        try:
+            import requests
+            resp = requests.post("http://localhost:8080/a2a/mwis-agent", json=req)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Local proxy failed: {e}")
+
 # Mount static files at the root
 app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
 

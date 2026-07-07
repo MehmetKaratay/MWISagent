@@ -17,6 +17,8 @@ All notable changes to this project will be documented in this file.
 - Added `OAuthJWTValidationMiddleware` to enforce Google OAuth JWT validation on A2A execution endpoints.
 - Bypass authentication for `.well-known/agent-card` and other public endpoints.
 - TDD unit tests for the OAuth middleware.
+- [Frontend] Hybrid API proxy in `server.py` (`/api/chat`) to securely connect the frontend to the deployed remote Reasoning Engine using the Vertex AI SDK.
+- [Frontend] Updated root `Dockerfile` to include the `frontend/` directory, allowing it to be deployed as a containerized dashboard alongside the backend `app/`.
 
 ### Changed
 - Updated all non-Apache project files to use the Creative Commons Attribution-ShareAlike 4.0 International License (CC-BY-4.0).

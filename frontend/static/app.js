@@ -15,8 +15,8 @@ document.addEventListener('alpine:init', () => {
         dateOutput: '',
         isQueryingDate: false,
 
-        // Replace with production ADK backend URL if needed
-        adkEndpoint: 'http://localhost:8080/a2a/mwis-agent',
+        // Point to the local backend proxy
+        adkEndpoint: '/api/chat',
 
         init() {
             // Initialization logic if any
@@ -33,7 +33,7 @@ document.addEventListener('alpine:init', () => {
             this.scrollToBottom();
 
             try {
-                // The ADK Agent accepts POST requests to /a2a/mwis-agent
+                // The ADK Agent proxy endpoint
                 const response = await fetch(this.adkEndpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
