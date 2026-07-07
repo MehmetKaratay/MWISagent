@@ -232,21 +232,26 @@ def local_knowledge(ctx: Context, node_input: Any) -> Event:
     return Event(output=node_input)
 
 
-@node(rerun_on_resume=False)
-async def ask_follow_up(ctx: Context, node_input: Any) -> Event:
-    """
-    Human-in-the-loop node to check if the user has further questions about the forecast.
-    """
+async def _ask_follow_up_logic(ctx: Context, node_input: Any):
     interrupt_id = f"follow_up_{ctx.state.get('loop_count', 0)}"
     if not ctx.resume_inputs or interrupt_id not in ctx.resume_inputs:
+        forecast_text = str(node_input).strip()
         yield RequestInput(
             interrupt_id=interrupt_id,
-            message="Do you have any follow-up questions? (e.g. higher/lower elevation, specific part of the region, or 'no' to finish)",
+            message=f"{forecast_text}\n\nDo you have any follow-up questions? (e.g. higher/lower elevation, specific part of the region, or 'no' to finish)",
         )
         return
 
     reply = ctx.resume_inputs[interrupt_id]
     yield Event(output=reply)
+
+@node(rerun_on_resume=False)
+async def ask_follow_up(ctx: Context, node_input: Any) -> Event:
+    """
+    Human-in-the-loop node to check if the user has further questions about the forecast.
+    """
+    async for event in _ask_follow_up_logic(ctx, node_input):
+        yield event
 
 
 @node
