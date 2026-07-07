@@ -62,9 +62,9 @@ Then the output of the local `query_date.py` is displayed in the dialog
 ## SECTION 3: TASKS
 
 ## Task 1: Create API Chat Proxy
-- **What to build:** Add a `POST /api/chat` endpoint in `frontend/server.py` that uses the Vertex AI SDK to query the remote Agent Runtime using `AGENT_RUNTIME_ID`. Add `google-cloud-aiplatform` to dependencies.
-- **Files likely affected:** `frontend/server.py`, `frontend/requirements.txt`
-- **Acceptance criteria:** Sending a POST request to `/api/chat` successfully returns a response from the deployed Agent Runtime.
+- **What to build:** Add a `POST /api/chat` endpoint in `frontend/server.py` that uses a `subprocess.run(["agents-cli", "run", "--mode", "a2a"])` wrapper to query the remote Agent Runtime using `AGENT_RUNTIME_ID`. Add `google-agents-cli` to dependencies.
+- **Files likely affected:** `frontend/server.py`, `pyproject.toml`
+- **Acceptance criteria:** Sending a POST request to `/api/chat` successfully returns a response from the deployed Agent Runtime via the CLI wrapper.
 - **Dependencies:** none
 
 ## Task 2: Update Frontend Chat Logic
@@ -74,7 +74,7 @@ Then the output of the local `query_date.py` is displayed in the dialog
 - **Dependencies:** Task 1
 
 ## Task 3: Update Container Configuration
-- **What to build:** Update the root `Dockerfile` to copy the `frontend/` directory into the container, so it can be deployed to Cloud Run alongside the `app/` directory.
+- **What to build:** Update the root `Dockerfile` to copy the `frontend/` directory into the container, so it can be deployed to Cloud Run alongside the `app/` directory. Also, `agents-cli-manifest.yaml` and `deployment_metadata.json` must be copied so the `agents-cli` wrapper functions properly.
 - **Files likely affected:** `Dockerfile`
-- **Acceptance criteria:** `Dockerfile` includes `COPY ./frontend ./frontend`.
+- **Acceptance criteria:** `Dockerfile` includes `COPY ./frontend ./frontend` and copies `agents-cli-manifest.yaml`.
 - **Dependencies:** none

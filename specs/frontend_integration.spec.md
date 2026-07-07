@@ -54,12 +54,13 @@ Then the agent recalls the context of the previous message
 No database schema changes required. The session memory is handled internally by ADK's `session_service`.
 
 **API contracts**
-- `POST /a2a/app/stream`
-  - **Inputs:** JSON body with `message.text` and `session_id`. `Authorization: Bearer <jwt>`.
-  - **Outputs:** Server-Sent Events stream (JSON-encoded chunks).
-  - **Errors:** 401 Unauthorized (Invalid token), 400 Bad Request (Missing fields).
+- `POST /api/chat` (previously `/a2a/app/stream` or `/a2a/app/message`)
+  - **Inputs:** JSON body with `inputs.input`. `Authorization: Bearer <jwt>`.
+  - **Outputs:** Text or structured response from `agents-cli run --mode a2a`.
+  - **Errors:** 401 Unauthorized (Invalid token), 400 Bad Request (Missing fields), 500 Internal Server Error (CLI failure).
 
 **Patterns to follow**
+- Use `subprocess.run` to invoke the `agents-cli run` command directly instead of the Python SDK, as it aligns better with the ADK structure.
 - RESTful API principles for error handling.
 - Standard FastAPI CORS middleware configuration.
 
