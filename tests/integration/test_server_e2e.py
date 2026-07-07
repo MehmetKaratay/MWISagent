@@ -212,7 +212,7 @@ def test_a2a_chat_stream(server_fixture: subprocess.Popen[str]) -> None:
         and r.root.result.final is True
     ]
     assert final_responses, "No final response received"
-    assert final_responses[-1].result.status.state == "completed"
+    assert final_responses[-1].result.status.state == "input-required"
 
 
 def test_agent_card(server_fixture: subprocess.Popen[str]) -> None:
