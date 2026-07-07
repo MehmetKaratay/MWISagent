@@ -19,6 +19,8 @@ dependencies:
   - beautifulsoup4 >= 4.12.3
   - requests >= 2.31.0
   - pydantic >= 2.0.0
+  - fastapi >= 0.100.0
+  - google-auth >= 2.22.0
 ```
 
 ## Behavior & Technical Requirements
@@ -39,6 +41,8 @@ Define runtime dependencies in the `dependencies` list under `[project]`:
 * `beautifulsoup4 >= 4.12.3`
 * `requests >= 2.31.0`
 * `pydantic >= 2.0.0`
+* `fastapi >= 0.100.0`
+* `google-auth >= 2.22.0`
 
 ### 3. Development Dependencies
 Define dev dependencies under `[dependency-groups]` or `[project.optional-dependencies]` (using PEP 621 optional dependencies or standard PEP 735 dependency groups). Since `uv` supports dependency groups:
@@ -69,6 +73,8 @@ dependencies = [
     "parsedatetime>=2.6",
     "beautifulsoup4>=4.12.3",
     "requests>=2.31.0",
-    "pydantic>=2.0.0"
+    "pydantic>=2.0.0",
+    "fastapi>=0.100.0",
+    "google-auth>=2.22.0"
 ]
 ```
