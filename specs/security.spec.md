@@ -50,7 +50,10 @@ All public-facing ADK API endpoints (e.g., `/a2a/app/message`, `/a2a/app/stream`
   * **Audience Validation**: To prevent confused deputy attacks, the middleware must explicitly validate the token's audience against the `GOOGLE_OAUTH_CLIENT_ID` environment variable.
   * **Path Exemptions**: The middleware must protect all A2A JSON-RPC execution endpoints (e.g., `/a2a/mwis-agent/message`, `/a2a/mwis-agent/stream`), but must explicitly bypass authentication for discovery paths (e.g., `/.well-known/agent-card`, `/docs`, `/openapi.json`).
   * Return `401 Unauthorized` for missing, invalid, or incorrectly scoped tokens.
-* **CORS Restrictions**: The `ALLOW_ORIGINS` environment variable must be strictly configured to match the precise production frontend domains. Wildcard (`*`) origins must be strictly forbidden in production to mitigate CSRF-style attacks.
+* **CORS Restrictions**:
+  * The `ALLOW_ORIGINS` environment variable must be strictly configured to match the precise production frontend domains.
+  * **No Wildcards**: Wildcard (`*`) origins must be strictly forbidden. The backend must raise a `ValueError` on startup if a wildcard origin is detected in `ALLOW_ORIGINS` to mitigate CSRF-style attacks.
+  * **Local Development**: Even in local development, origins must not default to wildcards. The `.env` file must explicitly configure `ALLOW_ORIGINS=http://localhost:8080,http://127.0.0.1:8080`.
 
 ## Examples
 
