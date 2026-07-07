@@ -38,6 +38,7 @@
 
 ## Far future
 * Add Met Office Weather Warnings. See DEV-NOTES.md
+* cron job to fetch forecast on a schedule. For now it is fetched when first interacted with.
 
 ## Draft prompts
 

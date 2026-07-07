@@ -122,7 +122,9 @@ All inputs, sanitization logic, and prompt isolation schemas are detailed in the
 
 ## Caching & State
 - **Conversation State**: The individual chat conversations will be stateless.
-- **Caching Layer**: A backend caching layer will cache fetched forecasts so multiple conversations can refer to the same forecast without re-fetching. Forecasts are fetched once daily at 5:00 PM (after new forecasts are issued).
+- **Caching Layer**: A backend caching layer (`mwis_cache.db`) stores fetched forecasts so multiple conversations can refer to the same forecast without re-fetching.
+  - **Current Approach (Lazy-loading)**: The cache is updated on-demand. When a user asks for weather data, the agent checks the cache. If the data is missing or stale (issued before 4:30 PM today), it scrapes MWIS in real-time. This means the *first* user to request a forecast after it expires will experience a slight delay, but subsequent requests are instant.
+  - **Future Approach**: We may switch to a scheduled background task (e.g., a cron job or Cloud Scheduler) in the future to proactively keep the cache warm, eliminating the delay for the first user.
 
 ## Google Cloud Deployment
 - **Hosting Service**: Specific GCP hosting services will be finalized later.
