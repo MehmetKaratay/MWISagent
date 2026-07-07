@@ -60,22 +60,23 @@ def test_query_date_missing_q():
     assert response.status_code == 422
 
 @patch("os.environ.get")
-@patch("requests.post")
-def test_chat_api_local(mock_post, mock_getenv):
+@patch("subprocess.run")
+def test_chat_api_local(mock_run, mock_getenv):
     """Test the /api/chat endpoint using local fallback."""
     mock_getenv.return_value = None
-    mock_post.return_value.json.return_value = {"outputs": {"output": "hello"}}
-    mock_post.return_value.raise_for_status.return_value = None
+    mock_run.return_value.stdout = '{"update": {"status": {"message": {"role": "agent", "parts": [{"text": "hello"}]}}}}'
+    mock_run.return_value.returncode = 0
     
     response = client.post("/api/chat", json={"inputs": {"input": "hi"}})
     assert response.status_code == 200
     assert response.json() == {"outputs": {"output": "hello"}}
-    mock_post.assert_called_once_with("http://localhost:8080/a2a/mwis-agent", json={"inputs": {"input": "hi"}})
+    mock_run.assert_called_once()
+    args = mock_run.call_args[0][0]
+    assert args == ["agents-cli", "run", "--url", "http://localhost:8080", "--mode", "a2a", "hi", "-v"]
 
 @patch("os.environ.get")
-@patch("vertexai.init")
-@patch("vertexai.preview.reasoning_engines.ReasoningEngine")
-def test_chat_api_remote(mock_reasoning_engine, mock_init, mock_getenv):
+@patch("subprocess.run")
+def test_chat_api_remote(mock_run, mock_getenv):
     """Test the /api/chat endpoint using remote Agent Runtime."""
     # Mock AGENT_RUNTIME_ID
     def mock_env(key, default=None):
@@ -84,11 +85,12 @@ def test_chat_api_remote(mock_reasoning_engine, mock_init, mock_getenv):
         return default
     mock_getenv.side_effect = mock_env
     
-    mock_engine_instance = mock_reasoning_engine.return_value
-    mock_engine_instance.query.return_value = {"outputs": {"output": "remote hello"}}
+    mock_run.return_value.stdout = '{"update": {"status": {"message": {"role": "agent", "parts": [{"text": "remote hello"}]}}}}'
+    mock_run.return_value.returncode = 0
     
     response = client.post("/api/chat", json={"inputs": {"input": "hi"}})
     assert response.status_code == 200
     assert response.json() == {"outputs": {"output": "remote hello"}}
-    mock_reasoning_engine.assert_called_once_with("projects/123/locations/europe-west2/reasoningEngines/456")
-    mock_engine_instance.query.assert_called_once_with(input="hi")
+    mock_run.assert_called_once()
+    args = mock_run.call_args[0][0]
+    assert args == ["agents-cli", "run", "--url", "https://europe-west2-aiplatform.googleapis.com/v1/projects/123/locations/europe-west2/reasoningEngines/456", "--mode", "a2a", "hi", "-v"]
