@@ -64,9 +64,9 @@ To set up your own live Cloud Run dashboard:
 ## 5. Related Diagrams & Images
 
 ### Agent Flow Diagram
-![Agent Flow Diagram](../gallery/agent-prototype/agent-flow.png)
+![Agent Flow Diagram](/gallery/agent-prototype/agent-flow.png)
 
-*For more screenshots of the frontend interface and development process, see the [Media Gallery](../gallery/).*
+*For more screenshots of the frontend interface and development process, see the [Media Gallery](kaggle-writeup/gallery/).*
 
 ## 6. Roadmap
 The agent currently fetches and interprets the static forecast text. Future versions will include:
