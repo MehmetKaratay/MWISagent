@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+### Fixed
+- Fixed `TypeError` in `query_region.py` when outputting nearest regions in JSON format for out-of-bounds locations (e.g. London).
+
 ### Added
 - Created `tests/eval/datasets/mwis_eval.json` with 4 test scenarios (direct, ambiguous, location out-of-scope, date out-of-scope).
 - Configured ADK built-in evaluation metrics in `tests/eval/eval_config.yaml`.

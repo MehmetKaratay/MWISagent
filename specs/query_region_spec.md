@@ -125,19 +125,19 @@ test_cases:
     expected:
       in_scope: true
       in_area: false
-      nearest: ["YD"]  # YD is nearest, directional output included
+      nearest: [{"code": "YD", "distance_km": 12.5}]  # YD is nearest, directional output included
   - name: Sheffield Out-of-Area Boundary Check
     inputs: [53.3811, -1.4701]
     expected:
       in_scope: true
       in_area: false
-      nearest: ["PD"]
+      nearest: [{"code": "PD", "distance_km": 5.0}]
   - name: London Distance Check
     inputs: [51.5074, -0.1278]
     expected:
       in_scope: true
       in_area: false
-      nearest: ["PD"]  # Peak District or Brecon Beacons, with large distance
+      nearest: [{"code": "PD", "distance_km": 193.66}]
   - name: Paris Out-of-Scope Check
     inputs: [48.8566, 2.3522]
     expected:
@@ -169,7 +169,7 @@ test_cases:
     expected:
       in_scope: true
       in_area: false
-      nearest: ["PD"]
+      nearest: [{"code": "PD", "distance_km": 150.0}]
 ```
 
 ---
