@@ -48,3 +48,13 @@ Summarise current state of project and archive unnecessary logs. Keep instructio
 NOTE: This made the agent forget a lot of how we were working together and I had to remind it of our various 'rules'. Better to do that than to hallucinate. I added the second instruction to try to overcome this barrier.
 
 ## tmp
+
+User, on live server: What will the weather be like on Ben Nevis today?
+
+Agent: I'm sorry, I don't have a forecast area code for "WH". The available forecast areas are: * **L**ochaber * **P**erthshire * **SN**owdonia * **C**airngorms * **FP**orfar * **DL**och Lomond & The Trossachs * **W**estern Highlands * **E**astern Highlands Please let me know which of these areas you'd like a forecast for. Do you have any follow-up questions? (e.g. higher/lower elevation, specific part of the region, or 'no' to finish)
+
+Note to coding agent: Those areas aren't MWIS regions. The agent should use query_region.sh to find what region is being referred to.
+
+Why did behaviour change so much between local host and live server?
+
+Agent reply from another session: I'm sorry, I cannot find a forecast for the area code "WH". Please check the area codes available in the MWIS forecast, which typically include areas like: * Southern Scotland (SN) * Lake District (LO) * West Highlands (WK) * East Highlands (EH) * Cairngorms (CG) * Southwest Highlands (SW) * Northwest Highlands (NW) Could you please provide a different area code? Do you have any follow-up questions? (e.g. higher/lower elevation, specific part of the region, or 'no' to finish)
