@@ -51,6 +51,7 @@ These are mentioned so you can plan ahead for their implementation and design th
 * Front end improvements
   - A seperate summary showing the weather forecast the discussion is based on
   - The ability to hover over forecast items to get more detailed information
+  - Transition the development scripts (`query_region.py` and `query_date.py`) currently proxied via `frontend/server.py` into proper backend API calls.
 
 ## SKILL Categories
 Skills are dividing into categories to make it easier to identify and use skills.
