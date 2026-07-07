@@ -22,6 +22,7 @@ class TestCheckForecast(unittest.TestCase):
     """Test suite for the check_forecast_issued core logic orchestrator."""
 
     def setUp(self):
+        """Docstring for setUp."""
         self.temp_dir = tempfile.TemporaryDirectory()
         self.db_path = os.path.join(self.temp_dir.name, "test_mwis.db")
         # Ensure database is clean
@@ -29,6 +30,7 @@ class TestCheckForecast(unittest.TestCase):
         conn.close()
 
     def tearDown(self):
+        """Docstring for tearDown."""
         self.temp_dir.cleanup()
 
     @patch("check_forecast.is_time_in_schedule")

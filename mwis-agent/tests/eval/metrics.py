@@ -11,11 +11,30 @@ from pydantic import BaseModel
 
 
 class _Verdict(BaseModel):
+    """Pydantic model representing the evaluation verdict.
+
+    Attributes:
+        score: An integer from 1 to 5 representing the agent's grade.
+        explanation: A string explaining the reasoning behind the score.
+    """
+
     score: int  # 1-5
     explanation: str
 
 
 def evaluate(instance):
+    """Evaluates the agent's response using an LLM-as-a-judge.
+
+    Grades the agent's final response on a 1-5 scale based on accuracy,
+    relevance, and clarity, referencing ground truth if available.
+
+    Args:
+        instance (dict): A dictionary containing the evaluation context,
+            including 'prompt', 'response', 'agent_data', and 'reference'.
+
+    Returns:
+        dict: A dictionary with the keys 'score' (int) and 'explanation' (str).
+    """
     reference = instance.get("reference")
     rubric = (
         "Grade the agent's final response on a 1-5 scale (1 poor, 5 excellent) for "

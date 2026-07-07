@@ -13,6 +13,7 @@ class TestParseDCodes(unittest.TestCase):
     """Test suite for validating get_d_code_for_date resolution logic."""
 
     def setUp(self):
+        """Docstring for setUp."""
         self.ref_date = datetime.date(2026, 7, 5)  # Sunday
 
     def test_past_date(self):

@@ -20,10 +20,12 @@ class TestMwisCacheDb(unittest.TestCase):
     """Test suite for verifying the MWIS forecast cache database layer."""
 
     def setUp(self):
+        """Docstring for setUp."""
         self.temp_dir = tempfile.TemporaryDirectory()
         self.db_path = os.path.join(self.temp_dir.name, "test_forecasts.db")
 
     def tearDown(self):
+        """Docstring for tearDown."""
         self.temp_dir.cleanup()
 
     def test_db_init_creates_table(self):

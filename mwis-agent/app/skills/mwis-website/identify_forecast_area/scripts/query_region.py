@@ -42,30 +42,45 @@ EPSG_WGS84 = "epsg:4326"
 
 @dataclass
 class Point:
+    """Represents the Point logic."""
+
     lat: float
     lon: float
 
 
 @dataclass
 class Segment:
+    """Represents the Segment logic."""
+
     start: Point
     end: Point
 
 
 @dataclass
 class RegionDistance:
+    """Represents the RegionDistance logic."""
+
     code: str
     distance_km: float
     direction: str
 
 
 class OutOfScopeError(Exception):
+    """Represents the OutOfScopeError logic."""
+
     pass
 
 
 class BoundariesLoader:
+    """Represents the BoundariesLoader logic."""
+
     @staticmethod
     def load() -> dict[str, Any]:
+        """Executes the load operation.
+
+        Returns:
+            The return value.
+        """
         try:
             with open(BOUNDARIES_PATH) as f:
                 return json.load(f)
@@ -75,8 +90,15 @@ class BoundariesLoader:
 
 
 class ConfigLoader:
+    """Represents the ConfigLoader logic."""
+
     @staticmethod
     def get_overlap_tolerance() -> float:
+        """Executes the get_overlap_tolerance operation.
+
+        Returns:
+            The return value.
+        """
         if not os.path.exists(CONFIG_PATH):
             return DEFAULT_OVERLAP_TOLERANCE_PCT
         try:
@@ -90,8 +112,17 @@ class ConfigLoader:
 
 
 class GeoMath:
+    """Represents the GeoMath logic."""
+
     @staticmethod
     def is_in_gb(pt: Point) -> bool:
+        """Executes the is_in_gb operation.
+
+        Args:
+            pt: The pt parameter.
+        Returns:
+            The return value.
+        """
         if not (
             GB_LAT_MIN <= pt.lat <= GB_LAT_MAX and GB_LON_MIN <= pt.lon <= GB_LON_MAX
         ):
@@ -104,6 +135,14 @@ class GeoMath:
 
     @staticmethod
     def get_cardinal_direction(start: Point, target: Point) -> str:
+        """Executes the get_cardinal_direction operation.
+
+        Args:
+            start: The start parameter.
+            target: The target parameter.
+        Returns:
+            The return value.
+        """
         y = math.sin(math.radians(target.lon - start.lon)) * math.cos(
             math.radians(target.lat)
         )
@@ -119,10 +158,26 @@ class GeoMath:
 
     @staticmethod
     def _project_point(pt: Point, scale_x: float) -> tuple[float, float]:
+        """Executes the _project_point operation.
+
+        Args:
+            pt: The pt parameter.
+            scale_x: The scale_x parameter.
+        Returns:
+            The return value.
+        """
         return pt.lon * scale_x, pt.lat * EARTH_RADIUS_KM
 
     @staticmethod
     def point_to_segment_distance(pt: Point, seg: Segment) -> tuple[float, Point]:
+        """Executes the point_to_segment_distance operation.
+
+        Args:
+            pt: The pt parameter.
+            seg: The seg parameter.
+        Returns:
+            The return value.
+        """
         avg_lat = (pt.lat + seg.start.lat + seg.end.lat) / 3.0
         scale_x = EARTH_RADIUS_KM * math.cos(math.radians(avg_lat))
         px, py = GeoMath._project_point(pt, scale_x)
@@ -143,6 +198,14 @@ class GeoMath:
 
     @staticmethod
     def point_in_polygon(pt: Point, polygon: list[list[float]]) -> bool:
+        """Executes the point_in_polygon operation.
+
+        Args:
+            pt: The pt parameter.
+            polygon: The polygon parameter.
+        Returns:
+            The return value.
+        """
         if len(polygon) > 1 and polygon[0] == polygon[-1]:
             polygon = polygon[:-1]
         n = len(polygon)
@@ -161,6 +224,14 @@ class GeoMath:
 
     @staticmethod
     def polygon_distance(pt: Point, polygon: list[list[float]]) -> tuple[float, Point]:
+        """Executes the polygon_distance operation.
+
+        Args:
+            pt: The pt parameter.
+            polygon: The polygon parameter.
+        Returns:
+            The return value.
+        """
         min_dist = float("inf")
         closest_pt = Point(0, 0)
         for i in range(len(polygon) - 1):
@@ -176,10 +247,24 @@ class GeoMath:
 
 
 class RegionFinder:
+    """Represents the RegionFinder logic."""
+
     def __init__(self, boundaries: dict[str, Any]):
+        """Executes the __init__ operation.
+
+        Args:
+            boundaries: The boundaries parameter.
+        """
         self.boundaries = boundaries
 
     def get_matching_regions(self, pt: Point) -> list[str]:
+        """Executes the get_matching_regions operation.
+
+        Args:
+            pt: The pt parameter.
+        Returns:
+            The return value.
+        """
         matches = []
         for code, info in self.boundaries.items():
             if GeoMath.point_in_polygon(pt, info["coordinates"]):
@@ -189,6 +274,14 @@ class RegionFinder:
     def get_nearest_regions(
         self, pt: Point, tolerance_pct: float
     ) -> list[RegionDistance]:
+        """Executes the get_nearest_regions operation.
+
+        Args:
+            pt: The pt parameter.
+            tolerance_pct: The tolerance_pct parameter.
+        Returns:
+            The return value.
+        """
         distances = []
         for code, info in self.boundaries.items():
             dist, c_pt = GeoMath.polygon_distance(pt, info["coordinates"])
@@ -207,8 +300,17 @@ class RegionFinder:
 
 
 class InputResolver:
+    """Represents the InputResolver logic."""
+
     @staticmethod
     def _fetch_nominatim_data(name: str) -> dict[str, Any] | None:
+        """Executes the _fetch_nominatim_data operation.
+
+        Args:
+            name: The name parameter.
+        Returns:
+            The return value.
+        """
         params = urllib.parse.urlencode(
             {"q": name, "format": "json", "addressdetails": 1, "limit": 1}
         )
@@ -223,6 +325,13 @@ class InputResolver:
 
     @staticmethod
     def search_munros(name: str) -> str | None:
+        """Executes the search_munros operation.
+
+        Args:
+            name: The name parameter.
+        Returns:
+            The return value.
+        """
         if not os.path.exists(MUNROS_PATH):
             return None
         try:
@@ -237,6 +346,13 @@ class InputResolver:
 
     @staticmethod
     def query_nominatim(name: str) -> Point | None:
+        """Executes the query_nominatim operation.
+
+        Args:
+            name: The name parameter.
+        Returns:
+            The return value.
+        """
         if len(name) > 100:
             return None
         data = InputResolver._fetch_nominatim_data(name)
@@ -255,6 +371,14 @@ class InputResolver:
     def _get_grid_square_base(
         first: str, second: str
     ) -> tuple[int, int, int, int] | None:
+        """Executes the _get_grid_square_base operation.
+
+        Args:
+            first: The first parameter.
+            second: The second parameter.
+        Returns:
+            The return value.
+        """
         try:
             f_idx = GRID_ALPHABET.index(first)
             s_idx = GRID_ALPHABET.index(second)
@@ -268,6 +392,13 @@ class InputResolver:
 
     @staticmethod
     def parse_grid_reference(grid_ref: str) -> Point | None:
+        """Executes the parse_grid_reference operation.
+
+        Args:
+            grid_ref: The grid_ref parameter.
+        Returns:
+            The return value.
+        """
         grid_ref = grid_ref.replace(" ", "").upper()
         if len(grid_ref) < 2 or not grid_ref[:2].isalpha():
             return None
@@ -289,6 +420,13 @@ class InputResolver:
 
     @staticmethod
     def resolve_args(args: list[str]) -> tuple[Point | None, str | None]:
+        """Executes the resolve_args operation.
+
+        Args:
+            args: The args parameter.
+        Returns:
+            The return value.
+        """
         if len(args) == 1:
             grid_pt = InputResolver.parse_grid_reference(args[0])
             if grid_pt:
@@ -308,20 +446,53 @@ class InputResolver:
 
 
 class ResultFormatter:
+    """Represents the ResultFormatter logic."""
+
     def format_success(self, regions: list[str], boundaries: dict[str, Any]) -> None:
+        """Executes the format_success operation.
+
+        Args:
+            regions: The regions parameter.
+            boundaries: The boundaries parameter.
+        Returns:
+            The return value.
+        """
         raise NotImplementedError
 
     def format_nearest(
         self, nearest: list[RegionDistance], boundaries: dict[str, Any]
     ) -> None:
+        """Executes the format_nearest operation.
+
+        Args:
+            nearest: The nearest parameter.
+            boundaries: The boundaries parameter.
+        Returns:
+            The return value.
+        """
         raise NotImplementedError
 
     def format_out_of_scope(self) -> None:
+        """Executes the format_out_of_scope operation.
+
+        Returns:
+            The return value.
+        """
         raise NotImplementedError
 
 
 class JsonFormatter(ResultFormatter):
+    """Represents the JsonFormatter logic."""
+
     def format_success(self, regions: list[str], boundaries: dict[str, Any]) -> None:
+        """Executes the format_success operation.
+
+        Args:
+            regions: The regions parameter.
+            boundaries: The boundaries parameter.
+        Returns:
+            The return value.
+        """
         out = {
             "in_scope": True,
             "in_area": True,
@@ -333,6 +504,14 @@ class JsonFormatter(ResultFormatter):
     def format_nearest(
         self, nearest: list[RegionDistance], boundaries: dict[str, Any]
     ) -> None:
+        """Executes the format_nearest operation.
+
+        Args:
+            nearest: The nearest parameter.
+            boundaries: The boundaries parameter.
+        Returns:
+            The return value.
+        """
         out = {
             "in_scope": True,
             "in_area": False,
@@ -348,6 +527,11 @@ class JsonFormatter(ResultFormatter):
         print(json.dumps(out))
 
     def format_out_of_scope(self) -> None:
+        """Executes the format_out_of_scope operation.
+
+        Returns:
+            The return value.
+        """
         out = {
             "in_scope": False,
             "error": "OUT_OF_SCOPE",
@@ -357,7 +541,17 @@ class JsonFormatter(ResultFormatter):
 
 
 class TextFormatter(ResultFormatter):
+    """Represents the TextFormatter logic."""
+
     def format_success(self, regions: list[str], boundaries: dict[str, Any]) -> None:
+        """Executes the format_success operation.
+
+        Args:
+            regions: The regions parameter.
+            boundaries: The boundaries parameter.
+        Returns:
+            The return value.
+        """
         names = [boundaries[code]["name"] for code in regions]
         print(f"Region(s): {', '.join(regions)} ({', '.join(names)})")
         if len(regions) > 1:
@@ -366,6 +560,14 @@ class TextFormatter(ResultFormatter):
     def format_nearest(
         self, nearest: list[RegionDistance], boundaries: dict[str, Any]
     ) -> None:
+        """Executes the format_nearest operation.
+
+        Args:
+            nearest: The nearest parameter.
+            boundaries: The boundaries parameter.
+        Returns:
+            The return value.
+        """
         print("The location is not in an MWIS area.")
         print("Nearest area(s):")
         for d in nearest:
@@ -375,6 +577,11 @@ class TextFormatter(ResultFormatter):
             )
 
     def format_out_of_scope(self) -> None:
+        """Executes the format_out_of_scope operation.
+
+        Returns:
+            The return value.
+        """
         msg = "The requested location is out of scope of this skill. Only locations in Great Britain are supported."
         print(msg, file=sys.stderr)
 
@@ -382,6 +589,15 @@ class TextFormatter(ResultFormatter):
 def _process_location(
     pt: Point, boundaries: dict[str, Any], formatter: ResultFormatter
 ) -> None:
+    """Executes the _process_location operation.
+
+    Args:
+        pt: The pt parameter.
+        boundaries: The boundaries parameter.
+        formatter: The formatter parameter.
+    Returns:
+        The return value.
+    """
     finder = RegionFinder(boundaries)
     regions = finder.get_matching_regions(pt)
     if regions:
@@ -435,6 +651,7 @@ def find_regions_by_location(location_args: list[str]) -> dict:
 
 
 def main():
+    """Executes the main operation."""
     args = [a for a in sys.argv[1:] if a != "--json"]
     as_json = "--json" in sys.argv
 

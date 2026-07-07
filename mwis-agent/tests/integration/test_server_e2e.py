@@ -115,6 +115,7 @@ def server_fixture(request: Any) -> Iterator[subprocess.Popen[str]]:
     logger.info("Server process started")
 
     def stop_server() -> None:
+        """Docstring for stop_server."""
         logger.info("Stopping server process")
         server_process.terminate()
         server_process.wait()

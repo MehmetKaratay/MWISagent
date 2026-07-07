@@ -38,6 +38,7 @@ JSON_INDENT = 2
 
 
 def _parse_trackpoint(elem: ET.Element) -> list[float] | None:
+    """Docstring for _parse_trackpoint."""
     try:
         lat = float(elem.attrib[LAT_ATTR])
         lon = float(elem.attrib[LON_ATTR])
@@ -71,6 +72,7 @@ def parse_gpx_coordinates(filepath: str) -> list[list[float]]:
 
 
 def _process_gpx_file(filepath: str) -> tuple[str, dict[str, Any]] | None:
+    """Docstring for _process_gpx_file."""
     filename = os.path.basename(filepath)
     code = os.path.splitext(filename)[0]
     if code not in REGION_NAMES:
@@ -84,6 +86,7 @@ def _process_gpx_file(filepath: str) -> tuple[str, dict[str, Any]] | None:
 
 
 def update_boundaries(gpx_dir: str, output_path: str) -> None:
+    """Docstring for update_boundaries."""
     if not os.path.isdir(gpx_dir):
         print(f"Error: GPX directory does not exist at: {gpx_dir}")
         return
@@ -108,6 +111,7 @@ def update_boundaries(gpx_dir: str, output_path: str) -> None:
 
 
 def main() -> None:
+    """Docstring for main."""
     update_boundaries(GPX_DIR, OUTPUT_JSON_PATH)
 
 

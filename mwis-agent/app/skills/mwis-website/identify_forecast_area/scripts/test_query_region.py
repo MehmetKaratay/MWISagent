@@ -20,7 +20,17 @@ LONDON_COORDS = ["51.5074", "-0.1278"]
 
 
 class TestQueryRegionCLI(unittest.TestCase):
+    """Unit tests for the query_region CLI."""
+
     def run_query(self, args):
+        """Helper to run the CLI query with given args.
+
+        Args:
+            args (list): The command line args.
+
+        Returns:
+            tuple: stdout, stderr, and return code.
+        """
         cmd = [PYTHON_EXE, SCRIPT_PATH, *args]
         # Run with timeout to prevent hang
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
@@ -28,6 +38,7 @@ class TestQueryRegionCLI(unittest.TestCase):
 
     def test_coordinate_inside_snowdonia(self):
         # Snowdon coords (inside SD)
+        """Tests the coordinate_inside_snowdonia logic."""
         res = self.run_query(SNOWDON_COORDS)
         self.assertEqual(res.returncode, 0)
         self.assertIn("SD", res.stdout)
@@ -35,6 +46,7 @@ class TestQueryRegionCLI(unittest.TestCase):
 
     def test_coordinate_inside_overlap(self):
         # Coords in PD/YD overlap area
+        """Tests the coordinate_inside_overlap logic."""
         res = self.run_query(PD_YD_OVERLAP_COORDS)
         self.assertEqual(res.returncode, 0)
         self.assertTrue(any(x in res.stdout for x in ["PD", "YD"]))
@@ -42,34 +54,40 @@ class TestQueryRegionCLI(unittest.TestCase):
 
     def test_out_of_scope_paris(self):
         # Paris (out of UK scope)
+        """Tests the out_of_scope_paris logic."""
         res = self.run_query(PARIS_COORDS)
         self.assertEqual(res.returncode, 2)
         self.assertIn("out of scope", res.stdout.lower() + res.stderr.lower())
 
     def test_out_of_scope_belfast(self):
         # Belfast (Northern Ireland is excluded from scope)
+        """Tests the out_of_scope_belfast logic."""
         res = self.run_query(BELFAST_COORDS)
         self.assertEqual(res.returncode, 2)
         self.assertIn("out of scope", res.stdout.lower() + res.stderr.lower())
 
     def test_munro_name_lookup_ben_nevis(self):
+        """Tests the munro_name_lookup_ben_nevis logic."""
         res = self.run_query(["Ben Nevis"])
         self.assertEqual(res.returncode, 0)
         self.assertIn("WH", res.stdout)
 
     def test_munro_name_lookup_ben_hope(self):
+        """Tests the munro_name_lookup_ben_hope logic."""
         res = self.run_query(["Ben Hope"])
         self.assertEqual(res.returncode, 0)
         self.assertIn("NW", res.stdout)
 
     def test_name_lookup_fallback_keswick(self):
         # Keswick (resolved via Nominatim to LD)
+        """Tests the name_lookup_fallback_keswick logic."""
         res = self.run_query(["Keswick"])
         self.assertEqual(res.returncode, 0)
         self.assertIn("LD", res.stdout)
 
     def test_carlisle_out_of_area(self):
         # Carlisle is outside all regions, near LD, YD, SU
+        """Tests the carlisle_out_of_area logic."""
         res = self.run_query(CARLISLE_COORDS)
         self.assertEqual(res.returncode, 0)
         self.assertIn("not in an mwis area", res.stdout.lower())
@@ -77,24 +95,28 @@ class TestQueryRegionCLI(unittest.TestCase):
 
     def test_sheffield_inside_peak_district(self):
         # Sheffield is inside PD on the map overlays
+        """Tests the sheffield_inside_peak_district logic."""
         res = self.run_query(SHEFFIELD_COORDS)
         self.assertEqual(res.returncode, 0)
         self.assertIn("PD", res.stdout)
 
     def test_london_out_of_area(self):
         # London is far south-east, away from all regions
+        """Tests the london_out_of_area logic."""
         res = self.run_query(LONDON_COORDS)
         self.assertEqual(res.returncode, 0)
         self.assertIn("not in an mwis area", res.stdout.lower())
 
     def test_loch_lomond(self):
         # Loch Lomond -> Inside WH under new boundaries
+        """Tests the loch_lomond logic."""
         res = self.run_query(["Loch Lomond"])
         self.assertEqual(res.returncode, 0)
         self.assertIn("WH", res.stdout)
 
     def test_carlisle(self):
         # Carlisle -> Not in any region. YD is nearest
+        """Tests the carlisle logic."""
         import re
 
         res = self.run_query(["Carlisle"])
@@ -108,12 +130,14 @@ class TestQueryRegionCLI(unittest.TestCase):
 
     def test_glasgow(self):
         # Glasgow -> not in any region. "WH" and "SU" are nearest. "SH" may be within closeness tolerance
+        """Tests the glasgow logic."""
         res = self.run_query(["Glasgow"])
         self.assertEqual(res.returncode, 0)
         self.assertIn("not in an mwis area", res.stdout.lower())
         self.assertIn("SU", res.stdout)
 
     def test_json_output_success(self):
+        """Tests the json_output_success logic."""
         res = self.run_query([*SNOWDON_COORDS, "--json"])
         self.assertEqual(res.returncode, 0)
         data = json.loads(res.stdout)
@@ -122,6 +146,7 @@ class TestQueryRegionCLI(unittest.TestCase):
         self.assertIn("SD", data.get("regions", []))
 
     def test_json_output_out_of_scope(self):
+        """Tests the json_output_out_of_scope logic."""
         res = self.run_query([*PARIS_COORDS, "--json"])
         self.assertEqual(res.returncode, 2)
         data = json.loads(res.stdout)
@@ -129,6 +154,7 @@ class TestQueryRegionCLI(unittest.TestCase):
         self.assertEqual(data.get("error"), "OUT_OF_SCOPE")
 
     def test_grid_references_inside_eh(self):
+        """Tests the grid_references_inside_eh logic."""
         for gr in ["NJ 009 020", "NJ 00992 02017", "NJ009020", "NJ0099202017"]:
             res = self.run_query([gr])
             self.assertEqual(res.returncode, 0)
@@ -136,6 +162,7 @@ class TestQueryRegionCLI(unittest.TestCase):
             self.assertIn("Eastern Highlands", res.stdout)
 
     def test_grid_reference_outside_mwis_area(self):
+        """Tests the grid_reference_outside_mwis_area logic."""
         res = self.run_query(["TL 561 571"])
         self.assertEqual(res.returncode, 0)
         self.assertIn("not in an mwis area", res.stdout.lower())

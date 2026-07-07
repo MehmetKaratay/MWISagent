@@ -26,12 +26,14 @@ class TestCacheIntegration(unittest.TestCase):
     """Test suite for cache integration with SQLite."""
 
     def setUp(self):
+        """Docstring for setUp."""
         self.temp_dir = tempfile.TemporaryDirectory()
         self.db_path = os.path.join(self.temp_dir.name, "test_forecasts.db")
         # Ensure we run in development environment to load mocks
         os.environ["MWIS_ENV"] = "development"
 
     def tearDown(self):
+        """Docstring for tearDown."""
         self.temp_dir.cleanup()
 
     @patch("check_forecast.is_time_in_schedule")

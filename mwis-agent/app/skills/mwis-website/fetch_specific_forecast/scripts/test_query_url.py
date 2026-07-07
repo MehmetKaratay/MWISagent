@@ -21,6 +21,7 @@ class TestQueryUrlCLI(unittest.TestCase):
 
     def setUp(self):
         # Create a temporary CSV file mimicking the structure of mwis-regions.csv for tests
+        """Docstring for setUp."""
         self.temp_dir = tempfile.TemporaryDirectory()
         self.csv_path = os.path.join(self.temp_dir.name, "test-regions.csv")
         with open(self.csv_path, "w", encoding="utf-8") as f:
@@ -36,6 +37,7 @@ class TestQueryUrlCLI(unittest.TestCase):
             )
 
     def tearDown(self):
+        """Docstring for tearDown."""
         self.temp_dir.cleanup()
 
     def run_cli(

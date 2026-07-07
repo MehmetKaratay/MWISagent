@@ -19,6 +19,7 @@ class TestQueryRefHeightCLI(unittest.TestCase):
     """Test suite verifying CLI execution of query_refHeight.py."""
 
     def setUp(self):
+        """Docstring for setUp."""
         self.temp_dir = tempfile.TemporaryDirectory()
         self.csv_path = os.path.join(self.temp_dir.name, "test-regions.csv")
         with open(self.csv_path, "w", encoding="utf-8") as f:
@@ -34,9 +35,11 @@ class TestQueryRefHeightCLI(unittest.TestCase):
             )
 
     def tearDown(self):
+        """Docstring for tearDown."""
         self.temp_dir.cleanup()
 
     def run_cli(self, query, csv_path=None):
+        """Docstring for run_cli."""
         path = csv_path if csv_path is not None else self.csv_path
         cmd = [PYTHON_EXE, SCRIPT_PATH, query, path]
         return subprocess.run(cmd, capture_output=True, text=True, timeout=5)
