@@ -83,7 +83,7 @@ graph TD
 ### Node 3: `resolve_and_fetch`
 * **Type:** `FunctionNode` (determinstic Python code)
 * **Behavior:**
-  * Resolves `locations` (up to 5 regions max via `query_country.py`) and `date` using the modules in `app/skills/mwis-website/`.
+  * Resolves `locations` (up to 5 regions max) using `query_country.py` and `query_region.py`. If a location cannot be resolved, it is mapped to `"Unknown"`.
   * If the resolved region count > 5, routes to `clarify_too_many_locations`.
   * Fetches the corresponding forecasts sequentially from the local caching layer.
   * Scans forecast values: if wind speed is >40mph or temperature is <-5°C in any forecast, sets `needs_impact = True`.

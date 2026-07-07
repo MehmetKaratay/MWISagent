@@ -17,6 +17,7 @@ The update detection is deterministic:
 2. It parses the first forecast day element (`forecast_index == 0`).
 3. If the parsed day's `Dcode` is equal to `D1` (tomorrow), a new forecast is available.
 4. If the parsed day's `Dcode` is equal to `D0` (today), the daily forecast has not been updated yet.
+5. In the `development` environment, mock forecasts with hardcoded past dates (July 2026) are dynamically updated relative to the current execution date so they bypass this ingestion check and are successfully cached. `MWIS_ENV=test-new-dcode` will intentionally misalign them to force a D0/Dold scenario.
 
 ---
 
