@@ -20,7 +20,7 @@ Provides a secure, streaming API endpoint that allows a web-based chat frontend 
 3. The frontend must pass a valid JWT token in the `Authorization: Bearer` header.
 4. The backend must reject unauthorized requests (401).
 5. The frontend must generate and maintain a unique UUID (`session_id`) per chat session.
-6. The backend must support Cross-Origin Resource Sharing (CORS) configured strictly for the frontend's deployment URL in GCP `europe_west2`.
+6. The backend must support Cross-Origin Resource Sharing (CORS) configured strictly for the frontend's deployment URL in GCP `europe-west2`.
 
 **Edge cases**
 - **Token expiration:** The frontend's JWT token expires mid-session. Expected behavior: Backend returns 401 Unauthorized; frontend catches it, refreshes the token, and retries.
@@ -46,7 +46,7 @@ Then the agent recalls the context of the previous message
 ### SECTION 2: PLAN
 
 **Stack and architecture**
-- **Backend:** FastAPI, Python 3.10, ADK (Agent Development Kit). Hosted on Google Cloud (`europe_west2`).
+- **Backend:** FastAPI, Python 3.10, ADK (Agent Development Kit). Hosted on Google Cloud (`europe-west2`).
 - **Frontend:** Alpine.js (as per CONTEXT.md). Hosted on Google Cloud.
 - **Auth:** Google Identity Platform / Firebase Authentication.
 
@@ -89,7 +89,7 @@ No database schema changes required. The session memory is handled internally by
 
 ## Task 2: Configure CORS for GCP
 
-**What to build:** Update the `.env` or deployment pipeline to set `ALLOW_ORIGINS` to the exact frontend URL hosted in `europe_west2`.
+**What to build:** Update the `.env` or deployment pipeline to set `ALLOW_ORIGINS` to the exact frontend URL hosted in `europe-west2`.
 **Files likely affected:** `.env`, CI/CD pipelines.
 **Acceptance criteria:**
 1. The backend accepts preflight `OPTIONS` requests from the frontend domain.
