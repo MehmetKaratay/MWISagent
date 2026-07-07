@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MWIS Mountain Weather Agent">
+    <title>MWIS Weather Agent</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body x-data="chatApp()" x-cloak>
+    <div class="app-container">
+        <!-- Main Chat Area -->
+        <main class="chat-section">
+            <header>
+                <h1>MWIS Weather Agent</h1>
+            </header>
+            
+            <div class="chat-history" id="chat-history">
+                <template x-for="(msg, index) in messages" :key="index">
+                    <div :class="['message', msg.role === 'user' ? 'message-user' : 'message-agent']">
+                        <div class="message-bubble">
+                            <span x-text="msg.content"></span>
+                        </div>
+                    </div>
+                </template>
+                
+                <div x-show="isLoading" class="message message-agent">
+                    <div class="message-bubble loading">
+                        <span>Typing...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <form @submit.prevent="sendMessage" class="input-form">
+                    <input 
+                        type="text" 
+                        x-model="currentMessage" 
+                        placeholder="Ask about the mountain weather..." 
+                        :disabled="isLoading"
+                        autofocus
+                    >
+                    <button type="submit" :disabled="isLoading || currentMessage.trim() === ''">
+                        Send
+                    </button>
+                </form>
+            </div>
+        </main>
+
+        <!-- Development Tools Sidebar -->
+        <aside class="dev-tools-section">
+            <div class="dev-warning">
+                ⚠️ For testing purposes only. Will be removed in the future.
+            </div>
+            
+            <h2>Development Tools</h2>
+            
+            <div class="tool-card">
+                <h3>Query Region</h3>
+                <form @submit.prevent="submitRegion">
+                    <input type="text" x-model="regionQuery" placeholder="e.g. Ben Nevis">
+                    <button type="submit" :disabled="isQueryingRegion">Fetch Region</button>
+                </form>
+                <div class="tool-output" x-show="regionOutput">
+                    <pre x-text="regionOutput"></pre>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <h3>Query Date</h3>
+                <form @submit.prevent="submitDate">
+                    <input type="text" x-model="dateQuery" placeholder="e.g. tomorrow">
+                    <button type="submit" :disabled="isQueryingDate">Fetch Date</button>
+                </form>
+                <div class="tool-output" x-show="dateOutput">
+                    <pre x-text="dateOutput"></pre>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
