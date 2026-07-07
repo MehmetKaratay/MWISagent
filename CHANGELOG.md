@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- Implemented strict CORS policy enforcing exact origin matching and forbidding wildcards (`*`) via the `ALLOW_ORIGINS` environment variable.
 - Added `OAuthJWTValidationMiddleware` to enforce Google OAuth JWT validation on A2A execution endpoints.
 - Bypass authentication for `.well-known/agent-card` and other public endpoints.
 - TDD unit tests for the OAuth middleware.

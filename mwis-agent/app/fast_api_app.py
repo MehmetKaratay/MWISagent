@@ -38,9 +38,16 @@ setup_telemetry()
 _, project_id = google.auth.default()
 logging_client = google_cloud_logging.Client()
 logger = logging_client.logger(__name__)
-allow_origins = (
-    os.getenv("ALLOW_ORIGINS", "").split(",") if os.getenv("ALLOW_ORIGINS") else None
-)
+allow_origins_raw = os.getenv("ALLOW_ORIGINS")
+if allow_origins_raw:
+    allow_origins = [origin.strip() for origin in allow_origins_raw.split(",")]
+    if "*" in allow_origins:
+        raise ValueError(
+            "Wildcard (*) CORS origins are strictly forbidden in production."
+        )
+else:
+    # Default to an empty list rather than None to prevent ADK from falling back to ["*"]
+    allow_origins = []
 
 AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

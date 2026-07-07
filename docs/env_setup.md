@@ -34,7 +34,10 @@ Create a `.env` file inside the `mwis-agent/` directory with the following varia
 
 * **`GEMINI_API_KEY`**: (Required) Your Gemini API key for the LLM.
 * **`GOOGLE_OAUTH_CLIENT_ID`**: (Required for API) The Google OAuth Client ID to explicitly validate the audience of incoming JWT tokens on the FastAPI server endpoints.
-* **`ALLOW_ORIGINS`**: (Optional) Comma-separated list of allowed frontend domains for CORS in production.
+* **`ALLOW_ORIGINS`**: (Required for CORS) Comma-separated list of allowed frontend domains.
+  * **No Wildcards**: Wildcard (`*`) origins are strictly forbidden by the backend to prevent CSRF-style attacks.
+  * **Local Development**: You must explicitly define your local origins. Set this to: `http://localhost:8080,http://127.0.0.1:8080`
+  * **Production (Future)**: When you deploy your frontend to Cloud Run in `europe-west2`, you can retrieve its domain using `gcloud run services describe <FRONTEND_SERVICE_NAME> --region europe-west2 --format="value(status.url)"` and add it to this variable.
 
 ---
 
