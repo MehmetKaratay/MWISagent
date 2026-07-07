@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Fixed
+- Fixed 500 Internal Server Error in the frontend `/api/chat` route by replacing the legacy Reasoning Engine adapter with an `agents-cli run --mode a2a` wrapper, properly aligning with ADK AgentEngine interfaces.
 - Fixed `TypeError` in `query_region.py` when outputting nearest regions in JSON format for out-of-bounds locations (e.g. London).
 
 ### Added

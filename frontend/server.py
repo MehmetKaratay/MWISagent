@@ -62,28 +62,60 @@ def query_date(q: str = Query(..., description="The date to query")):
 @app.post("/api/chat")
 def proxy_chat(req: dict):
     """Proxies the chat request to the remote Agent Runtime or local ADK backend."""
-    # Assuming input is {"inputs": {"input": "message"}}
+    import subprocess
+    import json
+    import os
+    
     agent_id = os.environ.get("AGENT_RUNTIME_ID")
+    user_input = req.get("inputs", {}).get("input", "")
+    
     if agent_id:
-        try:
-            import vertexai
-            from vertexai.preview import reasoning_engines
-            vertexai.init(project=os.environ.get("GOOGLE_CLOUD_PROJECT", "gen-lang-client-0727740856"))
-            engine = reasoning_engines.ReasoningEngine(agent_id)
-            user_input = req.get("inputs", {}).get("input", "")
-            response = engine.query(input=user_input)
-            return response
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Remote agent failed: {e}")
+        # Remote Agent Runtime (e.g. europe-west2)
+        url = f"https://europe-west2-aiplatform.googleapis.com/v1/{agent_id}"
     else:
         # Local ADK fallback
-        try:
-            import requests
-            resp = requests.post("http://localhost:8080/a2a/mwis-agent", json=req)
-            resp.raise_for_status()
-            return resp.json()
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Local proxy failed: {e}")
+        url = "http://localhost:8080"
+        
+    try:
+        # Use agents-cli run --mode a2a -v to get the output from the ADK app
+        cmd = ["agents-cli", "run", "--url", url, "--mode", "a2a", user_input, "-v"]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        
+        # Parse consecutive JSON blocks from stdout
+        text = result.stdout
+        agent_response = "No response from agent."
+        decoder = json.JSONDecoder()
+        pos = 0
+        
+        start_idx = text.find("{")
+        if start_idx != -1:
+            text = text[start_idx:]
+            
+        while pos < len(text):
+            text = text[pos:].lstrip()
+            if not text:
+                break
+            try:
+                data, index = decoder.raw_decode(text)
+                pos = index
+                
+                if "update" in data and "status" in data["update"]:
+                    status = data["update"]["status"]
+                    if "message" in status and status["message"].get("role") == "agent":
+                        parts = status["message"].get("parts", [])
+                        if parts:
+                            if "text" in parts[0]:
+                                agent_response = parts[0]["text"]
+                            elif "data" in parts[0] and "args" in parts[0]["data"]:
+                                agent_response = parts[0]["data"]["args"].get("message", "")
+            except json.JSONDecodeError:
+                break
+                
+        return {"outputs": {"output": agent_response}}
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(status_code=500, detail=f"Proxy failed: {e.stderr}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Proxy failed: {e}")
 
 # Mount static files at the root
 app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
