@@ -22,6 +22,7 @@ from app.agent_nodes import (
     check_local,
     check_loop_limit,
     check_physics,
+    check_security,
     clarify_date,
     clarify_location,
     clarify_too_many_locations,
@@ -31,6 +32,7 @@ from app.agent_nodes import (
     parse_input,
     process_follow_up,
     resolve_and_fetch,
+    security_refusal,
     set_raw_query,
     synthesis,
     validate_coverage,
@@ -42,7 +44,9 @@ from app.agent_state import WorkflowState
 edges = [
     Edge(from_node=START, to_node=set_raw_query),
     Edge(from_node=set_raw_query, to_node=parse_input),
-    Edge(from_node=parse_input, to_node=check_ambiguity),
+    Edge(from_node=parse_input, to_node=check_security),
+    Edge(from_node=check_security, to_node=security_refusal, route="malicious"),
+    Edge(from_node=check_security, to_node=check_ambiguity, route="safe"),
     Edge(from_node=check_ambiguity, to_node=clarify_location, route="missing_location"),
     Edge(from_node=check_ambiguity, to_node=clarify_date, route="missing_date"),
     Edge(

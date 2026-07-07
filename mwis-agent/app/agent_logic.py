@@ -22,6 +22,21 @@ from google.adk.events.event import Event
 from app.cache import get_forecast
 
 
+def _check_security_logic(node_input: dict[str, Any]) -> Event:
+    """
+    Check if the input was flagged as malicious (prompt injection or commands).
+
+    Args:
+        node_input: The output from the parse_input node.
+
+    Returns:
+        Event: Routing event to handle malicious inputs or proceed safely.
+    """
+    if node_input.get("is_malicious", False):
+        return Event(output=node_input, route="malicious")
+    return Event(output=node_input, route="safe")
+
+
 def _check_ambiguity_logic(node_input: dict[str, Any]) -> Event:
     """
     Check if the user input lacks necessary information or has too many regions.

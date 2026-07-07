@@ -87,8 +87,15 @@ Then the workflow suspends at clarify_location stating "Only 5 regions can be co
 **Mermaid Graph Topology**
 ```mermaid
 graph TD
-    START([START]) --> parse_input[parse_input: LLM extracts locations/date/flags]
-    parse_input --> check_ambiguity{Is input vague?}
+    START([START]) --> set_raw_query[set_raw_query: Isolates query in XML tags]
+    set_raw_query --> parse_input[parse_input: LLM extracts locations/date/flags & detects attacks]
+    parse_input --> check_security{Is input malicious?}
+
+    %% Security route
+    check_security -- malicious --> security_refusal[security_refusal: Returns error message]
+    security_refusal --> END([END])
+
+    check_security -- safe --> check_ambiguity{Is input vague?}
 
     %% Ambiguity route
     check_ambiguity -- missing_location --> clarify_location[clarify_location: RequestInput HITL]
@@ -147,9 +154,10 @@ graph TD
       needs_physics: bool = False
       needs_impact: bool = False
       needs_local_knowledge: bool = False
+      is_malicious: bool = False
       loop_count: int = 0
   ```
-* `ParseOutput` must correctly specify `default=None` and `default=False` across all fields.
+* `ParseOutput` must correctly specify `default=None` and `default=False` across all fields, and include `is_malicious: bool = False`.
 
 **Testing strategy**
 * Eval dataset under `mwis-agent/tests/` evaluating location/date extraction and synthesis accuracy.
@@ -176,6 +184,12 @@ graph TD
 * **Files likely affected:** `mwis-agent/app/agent.py`
 * **Acceptance criteria:** Workflow builds, `agents-cli playground` launches successfully and correctly parses/aggregates up to 5 forecasts.
 * **Dependencies:** Task 2
+
+## Task 4: Prompt Injection Security Layer
+* **What to build:** Implement the `<user_input>` XML isolation in `set_raw_query`. Update `parse_input` instruction to reject system commands and set `is_malicious=True`. Add `check_security` router and `security_refusal` terminal node.
+* **Files likely affected:** `mwis-agent/app/agent.py`, `mwis-agent/app/agent_nodes.py`, `mwis-agent/app/agent_logic.py`, `mwis-agent/app/agent_state.py`
+* **Acceptance criteria:** Malicious prompts injected into the system are caught by `parse_input`, routed to `security_refusal`, and safely rejected without calling MWIS.
+* **Dependencies:** Task 1, Task 2, Task 3
 
 ---
 
