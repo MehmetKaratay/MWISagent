@@ -19,6 +19,7 @@ dependencies = [
     "requests>=2.31.0",
     "gpxpy>=1.6.2",
     "shapely>=2.0.4",
+    "google-agents-cli>=1.0.0",
 ]
 requires-python = ">=3.11,<3.14"
 
