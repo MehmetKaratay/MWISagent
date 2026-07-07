@@ -17,7 +17,6 @@ Unit tests for strict CORS policy implementation.
 """
 
 import os
-import sys
 from unittest.mock import patch
 
 import pytest
@@ -25,26 +24,24 @@ import pytest
 
 def test_wildcard_cors_raises_value_error():
     """Test that setting ALLOW_ORIGINS with a wildcard raises ValueError."""
-    # Ensure fast_api_app is not cached in sys.modules
-    if "app.fast_api_app" in sys.modules:
-        del sys.modules["app.fast_api_app"]
-
     with patch.dict(os.environ, {"ALLOW_ORIGINS": "http://localhost:8080, *"}):
+        from app.cors_config import get_allow_origins
+
         with pytest.raises(
             ValueError, match="Wildcard \\(\\*\\) CORS origins are strictly forbidden"
         ):
-            import app.fast_api_app  # noqa: F401
+            get_allow_origins()
 
 
 def test_valid_cors_does_not_raise():
     """Test that valid ALLOW_ORIGINS does not raise ValueError."""
-    if "app.fast_api_app" in sys.modules:
-        del sys.modules["app.fast_api_app"]
-
     with patch.dict(
         os.environ, {"ALLOW_ORIGINS": "http://localhost:8080,http://127.0.0.1:8080"}
     ):
         try:
-            import app.fast_api_app  # noqa: F401
+            from app.cors_config import get_allow_origins
+
+            origins = get_allow_origins()
+            assert origins == ["http://localhost:8080", "http://127.0.0.1:8080"]
         except ValueError as e:
             pytest.fail(f"Unexpected ValueError raised for valid ALLOW_ORIGINS: {e}")

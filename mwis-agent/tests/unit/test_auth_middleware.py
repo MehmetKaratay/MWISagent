@@ -21,7 +21,7 @@ from unittest.mock import patch
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.fast_api_app import OAuthJWTValidationMiddleware
+from app.auth_middleware import OAuthJWTValidationMiddleware
 
 # Create a dummy FastAPI app to test the middleware
 app = FastAPI()

@@ -14,6 +14,9 @@ All notable changes to this project will be documented in this file.
 - Added `OAuthJWTValidationMiddleware` to enforce Google OAuth JWT validation on A2A execution endpoints.
 - Bypass authentication for `.well-known/agent-card` and other public endpoints.
 - TDD unit tests for the OAuth middleware.
+
+### Changed
+- Refactored `fast_api_app.py` to extract `OAuthJWTValidationMiddleware` into `auth_middleware.py` and CORS configuration into `cors_config.py`, improving modularity without altering external behavior.
 - Implemented Prompt Injection Defense (XML tag wrapping and system prompt rules).
 - Integrated `is_malicious` state tracking. in `ParseOutput`. Added `check_security` router and `security_refusal` nodes to the workflow graph.
 - Configured backend caching architecture to store 10 MWIS forecasts locally to avoid multiple redundant downstream API calls and support lazy-loading.

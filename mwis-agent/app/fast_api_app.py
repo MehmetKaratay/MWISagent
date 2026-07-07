@@ -19,92 +19,26 @@ from collections.abc import AsyncIterator
 import google.auth
 from a2a.server.tasks import InMemoryTaskStore
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from google.adk.cli.fast_api import get_fast_api_app
 from google.adk.runners import Runner
-from google.auth.transport import requests as google_requests
 from google.cloud import logging as google_cloud_logging
-from google.oauth2 import id_token
-from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.app_utils import services
 from app.app_utils.a2a import attach_a2a_routes
 from app.app_utils.telemetry import setup_telemetry
 from app.app_utils.typing import Feedback
+from app.auth_middleware import OAuthJWTValidationMiddleware
+from app.cors_config import get_allow_origins
 
 load_dotenv()
 setup_telemetry()
 _, project_id = google.auth.default()
 logging_client = google_cloud_logging.Client()
 logger = logging_client.logger(__name__)
-allow_origins_raw = os.getenv("ALLOW_ORIGINS")
-if allow_origins_raw:
-    allow_origins = [origin.strip() for origin in allow_origins_raw.split(",")]
-    if "*" in allow_origins:
-        raise ValueError(
-            "Wildcard (*) CORS origins are strictly forbidden in production."
-        )
-else:
-    # Default to an empty list rather than None to prevent ADK from falling back to ["*"]
-    allow_origins = []
+allow_origins = get_allow_origins()
 
 AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
-class OAuthJWTValidationMiddleware(BaseHTTPMiddleware):
-    """
-    Middleware to intercept and validate OAuth JWT tokens for secure A2A execution endpoints.
-    """
-
-    async def dispatch(self, request: Request, call_next):
-        path = request.url.path
-
-        # Exempt paths from authentication
-        exempt_prefixes = [
-            "/docs",
-            "/openapi.json",
-            "/redoc",
-            "/feedback",
-            "/.well-known/agent-card",
-        ]
-
-        # Bypass authentication during E2E integration tests
-        if os.getenv("INTEGRATION_TEST") == "TRUE":
-            return await call_next(request)
-
-        if (
-            any(path.startswith(prefix) for prefix in exempt_prefixes)
-            or "/.well-known/" in path
-        ):
-            return await call_next(request)
-
-        # Protect A2A JSON-RPC endpoints (and potentially others)
-        if path.startswith("/a2a/app"):
-            auth_header = request.headers.get("Authorization")
-            if not auth_header or not auth_header.startswith("Bearer "):
-                return JSONResponse(
-                    status_code=401,
-                    content={
-                        "detail": "Missing or invalid Authorization header. Expected 'Bearer <token>'."
-                    },
-                )
-
-            token = auth_header.split(" ")[1]
-            client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
-
-            try:
-                # Verify the token against Google's public keys and check the audience
-                idinfo = id_token.verify_oauth2_token(
-                    token, google_requests.Request(), audience=client_id
-                )
-                request.state.user = idinfo
-            except ValueError as e:
-                return JSONResponse(
-                    status_code=401, content={"detail": f"Invalid token: {e}"}
-                )
-
-        return await call_next(request)
 
 
 @contextlib.asynccontextmanager
