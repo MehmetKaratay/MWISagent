@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - TDD unit tests for the OAuth middleware.
 
 ### Changed
+- Updated all non-Apache project files to use the Creative Commons Attribution-ShareAlike 4.0 International License (CC-BY-4.0).
 - Refactored `fast_api_app.py` to extract `OAuthJWTValidationMiddleware` into `auth_middleware.py` and CORS configuration into `cors_config.py`, improving modularity without altering external behavior.
 - Implemented Prompt Injection Defense (XML tag wrapping and system prompt rules).
 - Integrated `is_malicious` state tracking. in `ParseOutput`. Added `check_security` router and `security_refusal` nodes to the workflow graph.

@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
-# Copyright (c) 2026 Mehmet Rahmi Karatay
-# Licensed under the MIT License.
+# MWIS Agent (c) by Mehmet Rahmi Karatay
+#
+# MWIS Agent is licensed under a
+# Creative Commons Attribution-ShareAlike 4.0 International License.
+#
+# You should have received a copy of the license along with this
+# work.  If not, see <https://creativecommons.org/licenses/by-sa/4.0/>.
 
 """Utility script to extract the MWIS area forecast URL from a regions CSV reference."""
 
