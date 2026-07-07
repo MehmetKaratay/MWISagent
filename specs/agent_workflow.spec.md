@@ -40,7 +40,8 @@ Provides interactive mountain weather forecast synthesis, resolving missing inpu
 * *No Date:* Suspend and yield `RequestInput` asking for specific date or 3-day outlook.
 * *User requests >5 explicit regions:* Suspend and yield `RequestInput` reminding them of the 5-region cap and asking them to choose exactly which regions they want (Reminder: Scotland has 5, England has 3, Wales has 2).
 * *LLM parser omits optional fields:* Pydantic `ParseOutput` must correctly default `date` to `None` without raising a `ValidationError`.
-* *Out of Scope / Invalid:* If the location is outside the UK or the date is not between D0 and Doutlook, return a service limits message. If date is Dold, route to a historic lookup placeholder.
+* *Out of Scope / Invalid:* If the location is outside the UK, or fails to resolve to a known region (maps to "Unknown"), or the date is not between D0 and Doutlook, return a service limits message. If date is Dold, route to a historic lookup placeholder.
+* *Mock Forecast Environments:* In local dev, `MWIS_ENV=development` will dynamically align mock forecast dates to the current execution date to ensure they are treated as "fresh". `MWIS_ENV=test-new-dcode` will intentionally misalign dates to force a `"Dold"` (stale) scenario for testing.
 * *Hazard Detection:* If forecast data contains winds > 40mph or temperatures < -5°C, dynamically override `needs_impact = True`.
 * *Infinite Loops:* Cap loopback iterations at 5 to prevent DoS.
 

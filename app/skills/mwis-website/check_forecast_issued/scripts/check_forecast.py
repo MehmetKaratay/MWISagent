@@ -56,11 +56,22 @@ def get_all_region_codes() -> list[str]:
     return ["NW", "WH", "EH", "SH", "SU", "LD", "YD", "PD", "SD", "BB"]
 
 
-def _load_mock_html(region_code: str) -> str:
+def _format_mwis_date(dt: datetime.date) -> str:
+    """Format a date like 'Monday 6th July 2026'."""
+    day = dt.day
+    if 11 <= day <= 13:
+        suffix = 'th'
+    else:
+        suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
+    return dt.strftime(f"%A {day}{suffix} %B %Y")
+
+
+def _load_mock_html(region_code: str, env: str) -> str:
     """Load static mock HTML from disk.
 
     Args:
         region_code (str): The code of the region.
+        env (str): The environment string.
 
     Returns:
         str: Raw HTML content.
@@ -70,7 +81,24 @@ def _load_mock_html(region_code: str) -> str:
         raise FileNotFoundError(f"Mock file not found: {mock_file}")
     # nosemgrep: detect-path-traversal
     with open(mock_file, encoding="utf-8") as f:
-        return f.read()
+        html = f.read()
+
+    today = datetime.datetime.now(ZoneInfo("Europe/London")).date()
+    
+    if env == "development":
+        day0 = today
+        day1 = today + datetime.timedelta(days=1)
+        day2 = today + datetime.timedelta(days=2)
+    else:  # test-new-dcode
+        day0 = today - datetime.timedelta(days=1)
+        day1 = today
+        day2 = today + datetime.timedelta(days=1)
+
+    html = html.replace("Monday 6th July 2026", _format_mwis_date(day0))
+    html = html.replace("Tuesday 7th July 2026", _format_mwis_date(day1))
+    html = html.replace("Wednesday 8th July 2026", _format_mwis_date(day2))
+
+    return html
 
 
 def fetch_and_parse_region(
@@ -82,14 +110,14 @@ def fetch_and_parse_region(
 
     Args:
         region_code (str): The code of the region.
-        env (str): 'production' or 'development'.
+        env (str): 'production', 'development', or 'test-new-dcode'.
         ref_date (date, optional): Reference date for injecting Dcodes.
 
     Returns:
         dict: Parsed and injected forecast dictionary.
     """
-    if env == "development":
-        html = _load_mock_html(region_code)
+    if env in ("development", "test-new-dcode"):
+        html = _load_mock_html(region_code, env)
         parsed = parse_forecast_html(html)
     else:
         url = get_forecast_url(region_code)
@@ -97,6 +125,7 @@ def fetch_and_parse_region(
 
     if ref_date is None:
         ref_date = datetime.datetime.now(ZoneInfo("Europe/London")).date()
+
 
     return inject_d_codes(parsed, ref_date)
 
@@ -165,6 +194,10 @@ def _is_new_forecast_available(
         }
 
     days = nw_forecast.get("days", [])
+    if env == "development":
+        # Always return True in development to force cache update with the rewritten fresh dates
+        return True, {}
+        
     if not days or days[0].get("Dcode") != TARGET_NEW_DCODE:
         return False, {
             "status": STATUS_NO_UPDATE,

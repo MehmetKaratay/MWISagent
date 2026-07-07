@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 ### Fixed
+- Fixed mock forecast cache ingestion by dynamically rewriting static dates based on environment (`MWIS_ENV=development` and `test-new-dcode`).
+- Fixed region resolution in `agent_logic.py` to correctly map specific locations (like "Ben Nevis") using `query_region.py`, defaulting to "Unknown" when out of scope.
 - Added `google-agents-cli` to `pyproject.toml` dependencies.
 - Fixed 500 Internal Server Error in the frontend `/api/chat` route by replacing the legacy Reasoning Engine adapter with an `agents-cli run --mode a2a` wrapper, properly aligning with ADK AgentEngine interfaces.
 - Fixed `agents-cli run` failing in Cloud Run by copying `agents-cli-manifest.yaml` in the Dockerfile.

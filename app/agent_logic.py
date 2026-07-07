@@ -14,6 +14,7 @@
 
 import importlib.util
 import os
+import sys
 from typing import Any
 
 from google.adk.agents.context import Context
@@ -175,6 +176,33 @@ def load_query_country() -> Any:
     return module.get_regions_for_countries
 
 
+def load_query_region() -> Any:
+    """
+    Dynamically load the query_region skill module to map point locations to MWIS codes.
+
+    Returns:
+        Callable: The find_regions_by_location function.
+    """
+    path = os.path.join(
+        os.path.dirname(__file__),
+        "skills",
+        "mwis-website",
+        "identify_forecast_area",
+        "scripts",
+        "query_region.py",
+    )
+    # query_region relies on sys.path being modified or being executed from somewhere where it can import.
+    # To be safe, we temporarily inject its directory to sys.path
+    script_dir = os.path.dirname(path)
+    if script_dir not in sys.path:
+        sys.path.insert(0, script_dir)
+        
+    spec = importlib.util.spec_from_file_location("query_region", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.find_regions_by_location
+
+
 def _match_regions(locations: list[str]) -> tuple[list[str], bool]:
     """
     Map natural language location names to MWIS region codes.
@@ -185,12 +213,34 @@ def _match_regions(locations: list[str]) -> tuple[list[str], bool]:
     Returns:
         tuple: (list of matched region codes, boolean indicating if too many regions).
     """
-    get_regions = load_query_country()
-    try:
-        regions = get_regions(locations)
-        return regions or ["NW"], False
-    except ValueError:
+    get_regions_country = load_query_country()
+    find_regions_pt = load_query_region()
+    
+    all_regions = set()
+    
+    for loc in locations:
+        loc = loc.strip()
+        if not loc:
+            continue
+            
+        try:
+            c_regions = get_regions_country([loc])
+            if c_regions:
+                all_regions.update(c_regions)
+                continue
+        except ValueError:
+            return [], True
+            
+        # Try point based logic
+        pt_res = find_regions_pt([loc])
+        if pt_res.get("in_scope") and pt_res.get("regions"):
+            all_regions.update(pt_res["regions"])
+            
+    if len(all_regions) > 5:
         return [], True
+        
+    regions_list = sorted(list(all_regions))
+    return regions_list or ["Unknown"], False
 
 
 def _detect_hazard(forecast: dict[str, Any]) -> bool:
