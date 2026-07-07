@@ -19,9 +19,10 @@ A basic web frontend to provide an interactive chat experience with the MWISagen
 2. Existing backend code in `MWISagent/app/` must not be touched.
 3. Chat box must communicate with the agent backend via A2A protocol.
 4. Two development dialogs must exist to query region and date.
-5. The UI must use Vanilla CSS with a modern, sleek design (vibrant colors, dark mode support, glassmorphism, dynamic animations).
-6. The UI must use a single `<h1>` element.
-7. Must use Alpine.js for logic.
+5. Make it visually clear in the UI that the development dialogs are for testing purposes only and will be removed in the future.
+6. The UI must use Vanilla CSS with a modern, sleek design (vibrant colors, dark mode support, glassmorphism, dynamic animations).
+7. The UI must use a single `<h1>` element.
+8. Must use Alpine.js for logic.
 
 **Edge cases**
 - ADK Backend is down: The chat should display a clear connection error.
