@@ -2,7 +2,10 @@
 
 ## [Unreleased]
 ### Fixed
+- Added `google-agents-cli` to `pyproject.toml` dependencies.
 - Fixed 500 Internal Server Error in the frontend `/api/chat` route by replacing the legacy Reasoning Engine adapter with an `agents-cli run --mode a2a` wrapper, properly aligning with ADK AgentEngine interfaces.
+- Fixed `agents-cli run` failing in Cloud Run by copying `agents-cli-manifest.yaml` in the Dockerfile.
+- Made the mock HTML strings strictly pass the validator tests without requiring an `html5lib` parser explicitly in tests.
 - Fixed `TypeError` in `query_region.py` when outputting nearest regions in JSON format for out-of-bounds locations (e.g. London).
 
 ### Added

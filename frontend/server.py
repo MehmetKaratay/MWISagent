@@ -113,8 +113,11 @@ def proxy_chat(req: dict):
                 
         return {"outputs": {"output": agent_response}}
     except subprocess.CalledProcessError as e:
+        print(f"Subprocess failed with exit code {e.returncode}. Stderr: {e.stderr}", file=sys.stderr)
         raise HTTPException(status_code=500, detail=f"Proxy failed: {e.stderr}")
     except Exception as e:
+        import traceback
+        traceback.print_exc(file=sys.stderr)
         raise HTTPException(status_code=500, detail=f"Proxy failed: {e}")
 
 # Mount static files at the root
