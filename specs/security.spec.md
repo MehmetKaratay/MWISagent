@@ -45,7 +45,11 @@ When constructing system/user prompts for the LLM:
 
 ### 5. API Authentication & CORS
 All public-facing ADK API endpoints (e.g., `/a2a/app/message`, `/a2a/app/stream`) must be secured:
-* **Authentication**: Enforce OAuth validation. The backend must verify the validity of the JWT token supplied in the `Authorization: Bearer <token>` header (e.g., using Google Identity Platform or Firebase Auth) and return 401 Unauthorized for invalid tokens.
+* **Authentication**: Enforce OAuth validation using a custom FastAPI `BaseHTTPMiddleware`.
+  * The middleware must verify the validity of the JWT token supplied in the `Authorization: Bearer <token>` header using `google.oauth2.id_token.verify_oauth2_token`.
+  * **Audience Validation**: To prevent confused deputy attacks, the middleware must explicitly validate the token's audience against the `GOOGLE_OAUTH_CLIENT_ID` environment variable.
+  * **Path Exemptions**: The middleware must protect all A2A JSON-RPC execution endpoints (e.g., `/a2a/mwis-agent/message`, `/a2a/mwis-agent/stream`), but must explicitly bypass authentication for discovery paths (e.g., `/.well-known/agent-card`, `/docs`, `/openapi.json`).
+  * Return `401 Unauthorized` for missing, invalid, or incorrectly scoped tokens.
 * **CORS Restrictions**: The `ALLOW_ORIGINS` environment variable must be strictly configured to match the precise production frontend domains. Wildcard (`*`) origins must be strictly forbidden in production to mitigate CSRF-style attacks.
 
 ## Examples
