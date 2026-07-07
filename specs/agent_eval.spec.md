@@ -85,9 +85,9 @@ Then the agent triggers the out_of_scope_msg node
 **Dependencies:** Task 1
 
 ## Task 3: Create Makefile for On-Demand Execution
-**What to build:** Add a `Makefile` with an `eval` target that runs `agents-cli eval generate` followed by `agents-cli eval grade`. It must pass `MWIS_ENV=development` to `agents-cli eval generate` so the agent uses static HTML dumps instead of live fetch.
+**What to build:** Add a `Makefile` with an `eval` target that runs `agents-cli eval generate` followed by `agents-cli eval grade`. It must pass `MWIS_ENV=development` to `agents-cli eval generate` so the agent uses static HTML dumps instead of live fetch. It should also include a `playground` target that runs `agents-cli playground` with `MWIS_ENV=development` to ensure the playground uses mock data for testing.
 **Files likely affected:** `Makefile` (root)
-**Acceptance criteria:** Running `make eval` executes the pipeline in development mode successfully.
+**Acceptance criteria:** Running `make eval` executes the pipeline in development mode successfully. Running `make playground` runs the playground in development mode.
 **Dependencies:** Task 2
 
 ---

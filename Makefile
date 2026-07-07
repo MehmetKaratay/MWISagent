@@ -5,4 +5,4 @@ eval:
 
 .PHONY: playground
 playground:
-	cd mwis-agent && uv run --env-file .env agents-cli playground
+	MWIS_ENV=development uv run --env-file .env agents-cli playground
