@@ -37,3 +37,12 @@ setup_gcloud:
 	gcloud auth login
 	gcloud auth application-default login
 	gcloud auth application-default set-quota-project $(PROJECT_ID)
+
+.PHONY: cloud_deploy
+cloud_deploy:
+	@echo "Running pre-deployment validation checks..."
+	uvx pre-commit run --all-files
+	uv run --env-file .env pytest -W error -W ignore::DeprecationWarning -W ignore::UserWarning -W ignore::starlette.util.StarletteDeprecationWarning tests/unit tests/integration
+	@echo "Deploying to live Google Cloud Agent Runtime..."
+	@if [ -z "$(PROJECT_ID)" ]; then echo "Error: PROJECT_ID not set in .env"; exit 1; fi
+	agents-cli deploy --project $(PROJECT_ID) --no-confirm-project
