@@ -17,6 +17,7 @@
 - Fixed `TypeError` in `query_region.py` when outputting nearest regions in JSON format for out-of-bounds locations (e.g. London).
 
 ### Changed
+- Refactored multiple long functions in `query_region.py` into helper functions under 15 lines with descriptive names and docstrings to satisfy clean code standards.
 - Refactored `check_forecast_issued` in `check_forecast.py` into helper functions under 15 lines with descriptive names and docstrings.
 - Replaced hardcoded `10` region count magic number with dynamic `len(get_all_region_codes())`.
 

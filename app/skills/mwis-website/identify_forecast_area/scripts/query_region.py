@@ -280,29 +280,39 @@ class RegionFinder:
                 matches.append(code)
         return sorted(set(matches))
 
-    def get_nearest_regions(
-        self, pt: Point, tolerance_pct: float
-    ) -> list[RegionDistance]:
-        """Executes the get_nearest_regions operation.
+    def _calculate_region_distances(self, pt: Point) -> list[RegionDistance]:
+        """Calculates distance and direction to each region boundary.
 
         Args:
-            pt: The pt parameter.
-            tolerance_pct: The tolerance_pct parameter.
+            pt: Query point.
+
         Returns:
-            The return value.
+            List of region distance mappings.
         """
         distances = []
         for code, info in self.boundaries.items():
             dist, c_pt = GeoMath.polygon_distance(pt, info["coordinates"])
             direction = GeoMath.get_cardinal_direction(pt, c_pt)
             distances.append(RegionDistance(code, dist, direction))
+        return distances
 
+    def get_nearest_regions(
+        self, pt: Point, tolerance_pct: float
+    ) -> list[RegionDistance]:
+        """Gets the list of nearest regions within the tolerance limit.
+
+        Args:
+            pt: Query point.
+            tolerance_pct: Overlap tolerance percentage.
+
+        Returns:
+            Sorted list of nearest region distances.
+        """
+        distances = self._calculate_region_distances(pt)
         if not distances:
             return []
-
         min_dist = min(d.distance_km for d in distances)
         limit = min_dist * (1.0 + tolerance_pct / 100.0)
-
         near = [d for d in distances if d.distance_km <= limit]
         near.sort(key=lambda x: x.distance_km)
         return near
@@ -334,12 +344,13 @@ class InputResolver:
 
     @staticmethod
     def search_munros(name: str) -> str | None:
-        """Executes the search_munros operation.
+        """Searches the munros.csv file for a matching region ID.
 
         Args:
-            name: The name parameter.
+            name: The Munro name parameter.
+
         Returns:
-            The return value.
+            The associated region code if found, otherwise None.
         """
         if not os.path.exists(MUNROS_PATH):
             return None
@@ -347,8 +358,11 @@ class InputResolver:
             with open(MUNROS_PATH) as f:
                 for line in f:
                     parts = line.strip().split(",")
-                    if len(parts) >= 3 and parts[1].lower() == name.lower():
-                        return parts[2]
+                    if (
+                        len(parts) >= 3
+                        and parts[1].strip().lower() == name.strip().lower()
+                    ):
+                        return parts[2].strip()
         except Exception:
             pass
         return None
@@ -425,13 +439,31 @@ class InputResolver:
         return e500, n500, e100, n100
 
     @staticmethod
-    def parse_grid_reference(grid_ref: str) -> Point | None:
-        """Executes the parse_grid_reference operation.
+    def _bng_to_wgs84(e: int, n: int) -> Point:
+        """Transforms BNG (EPSG:27700) to WGS84 (EPSG:4326) coordinates.
 
         Args:
-            grid_ref: The grid_ref parameter.
+            e: Easting in meters.
+            n: Northing in meters.
+
         Returns:
-            The return value.
+            The WGS84 Point coordinates.
+        """
+        from pyproj import Transformer
+
+        transformer = Transformer.from_crs(EPSG_BNG, EPSG_WGS84, always_xy=True)
+        lon, lat = transformer.transform(e, n)
+        return Point(lat, lon)
+
+    @staticmethod
+    def parse_grid_reference(grid_ref: str) -> Point | None:
+        """Parses an OS grid reference and converts it to WGS84 coordinates.
+
+        Args:
+            grid_ref: The grid reference string to parse.
+
+        Returns:
+            The WGS84 Point if parsed successfully, otherwise None.
         """
         grid_ref = grid_ref.replace(" ", "").upper()
         if len(grid_ref) < 2 or not grid_ref[:2].isalpha():
@@ -446,35 +478,45 @@ class InputResolver:
         scale = 10 ** (MAX_GRID_DIGIT_PRECISION - len(digits) // 2)
         e = e500 + e100 + int(digits[: len(digits) // 2]) * scale
         n = n500 + n100 + int(digits[len(digits) // 2 :]) * scale
-        from pyproj import Transformer
+        return InputResolver._bng_to_wgs84(e, n)
 
-        transformer = Transformer.from_crs(EPSG_BNG, EPSG_WGS84, always_xy=True)
-        lon, lat = transformer.transform(e, n)
-        return Point(lat, lon)
+    @staticmethod
+    def _resolve_single_arg(arg: str) -> tuple[Point | None, str | None]:
+        """Resolves a single argument to either a Point or a region code.
+
+        Args:
+            arg: The single query argument string.
+
+        Returns:
+            A tuple of (Point, None) or (None, region_code) or (None, None).
+        """
+        grid_pt = InputResolver.parse_grid_reference(arg)
+        if grid_pt:
+            return grid_pt, None
+        m_code = InputResolver.search_munros(arg)
+        if m_code:
+            return None, m_code
+        local_code = InputResolver.search_local_names(arg)
+        if local_code:
+            return None, local_code
+        coords = InputResolver.query_nominatim(arg)
+        if coords:
+            return coords, None
+        return None, None
 
     @staticmethod
     def resolve_args(args: list[str]) -> tuple[Point | None, str | None]:
-        """Executes the resolve_args operation.
+        """Resolves command-line arguments to coordinates or a region code.
 
         Args:
-            args: The args parameter.
+            args: List of command-line argument strings.
+
         Returns:
-            The return value.
+            A tuple of (Point, None) or (None, region_code) or (None, None).
         """
         if len(args) == 1:
-            grid_pt = InputResolver.parse_grid_reference(args[0])
-            if grid_pt:
-                return grid_pt, None
-            m_code = InputResolver.search_munros(args[0])
-            if m_code:
-                return None, m_code
-            local_code = InputResolver.search_local_names(args[0])
-            if local_code:
-                return None, local_code
-            coords = InputResolver.query_nominatim(args[0])
-            if coords:
-                return coords, None
-        elif len(args) >= 2:
+            return InputResolver._resolve_single_arg(args[0])
+        if len(args) >= 2:
             try:
                 return Point(float(args[0]), float(args[1])), None
             except ValueError:
@@ -645,6 +687,42 @@ def _process_location(
         formatter.format_nearest(nearest, boundaries)
 
 
+def _serialize_nearest(nearest: list[RegionDistance]) -> list[dict]:
+    """Serializes nearest regions list to dict list for JSON output.
+
+    Args:
+        nearest: List of RegionDistance objects.
+
+    Returns:
+        List of serialized dicts.
+    """
+    return [{"code": reg.code, "distance_km": reg.distance_km} for reg in nearest]
+
+
+def _find_regions_by_coords(pt: Point, boundaries: dict[str, Any]) -> dict:
+    """Finds regions or nearest regions for a Point inside GB.
+
+    Args:
+        pt: Point coordinates inside GB.
+        boundaries: Loaded boundaries dictionary.
+
+    Returns:
+        Result dictionary mapping for the coordinates.
+    """
+    finder = RegionFinder(boundaries)
+    regions = finder.get_matching_regions(pt)
+    if regions:
+        return {"in_scope": True, "in_area": True, "regions": regions}
+    tol = ConfigLoader.get_overlap_tolerance()
+    nearest = finder.get_nearest_regions(pt, tol)
+    return {
+        "in_scope": True,
+        "in_area": False,
+        "error": "NOT_IN_AREA",
+        "nearest": _serialize_nearest(nearest),
+    }
+
+
 def find_regions_by_location(location_args: list[str]) -> dict:
     """Find regions for a given location, coordinate, or grid reference.
 
@@ -668,25 +746,7 @@ def find_regions_by_location(location_args: list[str]) -> dict:
     if pt is None or not GeoMath.is_in_gb(pt):
         return {"in_scope": False, "in_area": False, "error": "OUT_OF_SCOPE"}
 
-    finder = RegionFinder(boundaries)
-    regions = finder.get_matching_regions(pt)
-    if regions:
-        return {"in_scope": True, "in_area": True, "regions": regions}
-    else:
-        tol = ConfigLoader.get_overlap_tolerance()
-        nearest = finder.get_nearest_regions(pt, tol)
-        # Convert nearest regions to list of dicts/names if needed or return directly
-        nearest_serialized = []
-        for reg in nearest:
-            nearest_serialized.append(
-                {"code": reg.code, "distance_km": reg.distance_km}
-            )
-        return {
-            "in_scope": True,
-            "in_area": False,
-            "error": "NOT_IN_AREA",
-            "nearest": nearest_serialized,
-        }
+    return _find_regions_by_coords(pt, boundaries)
 
 
 def main():
