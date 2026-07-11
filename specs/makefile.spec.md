@@ -18,6 +18,8 @@ targets:
     description: Configures the mwis configuration, project settings, CLI login, and ADC quota project using PROJECT_ID.
   - name: cloud_deploy
     description: Runs verification linters and tests with warnings treated as errors, then deploys to Vertex AI Agent Runtime.
+  - name: cloud_deploy_dev
+    description: Deploys the backend agent first, then builds and deploys the containerized frontend dashboard to Cloud Run.
 ```
 
 ## Behavior & Technical Requirements
@@ -56,3 +58,9 @@ targets:
   1. `uvx pre-commit run --all-files`
   2. `uv run --env-file .env pytest -W error -W ignore::DeprecationWarning -W ignore::UserWarning -W ignore::starlette.util.StarletteDeprecationWarning tests/unit tests/integration`
   3. `agents-cli deploy --project $(PROJECT_ID) --no-confirm-project`
+
+#### `cloud_deploy_dev`
+- Depends on `cloud_deploy`.
+- Asserts `PROJECT_ID` is present in `.env`.
+- Extracts `remote_agent_runtime_id` from the updated `deployment_metadata.json`.
+- Runs `gcloud run deploy mwis-agent-dashboard` pointing to the root workspace directory with the `GOOGLE_CLOUD_PROJECT` and `AGENT_RUNTIME_ID` environment variables configured to build and deploy the containerized frontend to Cloud Run.
