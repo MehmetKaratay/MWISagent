@@ -16,3 +16,11 @@ local_deploy:
 	@sleep 2
 	@echo "Local deployment started!"
 	@echo "Frontend URL: http://localhost:8000"
+
+.PHONY: kill_local_deploy
+kill_local_deploy:
+	@echo "Stopping backend on port 8080..."
+	@fuser -k 8080/tcp || true
+	@echo "Stopping frontend on port 8000..."
+	@fuser -k 8000/tcp || true
+	@echo "Local deployment stopped."
