@@ -227,6 +227,30 @@ def load_query_date() -> Any:
     return module.resolve_date_query
 
 
+def load_filter_forecast() -> Any:
+    """Dynamically load the filter_forecast skill module to filter forecast payload.
+
+    Returns:
+        Callable: The filter_forecast_payload function.
+    """
+    path = os.path.join(
+        os.path.dirname(__file__),
+        "skills",
+        "mwis-website",
+        "serve_forecast_to_user",
+        "scripts",
+        "filter_forecast.py",
+    )
+    script_dir = os.path.dirname(path)
+    if script_dir not in sys.path:
+        sys.path.insert(0, script_dir)
+
+    spec = importlib.util.spec_from_file_location("filter_forecast", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.filter_forecast_payload
+
+
 def _match_regions(locations: list[str]) -> tuple[list[str], bool]:
     """
     Map natural language location names to MWIS region codes.
@@ -320,24 +344,6 @@ def _resolve_date_codes(date_query: str | None) -> list[str]:
         return []
 
 
-def _filter_forecasts(forecasts: dict, resolved: list[str]) -> dict:
-    """Filters forecast payload to keep only matching Dcodes and outlook."""
-    if not resolved:
-        return forecasts
-    filtered = {}
-    for region, f_data in forecasts.items():
-        if not isinstance(f_data, dict):
-            filtered[region] = f_data
-            continue
-        f_copy = {k: v for k, v in f_data.items() if k not in ["days", "outlook"]}
-        if "days" in f_data:
-            f_copy["days"] = [d for d in f_data["days"] if d.get("Dcode") in resolved]
-        if "outlook" in f_data and "Doutlook" in resolved:
-            f_copy["outlook"] = f_data["outlook"]
-        filtered[region] = f_copy
-    return filtered
-
-
 def _resolve_and_fetch_logic(ctx: Context, node_input: Any) -> Event:
     """
     Core logic to resolve requested locations to regions and fetch their forecasts.
@@ -357,7 +363,11 @@ def _resolve_and_fetch_logic(ctx: Context, node_input: Any) -> Event:
     forecasts, needs_impact = _fetch_all_forecasts(regions, needs_impact)
 
     resolved = _resolve_date_codes(ctx.state.get("date"))
-    forecasts = _filter_forecasts(forecasts, resolved)
+    try:
+        filter_fn = load_filter_forecast()
+        forecasts = filter_fn(forecasts, resolved)
+    except Exception:
+        pass
 
     state_updates = {
         "region_codes": regions,

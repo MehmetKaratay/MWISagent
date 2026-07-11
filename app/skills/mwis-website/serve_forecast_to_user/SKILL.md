@@ -31,9 +31,9 @@ This skills 'glues' the other skills in `MWISagent/.agent/skills/mwis-website/` 
     - If a user gives a date such as "02/07" clarify that you are interpreting this as "DD/MM/YYYY" and that this is 02nd July 2007. Allow the user to override the date specified if needed but do not proactively give them that option.
     - Use the `identify_outing_date` skill to check which forecast date(s) are available
     - If user requests a forecast that we do not have access to, for example because it is too far in the future, inform the user that we do not have access to that forecast and ask if they would like the closest available forecast instead. If they agree proceed to fetch the closest available forecast. If they do not agree, do not fetch any forecast and inform the user that you cannot help with their request
-  3. Fetch the forecast for the region and date range using the `fetch_specific_forecast` tool.
-  4. Pass the relevant dates back to the agent:
-     - Map the resolved date codes (`D0`, `D1`, `D2`, etc.) to the parsed JSON days or outlook.
+ 3. Fetch the forecast for the region and date range using the `fetch_specific_forecast` tool.
+ 4. Pass the relevant dates back to the agent:
+     - Programmatically filter the forecast payload using `scripts/filter_forecast.py` to map the resolved date codes (`D0`, `D1`, `D2`, etc.) to the parsed JSON days or outlook.
      - **Date-based Calibration Rules**:
        - Because new forecasts can be issued at variable times (sometimes as early as 11:00 AM), do NOT rely on system time to determine the mapping.
        - Instead, compare the parsed `"date"` field in `days[0]` with the current system/local calendar date to calibrate:
