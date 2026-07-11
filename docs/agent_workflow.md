@@ -87,6 +87,7 @@ graph TD
   * Resolves user-specified `date` query into `resolved_date_codes` using the `identify_outing_date` skill.
   * If the resolved region count > 5, routes to `clarify_too_many_locations`.
   * Fetches the corresponding forecasts sequentially from the local caching layer.
+  * Programmatically filters the retrieved forecast JSON payload to retain only the days or outlook matching `resolved_date_codes` (if populated).
   * Scans forecast values: if wind speed is >40mph or temperature is <-5°C in any forecast, sets `needs_impact = True`.
 
 ### Node 4: `validate_coverage`
@@ -111,7 +112,7 @@ graph TD
 
 ### Node 10: `synthesis`
 * **Type:** `LlmAgent` (model: `gemini-2.5-flash`)
-* **Behavior:** Reads forecast context and annotations to generate a clean, plain-text response answering the query. If `resolved_date_codes` is populated in the state, filters the output forecast details to only format matching days, completely omitting other day forecasts or general outlook comments.
+* **Behavior:** Reads the pre-filtered forecast payload context and annotations to generate a clean, plain-text response answering the query. Because the payload was filtered programmatically, the LLM only has access to the requested days' forecasts.
 
 ### Node 11: `ask_follow_up`
 * **Type:** `RequestInput`
