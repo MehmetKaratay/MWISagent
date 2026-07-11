@@ -62,9 +62,13 @@ def _parse_fuzzy_date(text: str, ref_date: datetime.date) -> datetime.date:
     Returns:
         datetime.date: The parsed date.
     """
-    cal = parsedatetime.Calendar()
-    ref_dt = datetime.datetime.combine(ref_date, datetime.time.min)
-    struct, flag = cal.parse(text, ref_dt.timetuple())
+    import warnings
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        cal = parsedatetime.Calendar()
+        ref_dt = datetime.datetime.combine(ref_date, datetime.time.min)
+        struct, flag = cal.parse(text, ref_dt.timetuple())
     if flag > 0:
         return datetime.date(struct.tm_year, struct.tm_mon, struct.tm_mday)
     raise ValueError(f"Could not parse date: '{text}'")

@@ -45,3 +45,9 @@ Safely validates and deploys the agent to Vertex AI Agent Runtime:
 1. **Pre-deployment Linter Audits:** Runs `pre-commit` quality checks (Ruff formatting and Semgrep security scan).
 2. **Pre-deployment Verification:** Runs the complete unit and integration test suite with warnings treated as errors.
 3. **Deployment:** Executes the live deployment command if all validation steps pass cleanly. If any step fails, execution halts immediately and the deployment is cancelled.
+
+#### `make cloud_deploy_dev`
+Deploys the backend agent and containerized frontend dashboard simultaneously:
+1. **Backend Deploy:** Invokes `make cloud_deploy` first to run validation checks and update the backend Reasoning Engine.
+2. **Metadata extraction:** Retrieves the newly deployed reasoning engine instance ID from `deployment_metadata.json`.
+3. **Frontend Deploy:** Deploys the frontend dashboard as a containerized environment to Google Cloud Run, passing in the correct project ID and routing destination variables so developer tools can securely connect to the live agent backend.

@@ -47,3 +47,16 @@ cloud_deploy:
 	@echo "Deploying to live Google Cloud Agent Runtime..."
 	@if [ -z "$(PROJECT_ID)" ]; then echo "Error: PROJECT_ID not set in .env"; exit 1; fi
 	agents-cli deploy --project $(PROJECT_ID) --no-confirm-project
+
+.PHONY: cloud_deploy_dev
+cloud_deploy_dev: cloud_deploy
+	@echo "Deploying containerized frontend dashboard to Cloud Run..."
+	@if [ -z "$(PROJECT_ID)" ]; then echo "Error: PROJECT_ID not set in .env"; exit 1; fi
+	$(eval RUNTIME_ID := $(shell grep '"remote_agent_runtime_id"' deployment_metadata.json | cut -d'"' -f4))
+	gcloud run deploy mwis-agent-dashboard \
+		--source . \
+		--command "uv" \
+		--args "run,uvicorn,frontend.server:app,--host,0.0.0.0,--port,8080" \
+		--region europe-west2 \
+		--allow-unauthenticated \
+		--set-env-vars="GOOGLE_CLOUD_PROJECT=$(PROJECT_ID),AGENT_RUNTIME_ID=$(RUNTIME_ID)"

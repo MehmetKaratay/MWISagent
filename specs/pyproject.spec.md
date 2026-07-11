@@ -61,6 +61,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 ```
 
+### 5. Pytest Tool Configuration
+Configure `pytest` in `[tool.pytest.ini_options]` to globally ignore custom deprecation warnings from third-party libraries:
+* Add `filterwarnings` configuration listing ignores for parsedatetime warnings.
+
 ## Examples
 
 Expected TOML structure:

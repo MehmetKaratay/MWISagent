@@ -97,6 +97,11 @@ build-backend = "hatchling.build"
 [tool.pytest.ini_options]
 pythonpath = "."
 asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    "ignore:.*Flag style will be deprecated.*:DeprecationWarning",
+    "ignore:.*Flag style will be deprecated.*:UserWarning",
+    "ignore::DeprecationWarning",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["app","frontend"]

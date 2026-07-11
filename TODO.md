@@ -4,6 +4,8 @@
 
 
 ## Next time
+ * Deployed version should use live forecasts, but maintain the Dev Tools §
+
 
 ## Future
 
@@ -13,22 +15,26 @@
  * Check: docs and specs for everything?
  * Anything in Context that could be extracted to a separate file with clean link to keep context  window cleaner?
  * Tidy up local GEMINI.md so it plays nicely with global GEMINI.md
-
- * Make file to: Make deploy, Make deploy-dev, etc.
+ * Fix depreciation warning that occurs during `make cloud-deploy`
+ * `make cloud-deploy` updates the deploy timestamp (possibly by calling helper script)
 
 ### Agent
 
- * Only return day requested
+ * Format output (Already markdown, but include line breaks in fronts of sections)
  * Short paragraphs for easy reading
  * Summarise the forecast, then give more detail if asked.
  * Focus (mostly) on the variable asked for (eg temp, wind, but briefly mention others)
  * Compare skills (as skill?)
  * Abovid that blanket question! (Do you want a forecast for a specific location, or a comparison of up to 5 regions (e.g., 'Scottish areas')?
  * Any more questions at end, as separate chat msg. Only after a pause to let user ask other qs first.
+ * London: result should be "That is not MWIS regions. The nearest region/s is/are: XXXX. Would you like a forecast for one of these?"
 
 #### Human interaction
  * Which day is better?
  * Where should I go in Scotland?
+ * Where will I see more sunshine? (Know to load cloud & sunshine fields and anaylise)
+ * Give me summary of the weather over Ben Nevis.
+ * How cloudy will Ben Nevis be tomorrow?
 
 ### Skills
  * If database cannot id a name, check local csv file to see if its there.
