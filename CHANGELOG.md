@@ -22,7 +22,7 @@
 - Added guide on setting up and running git pre-commit quality checks (Ruff linter/formatter and Semgrep scan) in `docs/env_setup.md`.
 - Created `tests/eval/datasets/mwis_eval.json` with 4 test scenarios (direct, ambiguous, location out-of-scope, date out-of-scope).
 - Configured ADK built-in evaluation metrics in `tests/eval/eval_config.yaml`.
-- Added a `Makefile` with `eval`, `playground`, `local_deploy`, and `kill_local_deploy` targets.
+- Added a `Makefile` with `eval`, `playground`, `local_deploy`, `kill_local_deploy`, and `setup_gcloud` targets.
 
 All notable changes to this project will be documented in this file.
 

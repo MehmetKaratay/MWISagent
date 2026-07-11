@@ -1,3 +1,5 @@
+PROJECT_ID := $(shell grep '^PROJECT_ID=' .env | cut -d= -f2)
+
 .PHONY: eval
 eval:
 	MWIS_ENV=development uv run --env-file .env agents-cli eval generate --dataset tests/eval/datasets/mwis_eval.json
@@ -24,3 +26,14 @@ kill_local_deploy:
 	@echo "Stopping frontend on port 8000..."
 	@fuser -k 8000/tcp || true
 	@echo "Local deployment stopped."
+
+.PHONY: setup_gcloud
+setup_gcloud:
+	@if [ -z "$(PROJECT_ID)" ]; then echo "Error: PROJECT_ID not set in .env"; exit 1; fi
+	@echo "Setting up gcloud for project $(PROJECT_ID)..."
+	@gcloud config configurations activate mwis 2>/dev/null || gcloud config configurations create mwis
+	gcloud config set project $(PROJECT_ID)
+	gcloud config set run/region europe-west2
+	gcloud auth login
+	gcloud auth application-default login
+	gcloud auth application-default set-quota-project $(PROJECT_ID)
