@@ -14,8 +14,8 @@
  * Check: docs and specs for everything?
  * Anything in Context that could be extracted to a separate file with clean link to keep context  window cleaner?
  * Tidy up local GEMINI.md so it plays nicely with global GEMINI.md
-
- * Make file to: Make deploy, Make deploy-dev, etc.
+ * Fix depreciation warning that occurs during `make cloud-deploy`
+ * `make cloud-deploy` updates the deploy timestamp (possibly by calling helper script)
 
 ### Agent
 
