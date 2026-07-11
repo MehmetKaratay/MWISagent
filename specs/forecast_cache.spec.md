@@ -23,7 +23,9 @@ Provides a SQLite cache layer to store parsed MWIS forecasts for all 10 regions,
 2. **Atomic Updates:**
    - Writes to the cache must be executed in a database transaction (`BEGIN TRANSACTION` / `COMMIT`).
    - If fetching or parsing any region's forecast fails (network error, schema mismatch, parser failure), the entire transaction must be rolled back (`ROLLBACK`), preserving the prior cache.
-3. **Development Mode:**
+3. **Bypass Schedule on Incomplete Cache:**
+   - If the `forecast_cache` table contains fewer than 10 entries (indicating the cache is incomplete or empty), the scheduler check (`is_time_in_schedule`) must be bypassed to force a complete cache load.
+4. **Development Mode:**
    - Checked via environment variable `MWIS_ENV=development`.
    - In development mode, the database will bypass remote network fetching. Instead, it will read mock HTML files from the relative directory `mwis-agent/app/skills/mwis-website/mocks/` and parse them.
 

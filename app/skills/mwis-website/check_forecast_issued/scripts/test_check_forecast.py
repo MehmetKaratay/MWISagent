@@ -33,9 +33,35 @@ class TestCheckForecast(unittest.TestCase):
         """Docstring for tearDown."""
         self.temp_dir.cleanup()
 
+    def _populate_dummy_cache(self):
+        """Populate the test database with 10 dummy region records from 'yesterday'."""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS forecast_cache (
+                region_code TEXT PRIMARY KEY,
+                forecast_json TEXT NOT NULL,
+                last_updated_mwis TEXT NOT NULL,
+                cached_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            """
+        )
+        for code in get_all_region_codes():
+            cursor.execute(
+                """
+                INSERT OR REPLACE INTO forecast_cache (region_code, forecast_json, last_updated_mwis, cached_at)
+                VALUES (?, ?, ?, datetime('now', '-1 day'));
+                """,
+                (code, '{"dummy": true}', 'Mon 6th Jul 26 at 4:00PM'),
+            )
+        conn.commit()
+        conn.close()
+
     @patch("check_forecast.is_time_in_schedule")
     def test_skip_check_out_of_hours(self, mock_schedule):
         """Verify check exits early with 'skipped' if not in active schedule hours."""
+        self._populate_dummy_cache()
         mock_schedule.return_value = False
         res = check_forecast_issued(
             db_path=self.db_path,
@@ -67,7 +93,7 @@ class TestCheckForecast(unittest.TestCase):
         with patch("check_forecast.fetch_and_parse_region", return_value=d0_mock_data):
             res = check_forecast_issued(
                 db_path=self.db_path,
-                env="development",
+                env="test-new-dcode",
                 current_time=datetime.datetime(2026, 7, 6, 12, 0),
             )
             self.assertEqual(res["status"], "no_update")
@@ -137,12 +163,18 @@ class TestCheckForecast(unittest.TestCase):
             "last_updated": "Sun 5th Jul 26 at 4:00PM",
         }
 
+        # Use current system date to align with CURRENT_TIMESTAMP insertion in DB
+        from zoneinfo import ZoneInfo
+        today = datetime.datetime.now(ZoneInfo("Europe/London"))
+        time1 = today.replace(hour=12, minute=0, second=0, microsecond=0)
+        time2 = today.replace(hour=13, minute=0, second=0, microsecond=0)
+
         with patch("check_forecast.fetch_and_parse_region", return_value=d1_mock_data):
             # First run: triggers update
             res1 = check_forecast_issued(
                 db_path=self.db_path,
                 env="development",
-                current_time=datetime.datetime(2026, 7, 6, 12, 0),
+                current_time=time1,
             )
             self.assertEqual(res1["status"], "updated")
 
@@ -150,9 +182,43 @@ class TestCheckForecast(unittest.TestCase):
             res2 = check_forecast_issued(
                 db_path=self.db_path,
                 env="development",
-                current_time=datetime.datetime(2026, 7, 6, 13, 0),
+                current_time=time2,
             )
             self.assertEqual(res2["status"], "already_updated_today")
+
+    @patch("check_forecast.is_time_in_schedule")
+    def test_check_forecast_issued_forces_update_when_cache_incomplete(self, mock_schedule):
+        """Verify check is forced when the database cache has fewer than 10 entries, ignoring schedule."""
+        mock_schedule.return_value = False
+
+        d1_mock_data = {
+            "region": "North West Highlands",
+            "days": [
+                {
+                    "forecast_index": 0,
+                    "Dcode": "D1",
+                    "date": "Monday 6th July 2026",
+                    "last_updated": "Sun 5th Jul 26 at 4:00PM",
+                }
+            ],
+            "outlook": "Calm",
+            "last_updated": "Sun 5th Jul 26 at 4:00PM",
+        }
+
+        with patch("check_forecast.fetch_and_parse_region", return_value=d1_mock_data):
+            res = check_forecast_issued(
+                db_path=self.db_path,
+                env="development",
+                current_time=datetime.datetime(2026, 7, 6, 9, 0),
+            )
+            self.assertEqual(res["status"], "updated")
+
+            # Check db contains all 10 regions
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute("SELECT count(*) FROM forecast_cache;")
+            self.assertEqual(cursor.fetchone()[0], len(get_all_region_codes()))
+            conn.close()
 
 
 if __name__ == "__main__":

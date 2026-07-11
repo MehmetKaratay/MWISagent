@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Fixed
+- Fixed cache population issue by bypassing the scheduler check when the database contains fewer than 10 entries (incomplete or empty cache).
 - Fixed mock forecast cache ingestion by dynamically rewriting static dates based on environment (`MWIS_ENV=development` and `test-new-dcode`).
 - Fixed region resolution in `agent_logic.py` to correctly map specific locations (like "Ben Nevis") using `query_region.py`, defaulting to "Unknown" when out of scope.
 - Added `google-agents-cli` to `pyproject.toml` dependencies.

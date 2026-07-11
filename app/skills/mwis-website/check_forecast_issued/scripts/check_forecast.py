@@ -248,6 +248,26 @@ def _update_all_regions_cache(
     }
 
 
+def _get_cache_count(db_path: str) -> int:
+    """Return the number of records currently in the forecast_cache table.
+
+    Args:
+        db_path (str): DB file path.
+
+    Returns:
+        int: Number of rows in forecast_cache.
+    """
+    conn = sqlite3.connect(db_path)
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT count(*) FROM forecast_cache;")
+        return cursor.fetchone()[0]
+    except sqlite3.OperationalError:
+        return 0
+    finally:
+        conn.close()
+
+
 def check_forecast_issued(
     db_path: str | None = None,
     env: str = "production",
@@ -271,7 +291,10 @@ def check_forecast_issued(
 
     current_time = _normalize_time(current_time)
 
-    if not is_time_in_schedule(current_time):
+    if _get_cache_count(db_path) < 10:
+        # Cache is incomplete (fewer than 10 regions), force update check regardless of schedule
+        pass
+    elif not is_time_in_schedule(current_time):
         return {
             "status": STATUS_NO_UPDATE,
             "message": "Out of scheduled checking hours.",
