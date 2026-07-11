@@ -344,6 +344,20 @@ def _resolve_date_codes(date_query: str | None) -> list[str]:
         return []
 
 
+def _get_filtered_forecasts(
+    regions: list[str], date_query: str | None, needs_impact: bool
+) -> tuple[dict, bool, list[str]]:
+    """Fetches and filters forecasts for the given regions and date query."""
+    forecasts, needs_impact = _fetch_all_forecasts(regions, needs_impact)
+    resolved = _resolve_date_codes(date_query)
+    try:
+        filter_fn = load_filter_forecast()
+        forecasts = filter_fn(forecasts, resolved)
+    except Exception:
+        pass
+    return forecasts, needs_impact, resolved
+
+
 def _resolve_and_fetch_logic(ctx: Context, node_input: Any) -> Event:
     """
     Core logic to resolve requested locations to regions and fetch their forecasts.
@@ -359,15 +373,9 @@ def _resolve_and_fetch_logic(ctx: Context, node_input: Any) -> Event:
     if error:
         return Event(output=node_input, route="too_many_locations")
 
-    needs_impact = ctx.state.get("needs_impact", False)
-    forecasts, needs_impact = _fetch_all_forecasts(regions, needs_impact)
-
-    resolved = _resolve_date_codes(ctx.state.get("date"))
-    try:
-        filter_fn = load_filter_forecast()
-        forecasts = filter_fn(forecasts, resolved)
-    except Exception:
-        pass
+    forecasts, needs_impact, resolved = _get_filtered_forecasts(
+        regions, ctx.state.get("date"), ctx.state.get("needs_impact", False)
+    )
 
     state_updates = {
         "region_codes": regions,

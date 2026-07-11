@@ -18,6 +18,7 @@
 - Fixed `TypeError` in `query_region.py` when outputting nearest regions in JSON format for out-of-bounds locations (e.g. London).
 
 ### Changed
+- Refactored `_resolve_and_fetch_logic` in `app/agent_logic.py` by extracting a new `_get_filtered_forecasts` helper function, keeping all orchestration functions under the 15-line limit.
 - Relocated the forecast payload filtering logic to a modular `filter_forecast.py` script inside the `serve_forecast_to_user` skill directory, dynamically importing and executing it in `app/agent_logic.py`.
 - Refactored `_resolve_and_fetch_logic` in `app/agent_logic.py` into small helper functions under 15 lines with descriptive names and docstrings to satisfy clean code standards.
 - Split monolithic `query_region.py` into separate lightweight helper modules `geo_math.py`, `config_loader.py`, and `input_resolver.py`, keeping all modules under 300 lines.
