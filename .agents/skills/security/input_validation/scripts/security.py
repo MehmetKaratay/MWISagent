@@ -4,6 +4,7 @@
 """Security helper functions for input validation and prompt isolation."""
 
 import re
+
 from pydantic import BaseModel, Field, field_validator
 
 

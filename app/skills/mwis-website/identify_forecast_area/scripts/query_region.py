@@ -649,7 +649,9 @@ def find_regions_by_location(location_args: list[str]) -> dict:
         # Convert nearest regions to list of dicts/names if needed or return directly
         nearest_serialized = []
         for reg in nearest:
-            nearest_serialized.append({"code": reg.code, "distance_km": reg.distance_km})
+            nearest_serialized.append(
+                {"code": reg.code, "distance_km": reg.distance_km}
+            )
         return {
             "in_scope": True,
             "in_area": False,

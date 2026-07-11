@@ -14,28 +14,37 @@
 """
 Unit tests for query_region.py debugging.
 """
-import sys
-import os
+
 import json
 import subprocess
+import sys
 from pathlib import Path
+
 
 def test_query_region_out_of_bounds_json():
     """Test that querying a location outside MWIS areas (e.g. London) with --json
     returns a valid JSON object containing the 'nearest' key with a serialized list.
     """
     project_root = Path(__file__).resolve().parent.parent.parent
-    script_path = project_root / "app" / "skills" / "mwis-website" / "identify_forecast_area" / "scripts" / "query_region.py"
-    
+    script_path = (
+        project_root
+        / "app"
+        / "skills"
+        / "mwis-website"
+        / "identify_forecast_area"
+        / "scripts"
+        / "query_region.py"
+    )
+
     result = subprocess.run(
         [sys.executable, str(script_path), "London", "--json"],
         capture_output=True,
-        text=True
+        text=True,
     )
-    
+
     # We expect return code 0 because it handles the out-of-bounds gracefully in JSON mode
     assert result.returncode == 0
-    
+
     # It must be valid JSON
     data = json.loads(result.stdout)
     assert data["in_scope"] is True
@@ -44,7 +53,7 @@ def test_query_region_out_of_bounds_json():
     assert "nearest" in data
     assert isinstance(data["nearest"], list)
     assert len(data["nearest"]) > 0
-    
+
     # The first item should have code and distance_km
     first_nearest = data["nearest"][0]
     assert "code" in first_nearest

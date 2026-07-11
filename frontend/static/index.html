@@ -16,7 +16,7 @@
             <header>
                 <h1>MWIS Weather Agent</h1>
             </header>
-            
+
             <div class="chat-history" id="chat-history">
                 <template x-for="(msg, index) in messages" :key="index">
                     <div :class="['message', msg.role === 'user' ? 'message-user' : 'message-agent']">
@@ -25,7 +25,7 @@
                         </div>
                     </div>
                 </template>
-                
+
                 <div x-show="isLoading" class="message message-agent">
                     <div class="message-bubble loading">
                         <span>Typing...</span>
@@ -35,10 +35,10 @@
 
             <div class="chat-input-area">
                 <form @submit.prevent="sendMessage" class="input-form">
-                    <input 
-                        type="text" 
-                        x-model="currentMessage" 
-                        placeholder="Ask about the mountain weather..." 
+                    <input
+                        type="text"
+                        x-model="currentMessage"
+                        placeholder="Ask about the mountain weather..."
                         :disabled="isLoading"
                         autofocus
                     >
@@ -54,9 +54,9 @@
             <div class="dev-warning">
                 ⚠️ For testing purposes only. Will be removed in the future.
             </div>
-            
+
             <h2>Development Tools</h2>
-            
+
             <div class="tool-card">
                 <h3>Query Region</h3>
                 <form @submit.prevent="submitRegion">

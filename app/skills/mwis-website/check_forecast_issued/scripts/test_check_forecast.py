@@ -53,7 +53,7 @@ class TestCheckForecast(unittest.TestCase):
                 INSERT OR REPLACE INTO forecast_cache (region_code, forecast_json, last_updated_mwis, cached_at)
                 VALUES (?, ?, ?, datetime('now', '-1 day'));
                 """,
-                (code, '{"dummy": true}', 'Mon 6th Jul 26 at 4:00PM'),
+                (code, '{"dummy": true}', "Mon 6th Jul 26 at 4:00PM"),
             )
         conn.commit()
         conn.close()
@@ -165,6 +165,7 @@ class TestCheckForecast(unittest.TestCase):
 
         # Use current system date to align with CURRENT_TIMESTAMP insertion in DB
         from zoneinfo import ZoneInfo
+
         today = datetime.datetime.now(ZoneInfo("Europe/London"))
         time1 = today.replace(hour=12, minute=0, second=0, microsecond=0)
         time2 = today.replace(hour=13, minute=0, second=0, microsecond=0)
@@ -187,7 +188,9 @@ class TestCheckForecast(unittest.TestCase):
             self.assertEqual(res2["status"], "already_updated_today")
 
     @patch("check_forecast.is_time_in_schedule")
-    def test_check_forecast_issued_forces_update_when_cache_incomplete(self, mock_schedule):
+    def test_check_forecast_issued_forces_update_when_cache_incomplete(
+        self, mock_schedule
+    ):
         """Verify check is forced when the database cache has fewer than 10 entries, ignoring schedule."""
         mock_schedule.return_value = False
 

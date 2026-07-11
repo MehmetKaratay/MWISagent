@@ -60,9 +60,9 @@ def _format_mwis_date(dt: datetime.date) -> str:
     """Format a date like 'Monday 6th July 2026'."""
     day = dt.day
     if 11 <= day <= 13:
-        suffix = 'th'
+        suffix = "th"
     else:
-        suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
     return dt.strftime(f"%A {day}{suffix} %B %Y")
 
 
@@ -84,7 +84,7 @@ def _load_mock_html(region_code: str, env: str) -> str:
         html = f.read()
 
     today = datetime.datetime.now(ZoneInfo("Europe/London")).date()
-    
+
     if env == "development":
         day0 = today
         day1 = today + datetime.timedelta(days=1)
@@ -125,7 +125,6 @@ def fetch_and_parse_region(
 
     if ref_date is None:
         ref_date = datetime.datetime.now(ZoneInfo("Europe/London")).date()
-
 
     return inject_d_codes(parsed, ref_date)
 
@@ -197,7 +196,7 @@ def _is_new_forecast_available(
     if env == "development":
         # Always return True in development to force cache update with the rewritten fresh dates
         return True, {}
-        
+
     if not days or days[0].get("Dcode") != TARGET_NEW_DCODE:
         return False, {
             "status": STATUS_NO_UPDATE,
@@ -272,7 +271,9 @@ def _initialize_db_and_time(
     return db_path, _normalize_time(current_time)
 
 
-def _is_update_eligible(db_path: str, current_time: datetime.datetime) -> tuple[bool, str]:
+def _is_update_eligible(
+    db_path: str, current_time: datetime.datetime
+) -> tuple[bool, str]:
     """Check if the cache state and schedule allow a forecast update today."""
     if _get_cache_count(db_path) < len(get_all_region_codes()):
         return True, ""

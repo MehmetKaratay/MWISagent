@@ -21,11 +21,28 @@ app = FastAPI(title="MWISagent Frontend Dev Server")
 FRONTEND_DIR = Path(__file__).parent
 STATIC_DIR = FRONTEND_DIR / "static"
 PROJECT_ROOT = FRONTEND_DIR.parent
-REGION_SCRIPT = PROJECT_ROOT / "app" / "skills" / "mwis-website" / "identify_forecast_area" / "scripts" / "query_region.py"
-DATE_SCRIPT = PROJECT_ROOT / "app" / "skills" / "mwis-website" / "identify_outing_date" / "scripts" / "query_date.py"
+REGION_SCRIPT = (
+    PROJECT_ROOT
+    / "app"
+    / "skills"
+    / "mwis-website"
+    / "identify_forecast_area"
+    / "scripts"
+    / "query_region.py"
+)
+DATE_SCRIPT = (
+    PROJECT_ROOT
+    / "app"
+    / "skills"
+    / "mwis-website"
+    / "identify_outing_date"
+    / "scripts"
+    / "query_date.py"
+)
 
 # Ensure static directory exists
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
+
 
 @app.get("/api/query_region")
 def query_region(q: str = Query(..., description="The location to query")):
@@ -35,13 +52,16 @@ def query_region(q: str = Query(..., description="The location to query")):
             [sys.executable, str(REGION_SCRIPT), q, "--json"],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
         return json.loads(result.stdout)
     except subprocess.CalledProcessError as e:
         raise HTTPException(status_code=500, detail=f"Script failed: {e.stderr}")
     except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Failed to parse script JSON output.")
+        raise HTTPException(
+            status_code=500, detail="Failed to parse script JSON output."
+        )
+
 
 @app.get("/api/query_date")
 def query_date(q: str = Query(..., description="The date to query")):
@@ -51,46 +71,48 @@ def query_date(q: str = Query(..., description="The date to query")):
             [sys.executable, str(DATE_SCRIPT), q],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
         return json.loads(result.stdout)
     except subprocess.CalledProcessError as e:
         raise HTTPException(status_code=500, detail=f"Script failed: {e.stderr}")
     except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Failed to parse script JSON output.")
+        raise HTTPException(
+            status_code=500, detail="Failed to parse script JSON output."
+        )
+
 
 @app.post("/api/chat")
 def proxy_chat(req: dict):
     """Proxies the chat request to the remote Agent Runtime or local ADK backend."""
-    import subprocess
     import json
-    import os
-    
+    import subprocess
+
     agent_id = os.environ.get("AGENT_RUNTIME_ID")
     user_input = req.get("inputs", {}).get("input", "")
-    
+
     if agent_id:
         # Remote Agent Runtime (e.g. europe-west2)
         url = f"https://europe-west2-aiplatform.googleapis.com/v1/{agent_id}"
     else:
         # Local ADK fallback
         url = "http://localhost:8080"
-        
+
     try:
         # Use agents-cli run --mode a2a -v to get the output from the ADK app
         cmd = ["agents-cli", "run", "--url", url, "--mode", "a2a", user_input, "-v"]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        
+
         # Parse consecutive JSON blocks from stdout
         text = result.stdout
         agent_response = "No response from agent."
         decoder = json.JSONDecoder()
         pos = 0
-        
+
         start_idx = text.find("{")
         if start_idx != -1:
             text = text[start_idx:]
-            
+
         while pos < len(text):
             text = text[pos:].lstrip()
             if not text:
@@ -98,7 +120,7 @@ def proxy_chat(req: dict):
             try:
                 data, index = decoder.raw_decode(text)
                 pos = index
-                
+
                 if "update" in data and "status" in data["update"]:
                     status = data["update"]["status"]
                     if "message" in status and status["message"].get("role") == "agent":
@@ -107,22 +129,30 @@ def proxy_chat(req: dict):
                             if "text" in parts[0]:
                                 agent_response = parts[0]["text"]
                             elif "data" in parts[0] and "args" in parts[0]["data"]:
-                                agent_response = parts[0]["data"]["args"].get("message", "")
+                                agent_response = parts[0]["data"]["args"].get(
+                                    "message", ""
+                                )
             except json.JSONDecodeError:
                 break
-                
+
         return {"outputs": {"output": agent_response}}
     except subprocess.CalledProcessError as e:
-        print(f"Subprocess failed with exit code {e.returncode}. Stderr: {e.stderr}", file=sys.stderr)
+        print(
+            f"Subprocess failed with exit code {e.returncode}. Stderr: {e.stderr}",
+            file=sys.stderr,
+        )
         raise HTTPException(status_code=500, detail=f"Proxy failed: {e.stderr}")
     except Exception as e:
         import traceback
+
         traceback.print_exc(file=sys.stderr)
         raise HTTPException(status_code=500, detail=f"Proxy failed: {e}")
+
 
 # Mount static files at the root
 app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)

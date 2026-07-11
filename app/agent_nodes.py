@@ -245,6 +245,7 @@ async def _ask_follow_up_logic(ctx: Context, node_input: Any):
     reply = ctx.resume_inputs[interrupt_id]
     yield Event(output=reply)
 
+
 @node(rerun_on_resume=False)
 async def ask_follow_up(ctx: Context, node_input: Any) -> Event:
     """

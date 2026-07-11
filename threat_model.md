@@ -21,18 +21,18 @@
 
 ### Spoofing (Caller Identity)
 - **Threat**: An attacker could spoof requests to the agent server or spoof the MWIS website to feed malicious HTML into the cache.
-- **Mitigation**: 
+- **Mitigation**:
   - The API server expects requests on an internal loopback or behind an authenticated gateway when deployed.
   - MWIS data is fetched over HTTPS to ensure data authenticity.
 
 ### Tampering (Data Manipulation)
 - **Threat**: An attacker with filesystem access could manipulate `mwis_forecasts.db` to alter returned forecasts.
-- **Mitigation**: 
+- **Mitigation**:
   - The SQLite database is stored locally with strict file permissions. The containerized deployment should ensure the filesystem is read-only except for the `cache/` directory.
 
 ### Repudiation
 - **Threat**: Users making specific requests cannot be audited if logs are insufficient.
-- **Mitigation**: 
+- **Mitigation**:
   - Logging captures incoming query requests and their routing traces through the ADK workflow.
   - Adding persistent auth logging in the future (if tied to users) would improve non-repudiation.
 
@@ -40,7 +40,7 @@
 - **Threat**: PII leakage or API Key exposure in logs/stack traces.
 - **Mitigation**:
   - `GEMINI_API_KEY` is loaded from the environment and is never printed in logs.
-  - Application logic suppresses verbose error stack traces from externalizing to the client. 
+  - Application logic suppresses verbose error stack traces from externalizing to the client.
 
 ### Denial of Service
 - **Threat**: An attacker sends thousands of requests, exhausting API quotas or overwhelming the SQLite cache update mechanism.
@@ -51,7 +51,7 @@
 ### Elevation of Privilege
 - **Threat**: An unauthenticated user accesses privileged tool actions or system operations.
 - **Mitigation**:
-  - The agent only runs safe, isolated python queries against web HTML and local SQLite databases. It cannot execute arbitrary code or shell commands on the host. 
+  - The agent only runs safe, isolated python queries against web HTML and local SQLite databases. It cannot execute arbitrary code or shell commands on the host.
 
 ---
 

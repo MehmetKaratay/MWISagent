@@ -4,8 +4,9 @@
 """Automated security testing for run_command tool validation checks."""
 
 import os
-import sys
 import subprocess
+import sys
+
 import pytest
 
 # Ensure .agents/scripts is in path
@@ -20,7 +21,7 @@ SCRIPT_DIR = os.path.join(
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
-from validate_tool_call import validate_command, SecurityError  # noqa: E402
+from validate_tool_call import SecurityError, validate_command  # noqa: E402
 
 SAFE_COMMANDS = [
     "git status",

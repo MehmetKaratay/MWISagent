@@ -196,7 +196,7 @@ def load_query_region() -> Any:
     script_dir = os.path.dirname(path)
     if script_dir not in sys.path:
         sys.path.insert(0, script_dir)
-        
+
     spec = importlib.util.spec_from_file_location("query_region", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -215,14 +215,14 @@ def _match_regions(locations: list[str]) -> tuple[list[str], bool]:
     """
     get_regions_country = load_query_country()
     find_regions_pt = load_query_region()
-    
+
     all_regions = set()
-    
+
     for loc in locations:
         loc = loc.strip()
         if not loc:
             continue
-            
+
         try:
             c_regions = get_regions_country([loc])
             if c_regions:
@@ -230,15 +230,15 @@ def _match_regions(locations: list[str]) -> tuple[list[str], bool]:
                 continue
         except ValueError:
             return [], True
-            
+
         # Try point based logic
         pt_res = find_regions_pt([loc])
         if pt_res.get("in_scope") and pt_res.get("regions"):
             all_regions.update(pt_res["regions"])
-            
+
     if len(all_regions) > 5:
         return [], True
-        
+
     regions_list = sorted(list(all_regions))
     return regions_list or ["Unknown"], False
 

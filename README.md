@@ -1,12 +1,12 @@
 # MWIS Agent: Interactive Mountain Weather Forecasts
 
-The **MWIS Agent** is an interactive concierge service designed to help users understand complex British mountain weather forecasts. 
+The **MWIS Agent** is an interactive concierge service designed to help users understand complex British mountain weather forecasts.
 
 ## 1. Problem
 Traditional weather models are unreliable for mountainous terrain because they rely on smoothed topographical data that misses small mountain passes and local micro-climates. The Mountain Weather Information Service (MWIS) solves this by having expert human meteorologists write highly accurate forecasts. However, these forecasts are published as large chunks of text. Many modern users fail to fully engage with long-form text, instead turning to generic weather apps that falsely claim to offer mountain-specific data. This disconnect has serious safety implications for millions of outings in the UK mountains each year.
 
 ## 2. Solution
-We built an LLM-powered Concierge Agent to interpret the expert-human written MWIS forecasts. 
+We built an LLM-powered Concierge Agent to interpret the expert-human written MWIS forecasts.
 
 Attempting to solve this problem by writing purely deterministic code would result in unmanageable spaghetti logic, given the interdependent variables of weather physics. Instead, the agent uses an agentic workflow: it relies on deterministic Python scripts to accurately fetch the right forecast data, and then uses the LLM to dynamically interpret the text, answer probing questions, and provide interactive safety advice.
 

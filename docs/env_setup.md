@@ -57,24 +57,24 @@ You do **not** need to manually activate a virtual environment when running test
 
 ---
 
-## 5. Pre-commit Quality Checks
+## 5. Pre-commit Quality Checks (Required on Fresh Install)
 To ensure code styling and security policies are maintained, the repository is configured with git hooks using `pre-commit`. These hooks run the following tools automatically before every commit:
 - **`end-of-file-fixer`** and **`trailing-whitespace`** to clean up text formats.
 - **`ruff`** linter and formatter to check code quality and conventions.
 - **`semgrep`** (Custom Local Security Scan) using local rules to run static analysis security checks.
 
 ### Setup Git Hooks:
-Run the following commands to install pre-commit and register the git hook wrappers:
+On a fresh install, run the following commands to synchronize workspace tools/dependencies and register the git hook wrappers:
 ```bash
-# Install the dependencies from pyproject.toml
-uv pip install -e ".[lint]"
+# Sync all workspace dependencies (including dev and linting tools)
+uv sync --extra lint
 
-# Install the git hooks
-uv run pre-commit install
+# Register the git hooks
+uvx pre-commit install
 ```
 
 ### Manual Verification:
 You can run the checks manually on all files at any time:
 ```bash
-uv run pre-commit run --all-files
+uvx pre-commit run --all-files
 ```

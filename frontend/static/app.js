@@ -15,12 +15,12 @@ document.addEventListener('alpine:init', () => {
         ],
         currentMessage: '',
         isLoading: false,
-        
+
         // Dev Tool States
         regionQuery: '',
         regionOutput: '',
         isQueryingRegion: false,
-        
+
         dateQuery: '',
         dateOutput: '',
         isQueryingDate: false,
@@ -57,7 +57,7 @@ document.addEventListener('alpine:init', () => {
                 }
 
                 const data = await response.json();
-                
+
                 // Assuming ADK output format
                 let agentContent = "No response text found.";
                 if (data.outputs && data.outputs.output) {
@@ -70,9 +70,9 @@ document.addEventListener('alpine:init', () => {
 
             } catch (error) {
                 console.error("Error communicating with agent:", error);
-                this.messages.push({ 
-                    role: 'agent', 
-                    content: `Error: Unable to connect to the agent backend. Please ensure the ADK server is running. (${error.message})` 
+                this.messages.push({
+                    role: 'agent',
+                    content: `Error: Unable to connect to the agent backend. Please ensure the ADK server is running. (${error.message})`
                 });
             } finally {
                 this.isLoading = false;
@@ -93,14 +93,14 @@ document.addEventListener('alpine:init', () => {
             if (!this.regionQuery.trim()) return;
             this.isQueryingRegion = true;
             this.regionOutput = 'Loading...';
-            
+
             try {
                 const url = new URL('/api/query_region', window.location.origin);
                 url.searchParams.append('q', this.regionQuery.trim());
-                
+
                 const response = await fetch(url);
                 const data = await response.json();
-                
+
                 this.regionOutput = JSON.stringify(data, null, 2);
             } catch (error) {
                 this.regionOutput = `Error: ${error.message}`;
@@ -113,14 +113,14 @@ document.addEventListener('alpine:init', () => {
             if (!this.dateQuery.trim()) return;
             this.isQueryingDate = true;
             this.dateOutput = 'Loading...';
-            
+
             try {
                 const url = new URL('/api/query_date', window.location.origin);
                 url.searchParams.append('q', this.dateQuery.trim());
-                
+
                 const response = await fetch(url);
                 const data = await response.json();
-                
+
                 this.dateOutput = JSON.stringify(data, null, 2);
             } catch (error) {
                 this.dateOutput = `Error: ${error.message}`;

@@ -8,9 +8,9 @@ from pydantic import ValidationError
 
 # Import from local security module
 from security import (
-    validate_region_query,
-    validate_date_query,
     isolate_user_input,
+    validate_date_query,
+    validate_region_query,
 )
 
 

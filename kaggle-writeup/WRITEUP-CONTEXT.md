@@ -90,10 +90,3 @@ Create an MWIS agent so people can interact with the forecast dynamically and as
   * While this was happenign I realised I needed to work on the Kaggle Write up and other bits for submission. I did this in parallel to the agent doing its thing.
   * I then worked on the front end.
   * As I was approaching the deadline, the scaffold step broke my `.venv` and on my mobile data I didn't have the download bandwith to set it up agian. I reluctently had to use `git commit --no-verify` after that. This went against my insticnts, but the code in that directory was already verified and did not chagne from this point onwards.
-
-
-
-
-
-
-
