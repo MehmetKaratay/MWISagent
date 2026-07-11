@@ -20,6 +20,7 @@ python3 query_region.py <query_arguments> [--json]
 
 The query arguments can be:
 1. **Place / Mountain Name**: E.g., `"Ben Nevis"`, `"Keswick"`.
+   - **Resolution Flow**: Place name queries are resolved first by matching against `munros.csv` (case-insensitively). If unmatched, the script checks `local-names.csv` (case-insensitively). If still unmatched, the script makes an external network call to OpenStreetMap Nominatim API.
 2. **Coordinates**: Two float values representing latitude and longitude:
    ```bash
    python3 query_region.py 53.0685 -4.0763
@@ -73,3 +74,4 @@ The behavior is governed by the assets in the skill directory:
 - `assets/query_config.json`: Configures the distance overlap tolerance (`overlap_tolerance_pct`).
 - `assets/mwis-region-boundaries.json`: Contains the GeoJSON-like boundary polygons for the 10 MWIS regions.
 - `resources/munros.csv`: A CSV mapping of Munro mountains directly to their corresponding region codes.
+- `resources/local-names.csv`: A local CSV mapping containing manual overrides and fallback local names mapped directly to region codes (e.g. "Cuillin", "Rum").
