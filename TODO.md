@@ -26,6 +26,7 @@
  * Compare skills (as skill?)
  * Abovid that blanket question! (Do you want a forecast for a specific location, or a comparison of up to 5 regions (e.g., 'Scottish areas')?
  * Any more questions at end, as separate chat msg. Only after a pause to let user ask other qs first.
+ * London: result should be "That is not MWIS regions. The nearest region/s is/are: XXXX. Would you like a forecast for one of these?"
 
 #### Human interaction
  * Which day is better?
