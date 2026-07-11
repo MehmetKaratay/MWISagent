@@ -4,6 +4,7 @@
 
 
 ## Next time
+ * Update query_region script on deployed front end so "Cuillin" works.
 
 ## Future
 
@@ -18,7 +19,7 @@
 
 ### Agent
 
- * Only return day requested
+ * Format output (Already markdown, but include line breaks in fronts of sections)
  * Short paragraphs for easy reading
  * Summarise the forecast, then give more detail if asked.
  * Focus (mostly) on the variable asked for (eg temp, wind, but briefly mention others)
@@ -29,6 +30,9 @@
 #### Human interaction
  * Which day is better?
  * Where should I go in Scotland?
+ * Where will I see more sunshine? (Know to load cloud & sunshine fields and anaylise)
+ * Give me summary of the weather over Ben Nevis.
+ * How cloudy will Ben Nevis be tomorrow?
 
 ### Skills
  * If database cannot id a name, check local csv file to see if its there.
