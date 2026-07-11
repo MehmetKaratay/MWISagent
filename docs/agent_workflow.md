@@ -84,6 +84,7 @@ graph TD
 * **Type:** `FunctionNode` (determinstic Python code)
 * **Behavior:**
   * Resolves `locations` (up to 5 regions max) using `query_country.py` and `query_region.py`. If a location cannot be resolved, it is mapped to `"Unknown"`.
+  * Resolves user-specified `date` query into `resolved_date_codes` using the `identify_outing_date` skill.
   * If the resolved region count > 5, routes to `clarify_too_many_locations`.
   * Fetches the corresponding forecasts sequentially from the local caching layer.
   * Scans forecast values: if wind speed is >40mph or temperature is <-5°C in any forecast, sets `needs_impact = True`.
@@ -110,7 +111,7 @@ graph TD
 
 ### Node 10: `synthesis`
 * **Type:** `LlmAgent` (model: `gemini-2.5-flash`)
-* **Behavior:** Reads forecast context and annotations to generate a clean, plain-text response answering the query.
+* **Behavior:** Reads forecast context and annotations to generate a clean, plain-text response answering the query. If `resolved_date_codes` is populated in the state, filters the output forecast details to only format matching days, completely omitting other day forecasts or general outlook comments.
 
 ### Node 11: `ask_follow_up`
 * **Type:** `RequestInput`
