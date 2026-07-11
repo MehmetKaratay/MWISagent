@@ -87,7 +87,7 @@ graph TD
   * Resolves user-specified `date` query into `resolved_date_codes` using the `identify_outing_date` skill.
   * If the resolved region count > 5, routes to `clarify_too_many_locations`.
   * Fetches the corresponding forecasts sequentially from the local caching layer.
-  * Programmatically filters the retrieved forecast JSON payload to retain only the days or outlook matching `resolved_date_codes` (if populated).
+  * Programmatically filters the retrieved forecast JSON payload to retain only the days or outlook matching `resolved_date_codes` (if populated) by dynamically importing and executing `filter_forecast_payload` from the `serve_forecast_to_user` skill module.
   * Scans forecast values: if wind speed is >40mph or temperature is <-5°C in any forecast, sets `needs_impact = True`.
 
 ### Node 4: `validate_coverage`
