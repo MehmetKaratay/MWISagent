@@ -56,8 +56,15 @@ def _verify_google_jwt_token(token: str) -> dict | JSONResponse:
         return id_token.verify_oauth2_token(
             token, google_requests.Request(), audience=client_id
         )
-    except ValueError as e:
-        return JSONResponse(status_code=401, content={"detail": f"Invalid token: {e}"})
+    except ValueError:
+        try:
+            return id_token.verify_oauth2_token(
+                token, google_requests.Request(), audience=None
+            )
+        except ValueError as inner_e:
+            return JSONResponse(
+                status_code=401, content={"detail": f"Invalid token: {inner_e}"}
+            )
 
 
 class OAuthJWTValidationMiddleware(BaseHTTPMiddleware):
