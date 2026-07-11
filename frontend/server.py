@@ -82,65 +82,63 @@ def query_date(q: str = Query(..., description="The date to query")):
         ) from e
 
 
+def _get_agent_runtime_url() -> str:
+    """Return the remote Agent Runtime URL or local fallback URL."""
+    agent_id = os.environ.get("AGENT_RUNTIME_ID")
+    if agent_id:
+        return f"https://europe-west2-aiplatform.googleapis.com/v1/{agent_id}"
+    return "http://localhost:8080"
+
+
+def _run_agents_cli(url: str, user_input: str) -> str:
+    """Execute agents-cli command and return stdout."""
+    cmd = ["agents-cli", "run", "--url", url, "--mode", "a2a", user_input, "-v"]
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return result.stdout
+
+
+def _extract_response_from_json(data: dict) -> str | None:
+    """Extract agent message text from a single parsed JSON block."""
+    if "update" in data and "status" in data["update"]:
+        status = data["update"]["status"]
+        if "message" in status and status["message"].get("role") == "agent":
+            parts = status["message"].get("parts", [])
+            if parts and "text" in parts[0]:
+                return parts[0]["text"]
+            if parts and "data" in parts[0] and "args" in parts[0]["data"]:
+                return parts[0]["data"]["args"].get("message", "")
+    return None
+
+
+def _parse_agent_response(text: str) -> str:
+    """Parse consecutive JSON blocks from stdout to find the agent response."""
+    agent_response = "No response from agent."
+    decoder = json.JSONDecoder()
+    pos = 0
+    text = text[text.find("{") :] if "{" in text else text
+    while pos < len(text):
+        text = text[pos:].lstrip()
+        if not text:
+            break
+        try:
+            data, index = decoder.raw_decode(text)
+            pos = index
+            agent_response = _extract_response_from_json(data) or agent_response
+        except json.JSONDecodeError:
+            break
+    return agent_response
+
+
 @app.post("/api/chat")
 def proxy_chat(req: dict):
     """Proxies the chat request to the remote Agent Runtime or local ADK backend."""
-    import json
-    import subprocess
-
-    agent_id = os.environ.get("AGENT_RUNTIME_ID")
     user_input = req.get("inputs", {}).get("input", "")
-
-    if agent_id:
-        # Remote Agent Runtime (e.g. europe-west2)
-        url = f"https://europe-west2-aiplatform.googleapis.com/v1/{agent_id}"
-    else:
-        # Local ADK fallback
-        url = "http://localhost:8080"
-
     try:
-        # Use agents-cli run --mode a2a -v to get the output from the ADK app
-        cmd = ["agents-cli", "run", "--url", url, "--mode", "a2a", user_input, "-v"]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-
-        # Parse consecutive JSON blocks from stdout
-        text = result.stdout
-        agent_response = "No response from agent."
-        decoder = json.JSONDecoder()
-        pos = 0
-
-        start_idx = text.find("{")
-        if start_idx != -1:
-            text = text[start_idx:]
-
-        while pos < len(text):
-            text = text[pos:].lstrip()
-            if not text:
-                break
-            try:
-                data, index = decoder.raw_decode(text)
-                pos = index
-
-                if "update" in data and "status" in data["update"]:
-                    status = data["update"]["status"]
-                    if "message" in status and status["message"].get("role") == "agent":
-                        parts = status["message"].get("parts", [])
-                        if parts:
-                            if "text" in parts[0]:
-                                agent_response = parts[0]["text"]
-                            elif "data" in parts[0] and "args" in parts[0]["data"]:
-                                agent_response = parts[0]["data"]["args"].get(
-                                    "message", ""
-                                )
-            except json.JSONDecodeError:
-                break
-
-        return {"outputs": {"output": agent_response}}
+        url = _get_agent_runtime_url()
+        stdout = _run_agents_cli(url, user_input)
+        return {"outputs": {"output": _parse_agent_response(stdout)}}
     except subprocess.CalledProcessError as e:
-        print(
-            f"Subprocess failed with exit code {e.returncode}. Stderr: {e.stderr}",
-            file=sys.stderr,
-        )
+        print(f"Subprocess failed. Stderr: {e.stderr}", file=sys.stderr)
         raise HTTPException(status_code=500, detail=f"Proxy failed: {e.stderr}") from e
     except Exception as e:
         import traceback
