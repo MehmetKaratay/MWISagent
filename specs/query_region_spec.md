@@ -10,6 +10,7 @@ metadata:
   config_file: .agents/skills/mwis-website/identify_forecast_area/assets/query_config.json
   boundaries_file: .agents/skills/mwis-website/identify_forecast_area/assets/mwis-region-boundaries.json
   munros_file: .agents/skills/mwis-website/identify_forecast_area/resources/munros.csv
+  local_names_file: .agents/skills/mwis-website/identify_forecast_area/resources/local-names.csv
 ```
 
 ---
@@ -57,7 +58,8 @@ scope_rules:
   3. If not an OS Grid Reference, perform the Name Lookup Flow.
 - **Name Lookup Flow**:
   1. Check for a case-insensitive match in `munros.csv`. If found, resolve to its designated `RegionCode` immediately.
-  2. If not found in `munros.csv`, query `https://nominatim.openstreetmap.org/search` over HTTPS to resolve the name to coordinates.
+  2. If not found in `munros.csv`, check for a case-insensitive match in `local-names.csv`. If found, resolve to its designated `RegionCode` immediately.
+  3. If not found in `local-names.csv`, query `https://nominatim.openstreetmap.org/search` over HTTPS to resolve the name to coordinates.
 - **Out-of-Area Near Boundary Calculation**:
   - If a coordinate is within Great Britain but does not fall inside any MWIS region polygon:
     - Calculate the shortest great-circle (Haversine) distance from the coordinate to the boundary line segments of each of the 10 MWIS polygons.
@@ -170,6 +172,18 @@ test_cases:
       in_scope: true
       in_area: false
       nearest: [{"code": "PD", "distance_km": 150.0}]
+  - name: Local Name Cuillin Lookup
+    inputs: ["Cuillin"]
+    expected:
+      regions: ["NW"]
+  - name: Local Name Rum Lookup
+    inputs: ["Rum"]
+    expected:
+      regions: ["NW"]
+  - name: Local Name Case-Insensitive Lookup
+    inputs: ["cuillins"]
+    expected:
+      regions: ["NW"]
 ```
 
 ---
