@@ -68,6 +68,26 @@ Output:
 }
 ```
 
+## Python API Usage
+
+The function `find_regions_by_location(location_args: list[str]) -> dict` can be imported from `query_region.py` for direct programmatical invocation.
+
+### Return Format for Out-of-Area locations:
+```json
+{
+  "in_scope": true,
+  "in_area": false,
+  "error": "NOT_IN_AREA",
+  "nearest": [
+    {
+      "code": "PD",
+      "distance_km": 193.66,
+      "direction": "NW"
+    }
+  ]
+}
+```
+
 ## Underlying Configuration Files
 
 The behavior is governed by the assets in the skill directory:
