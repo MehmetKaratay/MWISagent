@@ -58,6 +58,9 @@ synthesis = LlmAgent(
     instruction="""
     You are a mountain weather forecaster. Using the provided state containing the MWIS forecast,
     synthesize a plain-text response to the user's raw_query. Do not mention JSON or raw data structures.
+
+    CRITICAL RULE:
+    Inspect the `resolved_date_codes` list in the workflow state. If this list contains specific codes (such as 'D0' for today, 'D1' for tomorrow, 'D2' for day 2, etc.), you MUST only synthesize the weather forecast details for those specific matching day codes from the forecast payload. Completely omit the forecast details for any other days, and do not include the outlook section in the response. If the list is empty, synthesize the full 3-day forecast and outlook as requested.
     """,
 )
 

@@ -55,3 +55,32 @@ def test_agent_stream() -> None:
             has_text_content = True
             break
     assert has_text_content, "Expected at least one message with text content"
+
+
+def test_agent_restricts_forecast_to_day() -> None:
+    """
+    Test that the agent updates state with resolved_date_codes and restricts the synthesized response
+    to only the requested day if specific Dcode is asked.
+    """
+    session_service = InMemorySessionService()
+    session = session_service.create_session_sync(user_id="test_user", app_name="test")
+    runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
+
+    message = types.Content(
+        role="user", parts=[types.Part.from_text(text="today forecast for Snowdon")]
+    )
+
+    events = list(
+        runner.run(
+            new_message=message,
+            user_id="test_user",
+            session_id=session.id,
+            run_config=RunConfig(streaming_mode=StreamingMode.SSE),
+        )
+    )
+    assert len(events) > 0
+
+    # Let's inspect the final workflow state in session
+    state = runner.get_state_sync(user_id="test_user", session_id=session.id)
+    assert "resolved_date_codes" in state
+    assert "D0" in state["resolved_date_codes"]

@@ -203,6 +203,30 @@ def load_query_region() -> Any:
     return module.find_regions_by_location
 
 
+def load_query_date() -> Any:
+    """Dynamically load the query_date skill module to parse date queries.
+
+    Returns:
+        Callable: The resolve_date_query function.
+    """
+    path = os.path.join(
+        os.path.dirname(__file__),
+        "skills",
+        "mwis-website",
+        "identify_outing_date",
+        "scripts",
+        "query_date.py",
+    )
+    script_dir = os.path.dirname(path)
+    if script_dir not in sys.path:
+        sys.path.insert(0, script_dir)
+
+    spec = importlib.util.spec_from_file_location("query_date", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.resolve_date_query
+
+
 def _match_regions(locations: list[str]) -> tuple[list[str], bool]:
     """
     Map natural language location names to MWIS region codes.
@@ -300,9 +324,23 @@ def _resolve_and_fetch_logic(ctx: Context, node_input: Any) -> Event:
     needs_impact = ctx.state.get("needs_impact", False)
     forecasts, needs_impact = _fetch_all_forecasts(regions, needs_impact)
 
+    date_query = ctx.state.get("date")
+    resolved = []
+    if date_query:
+        norm = date_query.strip().lower()
+        if norm in ["d0", "d1", "d2", "d3", "doutlook"]:
+            resolved = [date_query.strip()]
+        else:
+            try:
+                resolve_date_fn = load_query_date()
+                resolved = resolve_date_fn(date_query)
+            except Exception:
+                pass
+
     state_updates = {
         "region_codes": regions,
         "forecast_data": forecasts,
         "needs_impact": needs_impact,
+        "resolved_date_codes": resolved,
     }
     return Event(output=forecasts, state=state_updates)

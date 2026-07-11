@@ -38,6 +38,7 @@ class WorkflowState(BaseModel):
     parsed_info: dict[str, Any] | None = None
     locations: list[str] = Field(default_factory=list)
     date: str | None = None
+    resolved_date_codes: list[str] = Field(default_factory=list)
     region_codes: list[str] = Field(default_factory=list)
     forecast_data: dict[str, Any] | None = None
     needs_physics: bool = False

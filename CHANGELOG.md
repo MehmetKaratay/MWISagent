@@ -24,6 +24,7 @@
 - Replaced hardcoded `10` region count magic number with dynamic `len(get_all_region_codes())`.
 
 ### Added
+- Added date query resolution using `identify_outing_date` to workflow state, and restricted plain-text synthesis response in the `synthesis` node when specific day codes are requested.
 - Added a local `local-names.csv` fallback query mechanism to `query_region.py` enabling fast local resolution of region codes for name lookups not present in primary third-party or munros databases.
 - Added guide on setting up and running git pre-commit quality checks (Ruff linter/formatter and Semgrep scan) in `docs/env_setup.md`.
 - Created `tests/eval/datasets/mwis_eval.json` with 4 test scenarios (direct, ambiguous, location out-of-scope, date out-of-scope).

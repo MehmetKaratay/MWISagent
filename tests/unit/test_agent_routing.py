@@ -51,3 +51,23 @@ def test_check_ambiguity_valid():
     node_input = {"locations": ["Ben Nevis"], "date": "today"}
     event = _check_ambiguity_logic(node_input)
     assert event.model_dump()["actions"]["route"] == "no"
+
+
+def test_resolve_and_fetch_date_resolution():
+    """Test that _resolve_and_fetch_logic correctly resolves date to MWIS codes."""
+    from app.agent_logic import _resolve_and_fetch_logic
+
+    class MockContext:
+        def __init__(self, state):
+            self.state = state
+
+    ctx = MockContext(
+        state={
+            "locations": ["Ben Nevis"],
+            "date": "today",
+        }
+    )
+    event = _resolve_and_fetch_logic(ctx, None)
+    state_updates = event.model_dump()["actions"]["state_delta"]
+    assert "resolved_date_codes" in state_updates
+    assert "D0" in state_updates["resolved_date_codes"]
