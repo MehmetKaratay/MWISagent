@@ -32,7 +32,7 @@ Provides interactive mountain weather forecast synthesis, resolving missing inpu
    * Run `weather_physics` if `needs_physics` is set (triggered by queries on elevation, temperature gradients, or physical causes).
    * Run `weather_impact` if `needs_impact` is set (triggered by questions on safety, hiking plans, or presence of significant hazards like high winds/heavy rain).
    * Run `local_knowledge` if `needs_local_knowledge` is set (triggered by questions on specific micro-locations).
-6. **Synthesis:** Synthesizes final output in plain text.
+6. **Synthesis:** Synthesizes final output in plain text. If specific date codes (like `D0` or `D1`) are resolved and present in the state under `resolved_date_codes`, the synthesized text must only contain the forecast for those specific days, omitting any other days or general outlook.
 7. **Follow-Up Loop:** Prompts the user with follow-up options ("higher or lower?", "specific part of the region?") using `RequestInput` and loops back to execute the corresponding nodes.
 
 **Edge cases & expected behavior**
@@ -150,6 +150,7 @@ graph TD
       raw_query: str
       locations: list[str] = Field(default_factory=list) # Replaces location
       date: Optional[str] = None
+      resolved_date_codes: list[str] = Field(default_factory=list) # Track resolved date codes (e.g. D0, D1)
       region_codes: list[str] = Field(default_factory=list) # Replaces region_code
       forecast_data: Optional[dict] = None
       needs_physics: bool = False
