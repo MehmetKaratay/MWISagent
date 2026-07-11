@@ -18,6 +18,7 @@
 - Fixed `TypeError` in `query_region.py` when outputting nearest regions in JSON format for out-of-bounds locations (e.g. London).
 
 ### Changed
+- Refactored `_resolve_and_fetch_logic` in `app/agent_logic.py` into small helper functions under 15 lines with descriptive names and docstrings to satisfy clean code standards.
 - Split monolithic `query_region.py` into separate lightweight helper modules `geo_math.py`, `config_loader.py`, and `input_resolver.py`, keeping all modules under 300 lines.
 - Refactored multiple long functions in `query_region.py` into helper functions under 15 lines with descriptive names and docstrings to satisfy clean code standards.
 - Refactored `check_forecast_issued` in `check_forecast.py` into helper functions under 15 lines with descriptive names and docstrings.

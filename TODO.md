@@ -26,6 +26,10 @@
  * Abovid that blanket question! (Do you want a forecast for a specific location, or a comparison of up to 5 regions (e.g., 'Scottish areas')?
  * Any more questions at end, as separate chat msg. Only after a pause to let user ask other qs first.
 
+#### Human interaction
+ * Which day is better?
+ * Where should I go in Scotland?
+
 ### Skills
  * If database cannot id a name, check local csv file to see if its there.
 

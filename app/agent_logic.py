@@ -306,6 +306,38 @@ def _fetch_all_forecasts(regions: list[str], needs_impact: bool) -> tuple[dict, 
     return forecasts, needs_impact
 
 
+def _resolve_date_codes(date_query: str | None) -> list[str]:
+    """Resolves date query into day codes like D0, D1, etc."""
+    if not date_query:
+        return []
+    norm = date_query.strip().lower()
+    if norm in ["d0", "d1", "d2", "d3", "doutlook"]:
+        return [date_query.strip()]
+    try:
+        resolve_date_fn = load_query_date()
+        return resolve_date_fn(date_query)
+    except Exception:
+        return []
+
+
+def _filter_forecasts(forecasts: dict, resolved: list[str]) -> dict:
+    """Filters forecast payload to keep only matching Dcodes and outlook."""
+    if not resolved:
+        return forecasts
+    filtered = {}
+    for region, f_data in forecasts.items():
+        if not isinstance(f_data, dict):
+            filtered[region] = f_data
+            continue
+        f_copy = {k: v for k, v in f_data.items() if k not in ["days", "outlook"]}
+        if "days" in f_data:
+            f_copy["days"] = [d for d in f_data["days"] if d.get("Dcode") in resolved]
+        if "outlook" in f_data and "Doutlook" in resolved:
+            f_copy["outlook"] = f_data["outlook"]
+        filtered[region] = f_copy
+    return filtered
+
+
 def _resolve_and_fetch_logic(ctx: Context, node_input: Any) -> Event:
     """
     Core logic to resolve requested locations to regions and fetch their forecasts.
@@ -324,18 +356,8 @@ def _resolve_and_fetch_logic(ctx: Context, node_input: Any) -> Event:
     needs_impact = ctx.state.get("needs_impact", False)
     forecasts, needs_impact = _fetch_all_forecasts(regions, needs_impact)
 
-    date_query = ctx.state.get("date")
-    resolved = []
-    if date_query:
-        norm = date_query.strip().lower()
-        if norm in ["d0", "d1", "d2", "d3", "doutlook"]:
-            resolved = [date_query.strip()]
-        else:
-            try:
-                resolve_date_fn = load_query_date()
-                resolved = resolve_date_fn(date_query)
-            except Exception:
-                pass
+    resolved = _resolve_date_codes(ctx.state.get("date"))
+    forecasts = _filter_forecasts(forecasts, resolved)
 
     state_updates = {
         "region_codes": regions,
@@ -343,32 +365,4 @@ def _resolve_and_fetch_logic(ctx: Context, node_input: Any) -> Event:
         "needs_impact": needs_impact,
         "resolved_date_codes": resolved,
     }
-
-    # Filter forecasts JSON programmatically if specific date codes are resolved
-    if resolved:
-        filtered_forecasts = {}
-        for region, f_data in forecasts.items():
-            if not isinstance(f_data, dict):
-                filtered_forecasts[region] = f_data
-                continue
-
-            # Copy all fields except days and outlook
-            f_copy = {k: v for k, v in f_data.items() if k not in ["days", "outlook"]}
-
-            # Filter days list to only retain matching Dcodes
-            if "days" in f_data:
-                f_copy["days"] = [
-                    d for d in f_data["days"] if d.get("Dcode") in resolved
-                ]
-
-            # Filter outlook dictionary
-            if "outlook" in f_data:
-                outlook_data = f_data["outlook"]
-                if "Doutlook" in resolved:
-                    f_copy["outlook"] = outlook_data
-
-            filtered_forecasts[region] = f_copy
-        forecasts = filtered_forecasts
-        state_updates["forecast_data"] = forecasts
-
     return Event(output=forecasts, state=state_updates)
