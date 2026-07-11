@@ -20,13 +20,13 @@ Implement agent logic in `app/`. Use `agents-cli playground` for interactive tes
 ### Phase 3: The Evaluation Loop (Main Iteration Phase)
 Start with 1-2 eval cases, run `agents-cli eval generate`, then `agents-cli eval grade`, iterate by making changes and rerunning both commands until satisfied. Expect 5-10+ iterations. Once you have a baseline, reach for `agents-cli eval compare` (regression diffs), `agents-cli eval analyze` (cluster failure modes), and `agents-cli eval optimize` (auto-tune prompts). See the **Evaluation Guide** for metrics, dataset schema, LLM-as-judge config, and common gotchas.
 
-### Phase 4: Pre-Deployment Tests
+### Phase 6, part 1: Pre-Deployment Tests
 Run `uv run pytest tests/unit tests/integration`. Fix issues until all tests pass.
 
-### Phase 5: Deploy to Dev
+### Phase 6, part 2: Deploy to Dev
 **Requires explicit human approval.** Run `agents-cli deploy` only after user confirms. See the **Deployment Guide** for details.
 
-### Phase 6: Production Deployment
+### Phase 6, part 3: Production Deployment
 Ask the user: Option A (simple single-project) or Option B (full CI/CD pipeline with `agents-cli infra cicd`).
 
 ## Development Commands
