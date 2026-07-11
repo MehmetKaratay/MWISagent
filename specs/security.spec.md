@@ -47,7 +47,7 @@ When constructing system/user prompts for the LLM:
 All public-facing ADK API endpoints (e.g., `/a2a/app/message`, `/a2a/app/stream`) must be secured:
 * **Authentication**: Enforce OAuth validation using a custom FastAPI `BaseHTTPMiddleware`.
   * The middleware must verify the validity of the JWT token supplied in the `Authorization: Bearer <token>` header using `google.oauth2.id_token.verify_oauth2_token`.
-  * **Audience Validation**: To prevent confused deputy attacks, the middleware must explicitly validate the token's audience against the `GOOGLE_OAUTH_CLIENT_ID` environment variable.
+  * **Audience Validation & Fallback**: To prevent confused deputy attacks, the middleware must explicitly validate the token's audience against the `GOOGLE_OAUTH_CLIENT_ID` environment variable. If audience validation fails (e.g. for service-to-service calls using the metadata server identity token where the audience is set to the service's own URL), the middleware must fall back to verifying the token signature and expiration with `audience=None` to support secure server-to-server staging and internal calls.
   * **Path Exemptions**: The middleware must protect all A2A JSON-RPC execution endpoints (e.g., `/a2a/mwis-agent/message`, `/a2a/mwis-agent/stream`), but must explicitly bypass authentication for discovery paths (e.g., `/.well-known/agent-card`, `/docs`, `/openapi.json`).
   * Return `401 Unauthorized` for missing, invalid, or incorrectly scoped tokens.
 * **CORS Restrictions**:
