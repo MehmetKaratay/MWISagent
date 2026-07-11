@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Fixed
+- Fixed missing direction key in `find_regions_by_location` API nearest regions serialization.
 - Fixed 401 Unauthorized A2A errors between the frontend dashboard and backend Reasoning Engine by allowing token verification to fall back to general Google signature validation without audience restriction when configured placeholder is not present.
 - Fixed live deployment HTTP 500 startup crash by enabling the Cloud Resource Manager API in the GCP project configuration, and updated the `setup_gcloud` target in the `Makefile` to automatically enable it in the future.
 - Fixed Ruff C414 lint error (unnecessary list call in sorted()) in `app/agent_logic.py`.

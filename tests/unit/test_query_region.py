@@ -136,3 +136,26 @@ def test_query_region_local_name_case_insensitive():
     assert data["in_scope"] is True
     assert data["in_area"] is True
     assert "NW" in data["regions"]
+
+
+def test_query_region_nearest_serialization_includes_direction():
+    """Test that find_regions_by_location nearest results serialize with the direction key."""
+    sys.path.insert(
+        0,
+        str(
+            Path(__file__).resolve().parent.parent.parent
+            / "app"
+            / "skills"
+            / "mwis-website"
+            / "identify_forecast_area"
+            / "scripts"
+        ),
+    )
+    import query_region
+
+    res = query_region.find_regions_by_location(["London"])
+    assert res["in_scope"] is True
+    assert res["in_area"] is False
+    assert "nearest" in res
+    assert len(res["nearest"]) > 0
+    assert "direction" in res["nearest"][0]

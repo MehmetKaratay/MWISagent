@@ -205,7 +205,14 @@ def _process_location(
 
 def _serialize_nearest(nearest: list[RegionDistance]) -> list[dict]:
     """Serializes nearest regions list to dict list for JSON output."""
-    return [{"code": reg.code, "distance_km": reg.distance_km} for reg in nearest]
+    return [
+        {
+            "code": reg.code,
+            "distance_km": reg.distance_km,
+            "direction": reg.direction,
+        }
+        for reg in nearest
+    ]
 
 
 def _find_regions_by_coords(pt: Point, boundaries: dict[str, Any]) -> dict:
