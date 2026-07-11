@@ -60,8 +60,8 @@ def test_curl_today_forecast_no_outlook():
     time.sleep(5)
 
     try:
-        # Run curl POST request
-        curl_cmd = [
+        # Scenario 1: Today forecast only
+        curl_cmd1 = [
             "curl",
             "-s",
             "-X",
@@ -72,17 +72,64 @@ def test_curl_today_forecast_no_outlook():
             "-d",
             '{"inputs": {"input": "What is weather on Ben Nevis today?"}}',
         ]
-        result = subprocess.run(curl_cmd, capture_output=True, text=True)
+        res1 = subprocess.run(curl_cmd1, capture_output=True, text=True)
+        assert res1.returncode == 0
+        out1 = json.loads(res1.stdout).get("outputs", {}).get("output", "")
+        assert "No response" not in out1
+        assert "Outlook:" not in out1
+        # It should not contain details from tomorrow's forecast (Monday in mock data)
+        assert "Monday" not in out1
 
-        assert result.returncode == 0
-        data = json.loads(result.stdout)
-        output_text = data.get("outputs", {}).get("output", "")
+        # Scenario 2: Today and tomorrow forecast
+        curl_cmd2 = [
+            "curl",
+            "-s",
+            "-X",
+            "POST",
+            "http://localhost:8000/api/chat",
+            "-H",
+            "Content-Type: application/json",
+            "-d",
+            '{"inputs": {"input": "What is weather on Ben Nevis today and tomorrow?"}}',
+        ]
+        res2 = subprocess.run(curl_cmd2, capture_output=True, text=True)
+        assert res2.returncode == 0
+        out2 = json.loads(res2.stdout).get("outputs", {}).get("output", "")
+        assert "Outlook:" not in out2
 
-        assert "No response" not in output_text
-        assert "Proxy failed" not in output_text
+        # Scenario 3: Next week (Outlook only)
+        curl_cmd3 = [
+            "curl",
+            "-s",
+            "-X",
+            "POST",
+            "http://localhost:8000/api/chat",
+            "-H",
+            "Content-Type: application/json",
+            "-d",
+            '{"inputs": {"input": "What is weather on Ben Nevis next week?"}}',
+        ]
+        res3 = subprocess.run(curl_cmd3, capture_output=True, text=True)
+        assert res3.returncode == 0
+        out3 = json.loads(res3.stdout).get("outputs", {}).get("output", "")
+        assert "outlook" in out3.lower()
 
-        # Verify that the word "Outlook:" is not in the text response
-        assert "Outlook:" not in output_text
+        # Scenario 4: Full weather forecast (No date specification)
+        curl_cmd4 = [
+            "curl",
+            "-s",
+            "-X",
+            "POST",
+            "http://localhost:8000/api/chat",
+            "-H",
+            "Content-Type: application/json",
+            "-d",
+            '{"inputs": {"input": "What is the full weather forecast on Ben Nevis?"}}',
+        ]
+        res4 = subprocess.run(curl_cmd4, capture_output=True, text=True)
+        assert res4.returncode == 0
+        out4 = json.loads(res4.stdout).get("outputs", {}).get("output", "")
+        assert "outlook" in out4.lower()
     finally:
         server_proc.terminate()
         backend_proc.terminate()

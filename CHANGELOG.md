@@ -24,6 +24,7 @@
 - Replaced hardcoded `10` region count magic number with dynamic `len(get_all_region_codes())`.
 
 ### Added
+- Added programmatic forecast day filtering in `_resolve_and_fetch_logic` to strip out days/outlook not requested by the user, and updated test suites.
 - Renamed the curl integration test file to `test_human_agent_interaction.py` and updated specifications/documentation accordingly.
 - Enhanced the `parse_input` extraction rules to support both relative (e.g. today/tomorrow) and absolute (e.g. 11/07/2026 or 11th July) dates.
 - Added date query resolution using `identify_outing_date` to workflow state, and restricted plain-text synthesis response in the `synthesis` node when specific day codes are requested.
