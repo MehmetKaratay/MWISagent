@@ -38,6 +38,7 @@ Configures your local Google Cloud SDK to target the project defined by `PROJECT
 2. Sets the active project and default region (`europe-west2`).
 3. Launches the web login prompts for the `gcloud` CLI and Application Default Credentials (ADC).
 4. Configures the local ADC quota project to resolve potential billing or quota conflicts.
+5. Enables the Google Cloud Resource Manager API (`cloudresourcemanager.googleapis.com`) to prevent live agent runtime container startup crashes.
 
 #### `make cloud_deploy`
 Safely validates and deploys the agent to Vertex AI Agent Runtime:

@@ -49,6 +49,7 @@ targets:
 - Configures active project to `PROJECT_ID` and region to `europe-west2`.
 - Executes CLI login (`gcloud auth login`) and Application Default Credentials login (`gcloud auth application-default login`).
 - Sets local ADC quota project to `PROJECT_ID`.
+- Enables the Cloud Resource Manager API (`gcloud services enable cloudresourcemanager.googleapis.com`) to prevent Vertex AI Agent Runtime 500 startup crashes.
 
 #### `cloud_deploy`
 - Sequentially runs pre-deployment checks, stopping immediately if any step exits non-zero:
