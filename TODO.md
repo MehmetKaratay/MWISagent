@@ -4,7 +4,8 @@
 
 
 ## Next time
- * Update query_region script on deployed front end so "Cuillin" works.
+ * Deployed version should use live forecasts, but maintain the Dev Tools §
+
 
 ## Future
 
