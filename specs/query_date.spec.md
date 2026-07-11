@@ -35,6 +35,7 @@ dependencies:
   - Resolve the coverage code for each date.
   - Return a JSON array of all unique coverage codes, ordered chronologically by the dates they represent.
 - **Format**: All outputs to stdout are formatted as a JSON array of strings (e.g., `["D1", "D2"]`).
+- **Warning Suppression**: Because validation tests run under strict warnings-as-errors flags (`-W error`), any internal deprecation warnings raised by `parsedatetime` must be caught and ignored locally (e.g. using `warnings.catch_warnings()`) to prevent exceptions from interrupting date resolution.
 
 ## Examples
 
