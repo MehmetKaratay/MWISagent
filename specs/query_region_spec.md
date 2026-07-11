@@ -7,6 +7,10 @@ metadata:
   name: query_region.py
   description: CLI tool to query which MWIS forecast region a given location or coordinate belongs to.
   location: .agents/skills/mwis-website/identify_forecast_area/scripts/query_region.py
+  helper_files:
+    - .agents/skills/mwis-website/identify_forecast_area/scripts/geo_math.py
+    - .agents/skills/mwis-website/identify_forecast_area/scripts/config_loader.py
+    - .agents/skills/mwis-website/identify_forecast_area/scripts/input_resolver.py
   config_file: .agents/skills/mwis-website/identify_forecast_area/assets/query_config.json
   boundaries_file: .agents/skills/mwis-website/identify_forecast_area/assets/mwis-region-boundaries.json
   munros_file: .agents/skills/mwis-website/identify_forecast_area/resources/munros.csv
@@ -65,6 +69,7 @@ scope_rules:
     - Calculate the shortest great-circle (Haversine) distance from the coordinate to the boundary line segments of each of the 10 MWIS polygons.
     - Identify the nearest region and print its name, distance (in kilometers), and cardinal direction (e.g., N, NE, E, SE) to the nearest boundary point.
     - If other regions have boundary distances within the configured `overlap_tolerance_pct` tolerance of the minimum distance, list those regions as well.
+    - Both CLI output and API JSON outputs must include `"direction"` (e.g. `"NW"`, `"S"`) alongside `"code"` and `"distance_km"` (or `"distance"` in CLI JSON output).
 
 ---
 
@@ -127,19 +132,19 @@ test_cases:
     expected:
       in_scope: true
       in_area: false
-      nearest: [{"code": "YD", "distance_km": 12.5}]  # YD is nearest, directional output included
+      nearest: [{"code": "YD", "distance_km": 12.5, "direction": "S"}]  # YD is nearest, directional output included
   - name: Sheffield Out-of-Area Boundary Check
     inputs: [53.3811, -1.4701]
     expected:
       in_scope: true
       in_area: false
-      nearest: [{"code": "PD", "distance_km": 5.0}]
+      nearest: [{"code": "PD", "distance_km": 5.0, "direction": "W"}]
   - name: London Distance Check
     inputs: [51.5074, -0.1278]
     expected:
       in_scope: true
       in_area: false
-      nearest: [{"code": "PD", "distance_km": 193.66}]
+      nearest: [{"code": "PD", "distance_km": 193.66, "direction": "NW"}]
   - name: Paris Out-of-Scope Check
     inputs: [48.8566, 2.3522]
     expected:
@@ -171,7 +176,7 @@ test_cases:
     expected:
       in_scope: true
       in_area: false
-      nearest: [{"code": "PD", "distance_km": 150.0}]
+      nearest: [{"code": "PD", "distance_km": 150.0, "direction": "NW"}]
   - name: Local Name Cuillin Lookup
     inputs: ["Cuillin"]
     expected:
