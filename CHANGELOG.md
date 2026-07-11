@@ -24,6 +24,7 @@
 - Replaced hardcoded `10` region count magic number with dynamic `len(get_all_region_codes())`.
 
 ### Added
+- Renamed the curl integration test file to `test_human_agent_interaction.py` and updated specifications/documentation accordingly.
 - Enhanced the `parse_input` extraction rules to support both relative (e.g. today/tomorrow) and absolute (e.g. 11/07/2026 or 11th July) dates.
 - Added date query resolution using `identify_outing_date` to workflow state, and restricted plain-text synthesis response in the `synthesis` node when specific day codes are requested.
 - Added a local `local-names.csv` fallback query mechanism to `query_region.py` enabling fast local resolution of region codes for name lookups not present in primary third-party or munros databases.
