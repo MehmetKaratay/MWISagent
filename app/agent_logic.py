@@ -239,7 +239,7 @@ def _match_regions(locations: list[str]) -> tuple[list[str], bool]:
     if len(all_regions) > 5:
         return [], True
 
-    regions_list = sorted(list(all_regions))
+    regions_list = sorted(all_regions)
     return regions_list or ["Unknown"], False
 
 

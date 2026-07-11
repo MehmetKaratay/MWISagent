@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 ### Fixed
+- Fixed Ruff C414 lint error (unnecessary list call in sorted()) in `app/agent_logic.py`.
+- Fixed Ruff B904 lint errors (missing exception chaining from e) in `frontend/server.py`.
+- Fixed missing Semgrep dependency on local pre-commit check environments by adding `"semgrep"` to optional dependencies in `pyproject.toml`.
 - Fixed cache population issue by bypassing the scheduler check when the database contains fewer than 10 entries (incomplete or empty cache).
 - Fixed mock forecast cache ingestion by dynamically rewriting static dates based on environment (`MWIS_ENV=development` and `test-new-dcode`).
 - Fixed region resolution in `agent_logic.py` to correctly map specific locations (like "Ben Nevis") using `query_region.py`, defaulting to "Unknown" when out of scope.

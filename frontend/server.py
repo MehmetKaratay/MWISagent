@@ -56,11 +56,11 @@ def query_region(q: str = Query(..., description="The location to query")):
         )
         return json.loads(result.stdout)
     except subprocess.CalledProcessError as e:
-        raise HTTPException(status_code=500, detail=f"Script failed: {e.stderr}")
-    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail=f"Script failed: {e.stderr}") from e
+    except json.JSONDecodeError as e:
         raise HTTPException(
             status_code=500, detail="Failed to parse script JSON output."
-        )
+        ) from e
 
 
 @app.get("/api/query_date")
@@ -75,11 +75,11 @@ def query_date(q: str = Query(..., description="The date to query")):
         )
         return json.loads(result.stdout)
     except subprocess.CalledProcessError as e:
-        raise HTTPException(status_code=500, detail=f"Script failed: {e.stderr}")
-    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail=f"Script failed: {e.stderr}") from e
+    except json.JSONDecodeError as e:
         raise HTTPException(
             status_code=500, detail="Failed to parse script JSON output."
-        )
+        ) from e
 
 
 @app.post("/api/chat")
@@ -141,12 +141,12 @@ def proxy_chat(req: dict):
             f"Subprocess failed with exit code {e.returncode}. Stderr: {e.stderr}",
             file=sys.stderr,
         )
-        raise HTTPException(status_code=500, detail=f"Proxy failed: {e.stderr}")
+        raise HTTPException(status_code=500, detail=f"Proxy failed: {e.stderr}") from e
     except Exception as e:
         import traceback
 
         traceback.print_exc(file=sys.stderr)
-        raise HTTPException(status_code=500, detail=f"Proxy failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Proxy failed: {e}") from e
 
 
 # Mount static files at the root
