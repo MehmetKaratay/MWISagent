@@ -58,3 +58,81 @@ def test_query_region_out_of_bounds_json():
     first_nearest = data["nearest"][0]
     assert "code" in first_nearest
     assert "distance_km" in first_nearest
+
+
+def test_query_region_local_name_cuillin():
+    """Test that querying 'Cuillin' successfully maps to 'NW' via local-names.csv."""
+    project_root = Path(__file__).resolve().parent.parent.parent
+    script_path = (
+        project_root
+        / "app"
+        / "skills"
+        / "mwis-website"
+        / "identify_forecast_area"
+        / "scripts"
+        / "query_region.py"
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(script_path), "Cuillin", "--json"],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    data = json.loads(result.stdout)
+    assert data["in_scope"] is True
+    assert data["in_area"] is True
+    assert "NW" in data["regions"]
+
+
+def test_query_region_local_name_rum():
+    """Test that querying 'Rum' successfully maps to 'NW' via local-names.csv."""
+    project_root = Path(__file__).resolve().parent.parent.parent
+    script_path = (
+        project_root
+        / "app"
+        / "skills"
+        / "mwis-website"
+        / "identify_forecast_area"
+        / "scripts"
+        / "query_region.py"
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(script_path), "Rum", "--json"],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    data = json.loads(result.stdout)
+    assert data["in_scope"] is True
+    assert data["in_area"] is True
+    assert "NW" in data["regions"]
+
+
+def test_query_region_local_name_case_insensitive():
+    """Test that querying local names is case-insensitive (e.g. 'cuillins' maps to 'NW')."""
+    project_root = Path(__file__).resolve().parent.parent.parent
+    script_path = (
+        project_root
+        / "app"
+        / "skills"
+        / "mwis-website"
+        / "identify_forecast_area"
+        / "scripts"
+        / "query_region.py"
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(script_path), "cuillins", "--json"],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0
+    data = json.loads(result.stdout)
+    assert data["in_scope"] is True
+    assert data["in_area"] is True
+    assert "NW" in data["regions"]

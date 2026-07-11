@@ -24,6 +24,7 @@ RESOURCES_DIR = os.path.join(SCRIPT_DIR, "..", "resources")
 CONFIG_PATH = os.path.join(ASSETS_DIR, "query_config.json")
 BOUNDARIES_PATH = os.path.join(ASSETS_DIR, "mwis-region-boundaries.json")
 MUNROS_PATH = os.path.join(RESOURCES_DIR, "munros.csv")
+LOCAL_NAMES_PATH = os.path.join(RESOURCES_DIR, "local-names.csv")
 
 # Constants
 DEFAULT_OVERLAP_TOLERANCE_PCT = 15.0
@@ -353,6 +354,31 @@ class InputResolver:
         return None
 
     @staticmethod
+    def search_local_names(name: str) -> str | None:
+        """Searches the local-names.csv file for a matching region ID.
+
+        Args:
+            name: The location name to search.
+
+        Returns:
+            The associated region code if found, otherwise None.
+        """
+        if not os.path.exists(LOCAL_NAMES_PATH):
+            return None
+        try:
+            with open(LOCAL_NAMES_PATH) as f:
+                for line in f:
+                    parts = line.strip().split(",")
+                    if (
+                        len(parts) >= 2
+                        and parts[0].strip().lower() == name.strip().lower()
+                    ):
+                        return parts[1].strip()
+        except Exception:
+            pass
+        return None
+
+    @staticmethod
     def query_nominatim(name: str) -> Point | None:
         """Executes the query_nominatim operation.
 
@@ -442,6 +468,9 @@ class InputResolver:
             m_code = InputResolver.search_munros(args[0])
             if m_code:
                 return None, m_code
+            local_code = InputResolver.search_local_names(args[0])
+            if local_code:
+                return None, local_code
             coords = InputResolver.query_nominatim(args[0])
             if coords:
                 return coords, None
