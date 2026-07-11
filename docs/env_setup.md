@@ -17,7 +17,7 @@ The parent repository holds custom skills, specifications, and shared utilities.
 ---
 
 ## 2. ADK Agent App Setup
-The interactive agent resides at the repository root and runs in an isolated virtual environment.
+The interactive agent application resides at the repository root (with core agent logic and graph code located in the `app/` directory) and runs in an isolated virtual environment.
 
 * **Python Requirement:** Python >= 3.11 (Python 3.13 is recommended)
 * **Setup Commands:**
@@ -54,3 +54,27 @@ You do **not** need to manually activate a virtual environment when running test
   make eval
   ```
   *Note on Rate Limits:* Running `make eval` executes multiple agent trajectories against the Gemini API. If using a **Free Tier** API key (`GEMINI_API_KEY`), you are limited to 5 requests per minute (RPM), which may cause `429 RESOURCE_EXHAUSTED` errors during multi-case evaluation runs. See [docs/evaluation.md](file:///home/karatay/Repositories/weather/MWISagent/docs/evaluation.md#troubleshooting--environment-setup) for workarounds and billing setup instructions.
+
+---
+
+## 5. Pre-commit Quality Checks
+To ensure code styling and security policies are maintained, the repository is configured with git hooks using `pre-commit`. These hooks run the following tools automatically before every commit:
+- **`end-of-file-fixer`** and **`trailing-whitespace`** to clean up text formats.
+- **`ruff`** linter and formatter to check code quality and conventions.
+- **`semgrep`** (Custom Local Security Scan) using local rules to run static analysis security checks.
+
+### Setup Git Hooks:
+Run the following commands to install pre-commit and register the git hook wrappers:
+```bash
+# Install the dependencies from pyproject.toml
+uv pip install -e ".[lint]"
+
+# Install the git hooks
+uv run pre-commit install
+```
+
+### Manual Verification:
+You can run the checks manually on all files at any time:
+```bash
+uv run pre-commit run --all-files
+```
