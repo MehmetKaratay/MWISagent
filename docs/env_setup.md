@@ -39,6 +39,7 @@ Create a `.env` file inside the repository root directory with the following var
   * **Production (Future)**: When you deploy your frontend to Cloud Run in `europe-west2`, you can retrieve its domain using `gcloud run services describe <FRONTEND_SERVICE_NAME> --region europe-west2 --format="value(status.url)"` and add it to this variable.
 * **`MWIS_ENV`**: Set to `development` to enable local offline HTML mock ingestion instead of fetching live weather pages.
 * **`INTEGRATION_TEST`**: Set to `TRUE` to bypass authentication/OAuth JWT checks for local testing.
+* **`PROJECT_ID`**: (Required for Cloud SDK config) Your Google Cloud Project ID (e.g. `gen-lang-client-0123456789`) used by automated scripts to authenticate and configure gcloud environments.
 
 ---
 
@@ -54,6 +55,11 @@ You do **not** need to manually activate a virtual environment when running test
   make eval
   ```
   *Note on Rate Limits:* Running `make eval` executes multiple agent trajectories against the Gemini API. If using a **Free Tier** API key (`GEMINI_API_KEY`), you are limited to 5 requests per minute (RPM), which may cause `429 RESOURCE_EXHAUSTED` errors during multi-case evaluation runs. See [docs/evaluation.md](file:///home/karatay/Repositories/weather/MWISagent/docs/evaluation.md#troubleshooting--environment-setup) for workarounds and billing setup instructions.
+* **Google Cloud SDK Configuration:**
+  Ensure you have defined `PROJECT_ID` in your `.env` file, then run the configuration target to set up your local `gcloud` active configuration profile and authenticate Application Default Credentials (ADC):
+  ```bash
+  make setup_gcloud
+  ```
 
 ---
 
