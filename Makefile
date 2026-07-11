@@ -37,6 +37,7 @@ setup_gcloud:
 	gcloud auth login
 	gcloud auth application-default login
 	gcloud auth application-default set-quota-project $(PROJECT_ID)
+	gcloud services enable cloudresourcemanager.googleapis.com
 
 .PHONY: cloud_deploy
 cloud_deploy:
