@@ -8,251 +8,12 @@
 # work.  If not, see <https://creativecommons.org/licenses/by-sa/4.0/>.
 
 import json
-import math
-import os
 import sys
-import urllib.parse
-import urllib.request
-from dataclasses import dataclass
 from typing import Any
 
-# Path Configuration
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-ASSETS_DIR = os.path.join(SCRIPT_DIR, "..", "assets")
-RESOURCES_DIR = os.path.join(SCRIPT_DIR, "..", "resources")
-
-CONFIG_PATH = os.path.join(ASSETS_DIR, "query_config.json")
-BOUNDARIES_PATH = os.path.join(ASSETS_DIR, "mwis-region-boundaries.json")
-MUNROS_PATH = os.path.join(RESOURCES_DIR, "munros.csv")
-LOCAL_NAMES_PATH = os.path.join(RESOURCES_DIR, "local-names.csv")
-
-# Constants
-DEFAULT_OVERLAP_TOLERANCE_PCT = 15.0
-EARTH_RADIUS_KM = 111.0
-NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-CARDINAL_DIRS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-GB_LAT_MIN, GB_LAT_MAX = 49.9, 60.9
-GB_LON_MIN, GB_LON_MAX = -8.6, 1.8
-NI_LAT_MIN, NI_LAT_MAX = 54.0, 55.3
-NI_LON_MIN, NI_LON_MAX = -8.2, -5.4
-
-# Grid reference constants
-GRID_ALPHABET = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
-GRID_SIZE_500K_M = 500000
-GRID_SIZE_100K_M = 100000
-GRID_COLS = 5
-GRID_ROW_OFFSET_500K = 3
-GRID_ROW_OFFSET_100K = 4
-MAX_GRID_DIGIT_PRECISION = 5
-EPSG_BNG = "epsg:27700"
-EPSG_WGS84 = "epsg:4326"
-
-
-@dataclass
-class Point:
-    """Represents the Point logic."""
-
-    lat: float
-    lon: float
-
-
-@dataclass
-class Segment:
-    """Represents the Segment logic."""
-
-    start: Point
-    end: Point
-
-
-@dataclass
-class RegionDistance:
-    """Represents the RegionDistance logic."""
-
-    code: str
-    distance_km: float
-    direction: str
-
-
-class OutOfScopeError(Exception):
-    """Represents the OutOfScopeError logic."""
-
-    pass
-
-
-class BoundariesLoader:
-    """Represents the BoundariesLoader logic."""
-
-    @staticmethod
-    def load() -> dict[str, Any]:
-        """Executes the load operation.
-
-        Returns:
-            The return value.
-        """
-        try:
-            with open(BOUNDARIES_PATH) as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"Error loading boundaries file: {e}", file=sys.stderr)
-            sys.exit(1)
-
-
-class ConfigLoader:
-    """Represents the ConfigLoader logic."""
-
-    @staticmethod
-    def get_overlap_tolerance() -> float:
-        """Executes the get_overlap_tolerance operation.
-
-        Returns:
-            The return value.
-        """
-        if not os.path.exists(CONFIG_PATH):
-            return DEFAULT_OVERLAP_TOLERANCE_PCT
-        try:
-            with open(CONFIG_PATH) as f:
-                config = json.load(f)
-                return float(
-                    config.get("overlap_tolerance_pct", DEFAULT_OVERLAP_TOLERANCE_PCT)
-                )
-        except Exception:
-            return DEFAULT_OVERLAP_TOLERANCE_PCT
-
-
-class GeoMath:
-    """Represents the GeoMath logic."""
-
-    @staticmethod
-    def is_in_gb(pt: Point) -> bool:
-        """Executes the is_in_gb operation.
-
-        Args:
-            pt: The pt parameter.
-        Returns:
-            The return value.
-        """
-        if not (
-            GB_LAT_MIN <= pt.lat <= GB_LAT_MAX and GB_LON_MIN <= pt.lon <= GB_LON_MAX
-        ):
-            return False
-        if (NI_LAT_MIN <= pt.lat <= NI_LAT_MAX) and (
-            NI_LON_MIN <= pt.lon <= NI_LON_MAX
-        ):
-            return False
-        return True
-
-    @staticmethod
-    def get_cardinal_direction(start: Point, target: Point) -> str:
-        """Executes the get_cardinal_direction operation.
-
-        Args:
-            start: The start parameter.
-            target: The target parameter.
-        Returns:
-            The return value.
-        """
-        y = math.sin(math.radians(target.lon - start.lon)) * math.cos(
-            math.radians(target.lat)
-        )
-        x = math.cos(math.radians(start.lat)) * math.sin(
-            math.radians(target.lat)
-        ) - math.sin(math.radians(start.lat)) * math.cos(
-            math.radians(target.lat)
-        ) * math.cos(math.radians(target.lon - start.lon))
-        bearing = math.degrees(math.atan2(y, x))
-        bearing = (bearing + 360) % 360
-        idx = round(bearing / 45) % 8
-        return CARDINAL_DIRS[idx]
-
-    @staticmethod
-    def _project_point(pt: Point, scale_x: float) -> tuple[float, float]:
-        """Executes the _project_point operation.
-
-        Args:
-            pt: The pt parameter.
-            scale_x: The scale_x parameter.
-        Returns:
-            The return value.
-        """
-        return pt.lon * scale_x, pt.lat * EARTH_RADIUS_KM
-
-    @staticmethod
-    def point_to_segment_distance(pt: Point, seg: Segment) -> tuple[float, Point]:
-        """Executes the point_to_segment_distance operation.
-
-        Args:
-            pt: The pt parameter.
-            seg: The seg parameter.
-        Returns:
-            The return value.
-        """
-        avg_lat = (pt.lat + seg.start.lat + seg.end.lat) / 3.0
-        scale_x = EARTH_RADIUS_KM * math.cos(math.radians(avg_lat))
-        px, py = GeoMath._project_point(pt, scale_x)
-        ax, ay = GeoMath._project_point(seg.start, scale_x)
-        bx, by = GeoMath._project_point(seg.end, scale_x)
-
-        abx, aby = bx - ax, by - ay
-        apx, apy = px - ax, py - ay
-        ab2 = abx * abx + aby * aby
-        if ab2 == 0:
-            return math.sqrt(apx * apx + apy * apy), seg.start
-
-        t = max(0.0, min(1.0, (apx * abx + apy * aby) / ab2))
-        closest_lon = (ax + t * abx) / scale_x
-        closest_lat = (ay + t * aby) / EARTH_RADIUS_KM
-        dist = math.sqrt((px - (ax + t * abx)) ** 2 + (py - (ay + t * aby)) ** 2)
-        return dist, Point(closest_lat, closest_lon)
-
-    @staticmethod
-    def point_in_polygon(pt: Point, polygon: list[list[float]]) -> bool:
-        """Executes the point_in_polygon operation.
-
-        Args:
-            pt: The pt parameter.
-            polygon: The polygon parameter.
-        Returns:
-            The return value.
-        """
-        if len(polygon) > 1 and polygon[0] == polygon[-1]:
-            polygon = polygon[:-1]
-        n = len(polygon)
-        inside = False
-        p1y, p1x = polygon[0]
-        for i in range(n):
-            p2y, p2x = polygon[(i + 1) % n]
-            if min(p1y, p2y) < pt.lat <= max(p1y, p2y):
-                if pt.lon <= max(p1x, p2x):
-                    if p1y != p2y:
-                        xints = (pt.lat - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                    if p1x == p2x or pt.lon <= xints:
-                        inside = not inside
-            p1y, p1x = p2y, p2x
-        return inside
-
-    @staticmethod
-    def polygon_distance(pt: Point, polygon: list[list[float]]) -> tuple[float, Point]:
-        """Executes the polygon_distance operation.
-
-        Args:
-            pt: The pt parameter.
-            polygon: The polygon parameter.
-        Returns:
-            The return value.
-        """
-        min_dist = float("inf")
-        closest_pt = Point(0, 0)
-        for i in range(len(polygon) - 1):
-            seg = Segment(
-                Point(polygon[i][0], polygon[i][1]),
-                Point(polygon[i + 1][0], polygon[i + 1][1]),
-            )
-            d, c_pt = GeoMath.point_to_segment_distance(pt, seg)
-            if d < min_dist:
-                min_dist = d
-                closest_pt = c_pt
-        return min_dist, closest_pt
+from config_loader import BoundariesLoader, ConfigLoader
+from geo_math import GeoMath, Point, RegionDistance
+from input_resolver import InputResolver
 
 
 class RegionFinder:
@@ -318,212 +79,6 @@ class RegionFinder:
         return near
 
 
-class InputResolver:
-    """Represents the InputResolver logic."""
-
-    @staticmethod
-    def _fetch_nominatim_data(name: str) -> dict[str, Any] | None:
-        """Executes the _fetch_nominatim_data operation.
-
-        Args:
-            name: The name parameter.
-        Returns:
-            The return value.
-        """
-        params = urllib.parse.urlencode(
-            {"q": name, "format": "json", "addressdetails": 1, "limit": 1}
-        )
-        url = f"{NOMINATIM_URL}?{params}"
-        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        try:
-            with urllib.request.urlopen(req, timeout=5) as response:
-                data = json.loads(response.read().decode("utf-8"))
-                return data[0] if data else None
-        except Exception:
-            return None
-
-    @staticmethod
-    def search_munros(name: str) -> str | None:
-        """Searches the munros.csv file for a matching region ID.
-
-        Args:
-            name: The Munro name parameter.
-
-        Returns:
-            The associated region code if found, otherwise None.
-        """
-        if not os.path.exists(MUNROS_PATH):
-            return None
-        try:
-            with open(MUNROS_PATH) as f:
-                for line in f:
-                    parts = line.strip().split(",")
-                    if (
-                        len(parts) >= 3
-                        and parts[1].strip().lower() == name.strip().lower()
-                    ):
-                        return parts[2].strip()
-        except Exception:
-            pass
-        return None
-
-    @staticmethod
-    def search_local_names(name: str) -> str | None:
-        """Searches the local-names.csv file for a matching region ID.
-
-        Args:
-            name: The location name to search.
-
-        Returns:
-            The associated region code if found, otherwise None.
-        """
-        if not os.path.exists(LOCAL_NAMES_PATH):
-            return None
-        try:
-            with open(LOCAL_NAMES_PATH) as f:
-                for line in f:
-                    parts = line.strip().split(",")
-                    if (
-                        len(parts) >= 2
-                        and parts[0].strip().lower() == name.strip().lower()
-                    ):
-                        return parts[1].strip()
-        except Exception:
-            pass
-        return None
-
-    @staticmethod
-    def query_nominatim(name: str) -> Point | None:
-        """Executes the query_nominatim operation.
-
-        Args:
-            name: The name parameter.
-        Returns:
-            The return value.
-        """
-        if len(name) > 100:
-            return None
-        data = InputResolver._fetch_nominatim_data(name)
-        if not data:
-            return None
-
-        addr = data.get("address", {})
-        country_code = addr.get("country_code", "")
-        state = addr.get("state", "").lower()
-
-        if country_code == "gb" and "northern ireland" not in state:
-            return Point(float(data["lat"]), float(data["lon"]))
-        return None
-
-    @staticmethod
-    def _get_grid_square_base(
-        first: str, second: str
-    ) -> tuple[int, int, int, int] | None:
-        """Executes the _get_grid_square_base operation.
-
-        Args:
-            first: The first parameter.
-            second: The second parameter.
-        Returns:
-            The return value.
-        """
-        try:
-            f_idx = GRID_ALPHABET.index(first)
-            s_idx = GRID_ALPHABET.index(second)
-        except ValueError:
-            return None
-        e500 = ((f_idx % GRID_COLS) - 2) * GRID_SIZE_500K_M
-        n500 = (GRID_ROW_OFFSET_500K - (f_idx // GRID_COLS)) * GRID_SIZE_500K_M
-        e100 = (s_idx % GRID_COLS) * GRID_SIZE_100K_M
-        n100 = (GRID_ROW_OFFSET_100K - (s_idx // GRID_COLS)) * GRID_SIZE_100K_M
-        return e500, n500, e100, n100
-
-    @staticmethod
-    def _bng_to_wgs84(e: int, n: int) -> Point:
-        """Transforms BNG (EPSG:27700) to WGS84 (EPSG:4326) coordinates.
-
-        Args:
-            e: Easting in meters.
-            n: Northing in meters.
-
-        Returns:
-            The WGS84 Point coordinates.
-        """
-        from pyproj import Transformer
-
-        transformer = Transformer.from_crs(EPSG_BNG, EPSG_WGS84, always_xy=True)
-        lon, lat = transformer.transform(e, n)
-        return Point(lat, lon)
-
-    @staticmethod
-    def parse_grid_reference(grid_ref: str) -> Point | None:
-        """Parses an OS grid reference and converts it to WGS84 coordinates.
-
-        Args:
-            grid_ref: The grid reference string to parse.
-
-        Returns:
-            The WGS84 Point if parsed successfully, otherwise None.
-        """
-        grid_ref = grid_ref.replace(" ", "").upper()
-        if len(grid_ref) < 2 or not grid_ref[:2].isalpha():
-            return None
-        first, second, digits = grid_ref[0], grid_ref[1], grid_ref[2:]
-        if len(digits) % 2 != 0 or not digits.isdigit() or not digits:
-            return None
-        base = InputResolver._get_grid_square_base(first, second)
-        if not base:
-            return None
-        e500, n500, e100, n100 = base
-        scale = 10 ** (MAX_GRID_DIGIT_PRECISION - len(digits) // 2)
-        e = e500 + e100 + int(digits[: len(digits) // 2]) * scale
-        n = n500 + n100 + int(digits[len(digits) // 2 :]) * scale
-        return InputResolver._bng_to_wgs84(e, n)
-
-    @staticmethod
-    def _resolve_single_arg(arg: str) -> tuple[Point | None, str | None]:
-        """Resolves a single argument to either a Point or a region code.
-
-        Args:
-            arg: The single query argument string.
-
-        Returns:
-            A tuple of (Point, None) or (None, region_code) or (None, None).
-        """
-        grid_pt = InputResolver.parse_grid_reference(arg)
-        if grid_pt:
-            return grid_pt, None
-        m_code = InputResolver.search_munros(arg)
-        if m_code:
-            return None, m_code
-        local_code = InputResolver.search_local_names(arg)
-        if local_code:
-            return None, local_code
-        coords = InputResolver.query_nominatim(arg)
-        if coords:
-            return coords, None
-        return None, None
-
-    @staticmethod
-    def resolve_args(args: list[str]) -> tuple[Point | None, str | None]:
-        """Resolves command-line arguments to coordinates or a region code.
-
-        Args:
-            args: List of command-line argument strings.
-
-        Returns:
-            A tuple of (Point, None) or (None, region_code) or (None, None).
-        """
-        if len(args) == 1:
-            return InputResolver._resolve_single_arg(args[0])
-        if len(args) >= 2:
-            try:
-                return Point(float(args[0]), float(args[1])), None
-            except ValueError:
-                pass
-        return None, None
-
-
 class ResultFormatter:
     """Represents the ResultFormatter logic."""
 
@@ -533,10 +88,8 @@ class ResultFormatter:
         Args:
             regions: The regions parameter.
             boundaries: The boundaries parameter.
-        Returns:
-            The return value.
         """
-        raise NotImplementedError
+        pass
 
     def format_nearest(
         self, nearest: list[RegionDistance], boundaries: dict[str, Any]
@@ -546,18 +99,12 @@ class ResultFormatter:
         Args:
             nearest: The nearest parameter.
             boundaries: The boundaries parameter.
-        Returns:
-            The return value.
         """
-        raise NotImplementedError
+        pass
 
     def format_out_of_scope(self) -> None:
-        """Executes the format_out_of_scope operation.
-
-        Returns:
-            The return value.
-        """
-        raise NotImplementedError
+        """Executes the format_out_of_scope operation."""
+        pass
 
 
 class JsonFormatter(ResultFormatter):
@@ -569,15 +116,8 @@ class JsonFormatter(ResultFormatter):
         Args:
             regions: The regions parameter.
             boundaries: The boundaries parameter.
-        Returns:
-            The return value.
         """
-        out = {
-            "in_scope": True,
-            "in_area": True,
-            "regions": regions,
-            "overlap": len(regions) > 1,
-        }
+        out = {"in_scope": True, "in_area": True, "regions": regions}
         print(json.dumps(out))
 
     def format_nearest(
@@ -588,33 +128,25 @@ class JsonFormatter(ResultFormatter):
         Args:
             nearest: The nearest parameter.
             boundaries: The boundaries parameter.
-        Returns:
-            The return value.
         """
+        nearest_serialized = [
+            {"code": reg.code, "distance": reg.distance_km, "direction": reg.direction}
+            for reg in nearest
+        ]
         out = {
             "in_scope": True,
             "in_area": False,
-            "nearest": [
-                {
-                    "code": d.code,
-                    "distance_km": round(d.distance_km, 2),
-                    "direction": d.direction,
-                }
-                for d in nearest
-            ],
+            "regions": [],
+            "nearest": nearest_serialized,
         }
         print(json.dumps(out))
 
     def format_out_of_scope(self) -> None:
-        """Executes the format_out_of_scope operation.
-
-        Returns:
-            The return value.
-        """
+        """Executes the format_out_of_scope operation."""
         out = {
             "in_scope": False,
+            "in_area": False,
             "error": "OUT_OF_SCOPE",
-            "message": "The requested location is out of scope of this skill. Only locations in Great Britain are supported.",
         }
         print(json.dumps(out))
 
@@ -628,8 +160,6 @@ class TextFormatter(ResultFormatter):
         Args:
             regions: The regions parameter.
             boundaries: The boundaries parameter.
-        Returns:
-            The return value.
         """
         names = [boundaries[code]["name"] for code in regions]
         print(f"Region(s): {', '.join(regions)} ({', '.join(names)})")
@@ -644,8 +174,6 @@ class TextFormatter(ResultFormatter):
         Args:
             nearest: The nearest parameter.
             boundaries: The boundaries parameter.
-        Returns:
-            The return value.
         """
         print("The location is not in an MWIS area.")
         print("Nearest area(s):")
@@ -656,11 +184,7 @@ class TextFormatter(ResultFormatter):
             )
 
     def format_out_of_scope(self) -> None:
-        """Executes the format_out_of_scope operation.
-
-        Returns:
-            The return value.
-        """
+        """Executes the format_out_of_scope operation."""
         msg = "The requested location is out of scope of this skill. Only locations in Great Britain are supported."
         print(msg, file=sys.stderr)
 
@@ -668,15 +192,7 @@ class TextFormatter(ResultFormatter):
 def _process_location(
     pt: Point, boundaries: dict[str, Any], formatter: ResultFormatter
 ) -> None:
-    """Executes the _process_location operation.
-
-    Args:
-        pt: The pt parameter.
-        boundaries: The boundaries parameter.
-        formatter: The formatter parameter.
-    Returns:
-        The return value.
-    """
+    """Processes location by finding regions or formatting nearest."""
     finder = RegionFinder(boundaries)
     regions = finder.get_matching_regions(pt)
     if regions:
@@ -688,27 +204,12 @@ def _process_location(
 
 
 def _serialize_nearest(nearest: list[RegionDistance]) -> list[dict]:
-    """Serializes nearest regions list to dict list for JSON output.
-
-    Args:
-        nearest: List of RegionDistance objects.
-
-    Returns:
-        List of serialized dicts.
-    """
+    """Serializes nearest regions list to dict list for JSON output."""
     return [{"code": reg.code, "distance_km": reg.distance_km} for reg in nearest]
 
 
 def _find_regions_by_coords(pt: Point, boundaries: dict[str, Any]) -> dict:
-    """Finds regions or nearest regions for a Point inside GB.
-
-    Args:
-        pt: Point coordinates inside GB.
-        boundaries: Loaded boundaries dictionary.
-
-    Returns:
-        Result dictionary mapping for the coordinates.
-    """
+    """Finds regions or nearest regions for a Point inside GB."""
     finder = RegionFinder(boundaries)
     regions = finder.get_matching_regions(pt)
     if regions:
@@ -724,19 +225,7 @@ def _find_regions_by_coords(pt: Point, boundaries: dict[str, Any]) -> dict:
 
 
 def find_regions_by_location(location_args: list[str]) -> dict:
-    """Find regions for a given location, coordinate, or grid reference.
-
-    Args:
-        location_args: Location query arguments (e.g. ['Ben Nevis'] or ['53.0685', '-4.0763']).
-
-    Returns:
-        A dictionary containing keys:
-            - in_scope (bool)
-            - in_area (bool)
-            - regions (list of str, optional)
-            - error (str, optional)
-            - nearest (list, optional)
-    """
+    """Find regions for a given location, coordinate, or grid reference."""
     pt, munro_code = InputResolver.resolve_args(location_args)
     boundaries = BoundariesLoader.load()
 
