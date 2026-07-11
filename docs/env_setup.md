@@ -16,13 +16,12 @@ The parent repository holds custom skills, specifications, and shared utilities.
 
 ---
 
-## 2. ADK Agent App Setup (Inside `mwis-agent/`)
-The interactive agent resides in the `mwis-agent/` sub-directory and runs in an isolated virtual environment.
+## 2. ADK Agent App Setup
+The interactive agent resides at the repository root and runs in an isolated virtual environment.
 
 * **Python Requirement:** Python >= 3.11 (Python 3.13 is recommended)
 * **Setup Commands:**
   ```bash
-  cd mwis-agent
   # Run the installer with an increased timeout for slow downloads
   UV_HTTP_TIMEOUT=1200 uvx google-agents-cli install
   ```
@@ -30,7 +29,7 @@ The interactive agent resides in the `mwis-agent/` sub-directory and runs in an 
 ---
 
 ## 3. Environment Variables
-Create a `.env` file inside the `mwis-agent/` directory with the following variables:
+Create a `.env` file inside the repository root directory with the following variables:
 
 * **`GEMINI_API_KEY`**: (Required) Your Gemini API key for the LLM.
 * **`GOOGLE_OAUTH_CLIENT_ID`**: (Required for API) The Google OAuth Client ID to explicitly validate the audience of incoming JWT tokens on the FastAPI server endpoints.
@@ -38,6 +37,8 @@ Create a `.env` file inside the `mwis-agent/` directory with the following varia
   * **No Wildcards**: Wildcard (`*`) origins are strictly forbidden by the backend to prevent CSRF-style attacks.
   * **Local Development**: You must explicitly define your local origins. Set this to: `http://localhost:8080,http://127.0.0.1:8080`
   * **Production (Future)**: When you deploy your frontend to Cloud Run in `europe-west2`, you can retrieve its domain using `gcloud run services describe <FRONTEND_SERVICE_NAME> --region europe-west2 --format="value(status.url)"` and add it to this variable.
+* **`MWIS_ENV`**: Set to `development` to enable local offline HTML mock ingestion instead of fetching live weather pages.
+* **`INTEGRATION_TEST`**: Set to `TRUE` to bypass authentication/OAuth JWT checks for local testing.
 
 ---
 
@@ -46,7 +47,7 @@ You do **not** need to manually activate a virtual environment when running test
 
 * **Unit & Integration Tests:**
   ```bash
-  mwis-agent/.venv/bin/pytest mwis-agent/
+  uv run pytest tests/unit tests/integration
   ```
 * **Automated Agent Evaluation:**
   ```bash
