@@ -66,7 +66,7 @@ graph TD
 
 ### Node 1: `parse_input`
 * **Type:** `LlmAgent` (model: `gemini-2.5-flash`)
-* **Behavior:** Extracts `location` and `date` parameters, and evaluates whether the query requires `needs_physics`, `needs_impact`, or `needs_local_knowledge` annotations.
+* **Behavior:** Extracts `locations` and `date` parameters, and evaluates whether the query requires `needs_physics`, `needs_impact`, or `needs_local_knowledge` annotations. The `date` parameter extraction rules strictly require parsing relative day descriptions (e.g. "today", "tomorrow", "Saturday", "this weekend") and absolute formats (e.g. "11/07/2026", "11th July").
 
 ### Node 2: `clarify_location`
 * **Type:** `RequestInput` (HITL interruption)

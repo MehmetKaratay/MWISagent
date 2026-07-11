@@ -164,6 +164,7 @@ graph TD
 **Testing strategy**
 * Eval dataset under `mwis-agent/tests/` evaluating location/date extraction and synthesis accuracy.
 * Unit tests validating `check_ambiguity` routing to `missing_location` and `missing_date`.
+* Curl integration test under `tests/integration/test_curl_today_forecast.py` starting the dev server and sending a `curl -X POST` request for today's forecast to verify "Outlook:" section is excluded from the text output.
 
 ---
 
