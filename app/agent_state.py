@@ -60,7 +60,7 @@ class ParseOutput(BaseModel):
     )
     date: str | None = Field(
         default=None,
-        description="The date queried, e.g., 'today', 'tomorrow', 'Saturday'",
+        description="The relative or absolute date queried, e.g. 'today', 'tomorrow', 'Saturday', '11/07/2026', '11th July'",
     )
     is_ambiguous: bool = Field(
         default=False, description="True if location or date is too vague to resolve"
