@@ -11,6 +11,10 @@
 - Made the mock HTML strings strictly pass the validator tests without requiring an `html5lib` parser explicitly in tests.
 - Fixed `TypeError` in `query_region.py` when outputting nearest regions in JSON format for out-of-bounds locations (e.g. London).
 
+### Changed
+- Refactored `check_forecast_issued` in `check_forecast.py` into helper functions under 15 lines with descriptive names and docstrings.
+- Replaced hardcoded `10` region count magic number with dynamic `len(get_all_region_codes())`.
+
 ### Added
 - Created `tests/eval/datasets/mwis_eval.json` with 4 test scenarios (direct, ambiguous, location out-of-scope, date out-of-scope).
 - Configured ADK built-in evaluation metrics in `tests/eval/eval_config.yaml`.

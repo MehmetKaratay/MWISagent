@@ -249,14 +249,7 @@ def _update_all_regions_cache(
 
 
 def _get_cache_count(db_path: str) -> int:
-    """Return the number of records currently in the forecast_cache table.
-
-    Args:
-        db_path (str): DB file path.
-
-    Returns:
-        int: Number of rows in forecast_cache.
-    """
+    """Return the number of records currently in the forecast_cache table."""
     conn = sqlite3.connect(db_path)
     try:
         cursor = conn.cursor()
@@ -268,52 +261,52 @@ def _get_cache_count(db_path: str) -> int:
         conn.close()
 
 
+def _initialize_db_and_time(
+    db_path: str | None, current_time: datetime.datetime | None
+) -> tuple[str, datetime.datetime]:
+    """Initialize DB directory, create schema, and normalize the check time."""
+    if db_path is None:
+        db_path = os.getenv("MWIS_DB_PATH", DEFAULT_DB_PATH)
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    db_init(db_path)
+    return db_path, _normalize_time(current_time)
+
+
+def _is_update_eligible(db_path: str, current_time: datetime.datetime) -> tuple[bool, str]:
+    """Check if the cache state and schedule allow a forecast update today."""
+    if _get_cache_count(db_path) < len(get_all_region_codes()):
+        return True, ""
+    if not is_time_in_schedule(current_time):
+        return False, STATUS_NO_UPDATE
+    london_dt = current_time.astimezone(ZoneInfo("Europe/London"))
+    if _has_update_run_today(db_path, london_dt.strftime("%Y-%m-%d")):
+        return False, STATUS_ALREADY_UPDATED
+    return True, ""
+
+
+def _run_forecast_ingestion(
+    db_path: str, env: str, current_time: datetime.datetime
+) -> dict[str, Any]:
+    """Perform check for new forecast availability and commit to cache."""
+    london_dt = current_time.astimezone(ZoneInfo("Europe/London"))
+    is_new, err_res = _is_new_forecast_available(env, london_dt.date(), current_time)
+    if not is_new:
+        return err_res
+    return _update_all_regions_cache(db_path, env, london_dt.date(), current_time)
+
+
 def check_forecast_issued(
     db_path: str | None = None,
     env: str = "production",
     current_time: datetime.datetime | None = None,
 ) -> dict[str, Any]:
-    """Deterministically check if the forecast has been newly issued and update cache.
-
-    Args:
-        db_path (str, optional): Target SQLite DB file path.
-        env (str): Environment ('production' or 'development').
-        current_time (datetime, optional): Explicit override for current checking time.
-
-    Returns:
-        dict: Ingestion/check status information.
-    """
-    if db_path is None:
-        db_path = os.getenv("MWIS_DB_PATH", DEFAULT_DB_PATH)
-
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
-    db_init(db_path)
-
-    current_time = _normalize_time(current_time)
-
-    if _get_cache_count(db_path) < 10:
-        # Cache is incomplete (fewer than 10 regions), force update check regardless of schedule
-        pass
-    elif not is_time_in_schedule(current_time):
+    """Deterministically check if the forecast has been newly issued and update cache."""
+    db_path, current_time = _initialize_db_and_time(db_path, current_time)
+    eligible, status = _is_update_eligible(db_path, current_time)
+    if not eligible:
         return {
-            "status": STATUS_NO_UPDATE,
-            "message": "Out of scheduled checking hours.",
+            "status": status,
+            "message": "Update skipped due to schedule or previous runs.",
             "timestamp": current_time.isoformat(),
         }
-
-    london_dt = current_time.astimezone(ZoneInfo("Europe/London"))
-    today_str = london_dt.strftime("%Y-%m-%d")
-    ref_date = london_dt.date()
-
-    if _has_update_run_today(db_path, today_str):
-        return {
-            "status": STATUS_ALREADY_UPDATED,
-            "message": "Forecast update has already been applied today.",
-            "timestamp": current_time.isoformat(),
-        }
-
-    is_new, err_result = _is_new_forecast_available(env, ref_date, current_time)
-    if not is_new:
-        return err_result
-
-    return _update_all_regions_cache(db_path, env, ref_date, current_time)
+    return _run_forecast_ingestion(db_path, env, current_time)
