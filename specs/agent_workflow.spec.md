@@ -32,7 +32,7 @@ Provides interactive mountain weather forecast synthesis, resolving missing inpu
    * Run `weather_physics` if `needs_physics` is set (triggered by queries on elevation, temperature gradients, or physical causes).
    * Run `weather_impact` if `needs_impact` is set (triggered by questions on safety, hiking plans, or presence of significant hazards like high winds/heavy rain).
    * Run `local_knowledge` if `needs_local_knowledge` is set (triggered by questions on specific micro-locations).
-6. **Synthesis:** Synthesizes final output in plain text. If specific date codes (like `D0` or `D1`) are resolved and present in the state under `resolved_date_codes`, the synthesized text must only contain the forecast for those specific days, omitting any other days or general outlook.
+6. **Synthesis:** Synthesizes final output in plain text. If specific date codes (like `D0`, `D1`, or `Doutlook`) are resolved and present in the state under `resolved_date_codes`, the synthesized text must only contain the forecast for those specific days or outlook, omitting any other days or general outlook. If the list is empty (e.g., when the user requests "full forecast" or specifies no date restrictions), no filtering will occur and the complete forecast payload (all 3 days and the outlook) will be returned.
 7. **Follow-Up Loop:** Prompts the user with follow-up options ("higher or lower?", "specific part of the region?") using `RequestInput` and loops back to execute the corresponding nodes.
 
 **Edge cases & expected behavior**
@@ -62,6 +62,18 @@ Then the workflow suspends at clarify_date prompting for a date.
 Given a query "Compare all areas"
 When execution starts
 Then the workflow suspends at clarify_location stating "Only 5 regions can be compared. Which regions do you wish to choose?"
+
+Given a query "What is weather on Ben Nevis today and tomorrow?"
+When execution starts
+Then the workflow parses "Ben Nevis" and date codes "D0" and "D1", and the output forecast payload contains only D0 and D1 details.
+
+Given a query "What is weather on Ben Nevis next week?"
+When execution starts
+Then the workflow parses "Ben Nevis" and date code "Doutlook", and the output forecast payload contains only the outlook section.
+
+Given a query "What is the full weather forecast on Ben Nevis?"
+When execution starts
+Then the workflow parses "Ben Nevis" with no date code restrictions, and the output forecast payload contains all 3 days and the outlook.
 ```
 
 ---
