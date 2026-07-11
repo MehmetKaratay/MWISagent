@@ -41,6 +41,11 @@ This ensures that the database keeps the last valid cache data and is never left
 
 ---
 
-## 4. Offline Development Mode
+## 4. Incomplete Cache Bypass (Self-Healing)
+If the `forecast_cache` table contains fewer than 10 entries (indicating that some or all of the regional forecasts are missing from the cache), the scheduler update checks (which restrict updates to specific time windows) are bypassed. This forces the system to immediately fetch and parse all 10 regions to guarantee database completeness on fresh deployments or clean database states.
+
+---
+
+## 5. Offline Development Mode
 Setting the environment variable `MWIS_ENV=development` instructs the cache layer to bypass the live internet and populate the DB using static local mock HTML files located in the relative workspace folder:
 `mwis-agent/app/skills/mwis-website/mocks/`
