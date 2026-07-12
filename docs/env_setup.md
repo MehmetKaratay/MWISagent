@@ -42,6 +42,7 @@ Create a `.env` file inside the repository root directory with the following var
 * **`USE_LIVE_FORECAST`**: Set to `true` to force the cache to fetch live weather data even when `MWIS_ENV` is set to `development`. Defaults to `false`.
 * **`INTEGRATION_TEST`**: Set to `TRUE` to bypass authentication/OAuth JWT checks for local testing.
 * **`PROJECT_ID`**: (Required for Cloud SDK config) Your Google Cloud Project ID (e.g. `gen-lang-client-0123456789`) used by automated scripts to authenticate and configure gcloud environments.
+* **`HIDDEN_REFRESH_COMMAND`**: Secret command string that forces the agent to bypass schedulers and run a database cache update. Example: `HIDDEN_REFRESH_COMMAND=hidden-cmd-here`
 
 ---
 
