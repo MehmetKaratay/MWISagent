@@ -11,9 +11,9 @@
 - Fixed cache population issue by bypassing the scheduler check when the database contains fewer than 10 entries (incomplete or empty cache).
 
 ### Added
-- Added `USE_LIVE_FORECAST` environment variable to explicitly control whether the cache is populated from live fetches or local mock files.
-- Added `/api/config` GET endpoint to the frontend server to expose the backend `MWIS_ENV` setting.
-- Added client-side toggle in Alpine.js frontend to hide/show the "Development Tools" sidebar conditionally based on `MWIS_ENV=development`.
+- **2026-07-12 10:18**: Added `USE_LIVE_FORECAST` environment variable to explicitly control whether the cache is populated from live fetches or local mock files.
+- **2026-07-12 10:18**: Added `/api/config` GET endpoint to the frontend server to expose the backend `MWIS_ENV` setting.
+- **2026-07-12 10:18**: Added client-side toggle in Alpine.js frontend to hide/show the "Development Tools" sidebar conditionally based on `MWIS_ENV=development`.
 
 ### Fixed
 - Fixed mock forecast cache ingestion by dynamically rewriting static dates based on environment (`MWIS_ENV=development` and `test-new-dcode`).
@@ -83,3 +83,5 @@ All notable changes to this project will be documented in this file.
 - **2026-07-04 13:06**: Implemented `query_date.py` date resolver script with `parsedatetime` library and 12 unit tests.
 - **2026-07-04 13:06**: Created `requirements.txt` to manage Python dependencies.
 - **2026-07-04 12:22**: Recreated virtual environment `.venv` with working Python 3.10 and `pyproj` library to fix test errors.
+
+### Removed
