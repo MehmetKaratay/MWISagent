@@ -251,6 +251,30 @@ def load_filter_forecast() -> Any:
     return module.filter_forecast_payload
 
 
+def load_extract_details() -> Any:
+    """Dynamically load the extract_forecast_details helper script.
+
+    Returns:
+        Callable: The extract_forecast_details function.
+    """
+    path = os.path.join(
+        os.path.dirname(__file__),
+        "skills",
+        "mwis-website",
+        "serve_forecast_to_user",
+        "scripts",
+        "extract_forecast_details.py",
+    )
+    script_dir = os.path.dirname(path)
+    if script_dir not in sys.path:
+        sys.path.insert(0, script_dir)
+
+    spec = importlib.util.spec_from_file_location("extract_forecast_details", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.extract_forecast_details
+
+
 def _match_regions(locations: list[str]) -> tuple[list[str], bool]:
     """
     Map natural language location names to MWIS region codes.
@@ -345,14 +369,22 @@ def _resolve_date_codes(date_query: str | None) -> list[str]:
 
 
 def _get_filtered_forecasts(
-    regions: list[str], date_query: str | None, needs_impact: bool
+    regions: list[str],
+    date_query: str | None,
+    needs_impact: bool,
+    categories: list[str],
 ) -> tuple[dict, bool, list[str]]:
-    """Fetches and filters forecasts for the given regions and date query."""
+    """Fetches and filters forecasts for the given regions, date query, and categories."""
     forecasts, needs_impact = _fetch_all_forecasts(regions, needs_impact)
     resolved = _resolve_date_codes(date_query)
     try:
         filter_fn = load_filter_forecast()
         forecasts = filter_fn(forecasts, resolved)
+    except Exception:
+        pass
+    try:
+        extract_fn = load_extract_details()
+        forecasts = extract_fn(forecasts, categories)
     except Exception:
         pass
     return forecasts, needs_impact, resolved
@@ -374,7 +406,10 @@ def _resolve_and_fetch_logic(ctx: Context, node_input: Any) -> Event:
         return Event(output=node_input, route="too_many_locations")
 
     forecasts, needs_impact, resolved = _get_filtered_forecasts(
-        regions, ctx.state.get("date"), ctx.state.get("needs_impact", False)
+        regions,
+        ctx.state.get("date"),
+        ctx.state.get("needs_impact", False),
+        ctx.state.get("extracted_categories", []),
     )
 
     state_updates = {

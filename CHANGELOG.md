@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- **2026-07-12 16:23**: Implemented key-based forecast details pruning in `serve_forecast_to_user` skill using CSV-configured query categories.
 - **2026-07-12 15:28**: Enhanced prompt location extraction rules in `parse_input` to reliably identify mountains, regions, countries, national parks, and other geographical entities in user queries.
 - **2026-07-12 10:45**: Added hidden query command configured via environment variable, to route query and trigger check or forced update, requesting confirmation if already up-to-date.
 - **2026-07-12 10:18**: Added `USE_LIVE_FORECAST` environment variable to explicitly control whether the cache is populated from live fetches or local mock files.
