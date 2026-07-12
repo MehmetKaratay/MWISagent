@@ -9,6 +9,13 @@
 - Fixed Ruff B904 lint errors (missing exception chaining from e) in `frontend/server.py`.
 - Fixed missing Semgrep dependency on local pre-commit check environments by adding `"semgrep"` to optional dependencies in `pyproject.toml`.
 - Fixed cache population issue by bypassing the scheduler check when the database contains fewer than 10 entries (incomplete or empty cache).
+
+### Added
+- Added `USE_LIVE_FORECAST` environment variable to explicitly control whether the cache is populated from live fetches or local mock files.
+- Added `/api/config` GET endpoint to the frontend server to expose the backend `MWIS_ENV` setting.
+- Added client-side toggle in Alpine.js frontend to hide/show the "Development Tools" sidebar conditionally based on `MWIS_ENV=development`.
+
+### Fixed
 - Fixed mock forecast cache ingestion by dynamically rewriting static dates based on environment (`MWIS_ENV=development` and `test-new-dcode`).
 - Fixed region resolution in `agent_logic.py` to correctly map specific locations (like "Ben Nevis") using `query_region.py`, defaulting to "Unknown" when out of scope.
 - Added `google-agents-cli` to `pyproject.toml` dependencies.

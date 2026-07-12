@@ -298,7 +298,7 @@ def _run_forecast_ingestion(
 
 def check_forecast_issued(
     db_path: str | None = None,
-    env: str = "production",
+    use_live_forecast: bool = False,
     current_time: datetime.datetime | None = None,
 ) -> dict[str, Any]:
     """Deterministically check if the forecast has been newly issued and update cache."""
@@ -310,4 +310,10 @@ def check_forecast_issued(
             "message": "Update skipped due to schedule or previous runs.",
             "timestamp": current_time.isoformat(),
         }
+    if use_live_forecast:
+        env = "production"
+    else:
+        env = os.getenv("MWIS_ENV", "development")
+        if env == "production":
+            env = "development"
     return _run_forecast_ingestion(db_path, env, current_time)

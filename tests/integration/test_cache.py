@@ -31,10 +31,13 @@ class TestCacheIntegration(unittest.TestCase):
         self.db_path = os.path.join(self.temp_dir.name, "test_forecasts.db")
         # Ensure we run in development environment to load mocks
         os.environ["MWIS_ENV"] = "development"
+        os.environ["USE_LIVE_FORECAST"] = "false"
 
     def tearDown(self):
         """Docstring for tearDown."""
         self.temp_dir.cleanup()
+        if "USE_LIVE_FORECAST" in os.environ:
+            del os.environ["USE_LIVE_FORECAST"]
 
     @patch("check_forecast.is_time_in_schedule")
     @patch("check_forecast._is_new_forecast_available")
@@ -50,3 +53,19 @@ class TestCacheIntegration(unittest.TestCase):
         # Second call should be a hit (using populated database)
         cached_forecast = get_forecast("NW", db_path=self.db_path)
         self.assertEqual(cached_forecast, forecast)
+
+    @patch("app.cache.check_forecast_issued")
+    def test_get_forecast_use_live_forecast_true(self, mock_check):
+        """Verify use_live_forecast is True when USE_LIVE_FORECAST environment is 'true'."""
+        os.environ["USE_LIVE_FORECAST"] = "true"
+        get_forecast("NW", db_path=self.db_path)
+        mock_check.assert_called_once_with(db_path=self.db_path, use_live_forecast=True)
+
+    @patch("app.cache.check_forecast_issued")
+    def test_get_forecast_use_live_forecast_false(self, mock_check):
+        """Verify use_live_forecast is False when USE_LIVE_FORECAST environment is 'false'."""
+        os.environ["USE_LIVE_FORECAST"] = "false"
+        get_forecast("NW", db_path=self.db_path)
+        mock_check.assert_called_once_with(
+            db_path=self.db_path, use_live_forecast=False
+        )

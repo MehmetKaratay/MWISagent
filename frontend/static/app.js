@@ -27,9 +27,18 @@ document.addEventListener('alpine:init', () => {
 
         // Point to the local backend proxy
         adkEndpoint: '/api/chat',
+        mwisEnv: 'production',
 
-        init() {
-            // Initialization logic if any
+        async init() {
+            try {
+                const response = await fetch('/api/config');
+                if (response.ok) {
+                    const config = await response.json();
+                    this.mwisEnv = config.mwis_env;
+                }
+            } catch (error) {
+                console.error("Error fetching config:", error);
+            }
         },
 
         async sendMessage() {
