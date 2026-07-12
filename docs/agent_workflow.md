@@ -113,7 +113,7 @@ graph TD
 
 ### Node 10: `synthesis`
 * **Type:** `LlmAgent` (model: `gemini-2.5-flash`)
-* **Behavior:** Reads the pre-filtered forecast payload context and annotations to generate a clean, plain-text response answering the query. Because the payload was filtered programmatically, the LLM only has access to the requested days' forecasts.
+* **Behavior:** Reads the pre-filtered forecast payload context and annotations to generate a clean, plain-text response answering the query. Because the payload was filtered programmatically, the LLM only has access to the requested days' forecasts. If specific categories (elements) were requested, they are described first in the response.
 
 ### Node 11: `ask_follow_up`
 * **Type:** `RequestInput`
