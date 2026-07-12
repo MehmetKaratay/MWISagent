@@ -2,6 +2,7 @@
 
 ## In Progress
    - Focus on specific variable
+     - Clarify_detail note in clarify_nodes.py
    - Comparision
 
 ## Next time
