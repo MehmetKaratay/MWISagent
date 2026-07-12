@@ -38,7 +38,8 @@ Create a `.env` file inside the repository root directory with the following var
   * **No Wildcards**: Wildcard (`*`) origins are strictly forbidden by the backend to prevent CSRF-style attacks.
   * **Local Development**: You must explicitly define your local origins. Set this to: `http://localhost:8080,http://127.0.0.1:8080`
   * **Production (Future)**: When you deploy your frontend to Cloud Run in `europe-west2`, you can retrieve its domain using `gcloud run services describe <FRONTEND_SERVICE_NAME> --region europe-west2 --format="value(status.url)"` and add it to this variable.
-* **`MWIS_ENV`**: Set to `development` to enable local offline HTML mock ingestion instead of fetching live weather pages.
+* **`MWIS_ENV`**: Set to `development` to enable local offline HTML mock ingestion instead of fetching live weather pages, and to enable the "Development Tools" sidebar in the frontend.
+* **`USE_LIVE_FORECAST`**: Set to `true` to force the cache to fetch live weather data even when `MWIS_ENV` is set to `development`. Defaults to `false`.
 * **`INTEGRATION_TEST`**: Set to `TRUE` to bypass authentication/OAuth JWT checks for local testing.
 * **`PROJECT_ID`**: (Required for Cloud SDK config) Your Google Cloud Project ID (e.g. `gen-lang-client-0123456789`) used by automated scripts to authenticate and configure gcloud environments.
 

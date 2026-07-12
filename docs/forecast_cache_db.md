@@ -49,3 +49,7 @@ If the `forecast_cache` table contains fewer than 10 entries (indicating that so
 ## 5. Offline Development Mode
 Setting the environment variable `MWIS_ENV=development` instructs the cache layer to bypass the live internet and populate the DB using static local mock HTML files located in the relative workspace folder:
 `mwis-agent/app/skills/mwis-website/mocks/`
+
+### Overriding Offline Mode
+To force the database cache to populate using live data even when running locally in development mode (`MWIS_ENV=development`), set the environment variable:
+`USE_LIVE_FORECAST=true`
