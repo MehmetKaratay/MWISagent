@@ -6,6 +6,8 @@
    - Comparision
 
 ## Next time
+   - Comparision
+   - Remove "Do you have any follow-up questions? (e.g. higher/lower elevation, specific part of the region, or 'no' to finish"
 
 
 ## Future
