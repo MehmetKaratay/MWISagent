@@ -25,6 +25,9 @@ All notable changes to this project will be documented in this file.
 - TDD unit tests for the OAuth middleware.
 
 ### Fixed
+- **2026-07-12 12:08**: Fixed database cache update nodes `check_refresh` and `force_refresh` to correctly evaluate and pass the `USE_LIVE_FORECAST` environment variable to `check_forecast_issued`, ensuring live updates query the real MWIS website when requested.
+- **2026-07-12 12:08**: Fixed all MWIS region URLs in `mwis-regions.csv` to match the newly reorganized path structures on the live MWIS website (e.g. `cairngorms-np-and-monadhliath`, `southeastern-highlands`, Eryri, etc.) and updated the URL schema regex validation rules in `query_utils.py` to support `www.` prefixed URLs.
+- **2026-07-12 12:08**: Fixed `check_forecast_issued` to bypass the `_is_new_forecast_available` target date freshness check when `force_update=True`, allowing manual forced updates to correctly fetch and cache whatever forecast is currently live on the site.
 - **2026-07-11 16:38**: Fixed missing direction key in `find_regions_by_location` API nearest regions serialization.
 - **2026-07-11 15:17**: Fixed 401 Unauthorized A2A errors between the frontend dashboard and backend Reasoning Engine by allowing token verification to fall back to general Google signature validation without audience restriction when configured placeholder is not present.
 - **2026-07-11 14:45**: Fixed live deployment HTTP 500 startup crash by enabling the Cloud Resource Manager API in the GCP project configuration, and updated the `setup_gcloud` target in the `Makefile` to automatically enable it in the future.

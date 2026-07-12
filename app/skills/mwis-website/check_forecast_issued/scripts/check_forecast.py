@@ -286,13 +286,16 @@ def _is_update_eligible(
 
 
 def _run_forecast_ingestion(
-    db_path: str, env: str, current_time: datetime.datetime
+    db_path: str, env: str, current_time: datetime.datetime, force_update: bool = False
 ) -> dict[str, Any]:
     """Perform check for new forecast availability and commit to cache."""
     london_dt = current_time.astimezone(ZoneInfo("Europe/London"))
-    is_new, err_res = _is_new_forecast_available(env, london_dt.date(), current_time)
-    if not is_new:
-        return err_res
+    if not force_update:
+        is_new, err_res = _is_new_forecast_available(
+            env, london_dt.date(), current_time
+        )
+        if not is_new:
+            return err_res
     return _update_all_regions_cache(db_path, env, london_dt.date(), current_time)
 
 
@@ -318,4 +321,6 @@ def check_forecast_issued(
         env = os.getenv("MWIS_ENV", "development")
         if env == "production":
             env = "development"
-    return _run_forecast_ingestion(db_path, env, current_time)
+    return _run_forecast_ingestion(
+        db_path, env, current_time, force_update=force_update
+    )

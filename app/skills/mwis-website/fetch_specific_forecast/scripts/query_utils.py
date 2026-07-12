@@ -44,7 +44,8 @@ VALIDATION_RULES = {
     "RefHeight": lambda val: bool(re.match(r"^\d{3}m$", val)),
     "FLorValley": lambda val: val in ("FL", "Valley"),
     "Country": lambda val: val in ("Scotland", "England", "Wales"),
-    "Url": lambda val: val.startswith("https://mwis.org.uk/forecasts/"),
+    "Url": lambda val: val.startswith("https://mwis.org.uk/forecasts/")
+    or val.startswith("https://www.mwis.org.uk/forecasts/"),
 }
 
 

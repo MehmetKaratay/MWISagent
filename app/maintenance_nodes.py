@@ -64,7 +64,8 @@ def set_raw_query(ctx: Context, node_input: Any) -> Event:
 @node
 def check_refresh(ctx: Context, node_input: Any) -> Event:
     """Node to run standard eligibility refresh check."""
-    res = check_forecast_issued()
+    use_live = os.environ.get("USE_LIVE_FORECAST", "false").lower() == "true"
+    res = check_forecast_issued(use_live_forecast=use_live)
     msg, awaiting = check_refresh_response(res.get("status", ""))
     return Event(
         content=types.Content(role="model", parts=[types.Part.from_text(text=msg)]),
@@ -76,7 +77,8 @@ def check_refresh(ctx: Context, node_input: Any) -> Event:
 @node
 def force_refresh(ctx: Context, node_input: Any) -> Event:
     """Node to atomically force a database refresh."""
-    check_forecast_issued(force_update=True)
+    use_live = os.environ.get("USE_LIVE_FORECAST", "false").lower() == "true"
+    check_forecast_issued(use_live_forecast=use_live, force_update=True)
     msg = "Database refresh successfully forced!"
     return Event(
         content=types.Content(role="model", parts=[types.Part.from_text(text=msg)]),

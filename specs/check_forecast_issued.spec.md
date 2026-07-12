@@ -53,7 +53,7 @@ Then the check is skipped, and check_forecast_issued returns "already_updated_to
 **API contracts**
 * Function: `check_forecast_issued(db_path: str | None = None, use_live_forecast: bool = False, current_time: datetime.datetime | None = None, force_update: bool = False) -> dict[str, Any]`
   - Returns: `{"status": "updated" | "no_update" | "already_updated_today" | "error", "timestamp": str}`
-  - Note: If `force_update` is `True`, the schedule eligibility checks are bypassed entirely.
+  - Note: If `force_update` is `True`, the schedule eligibility and forecast freshness verification checks are bypassed entirely.
 
 ---
 
