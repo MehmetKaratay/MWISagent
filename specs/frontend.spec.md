@@ -22,6 +22,7 @@ A web frontend to provide an interactive chat experience with the MWISagent via 
 5. The UI must clearly indicate the development dialogs are for testing purposes.
 6. The UI must use Vanilla CSS with a modern, sleek design (vibrant colors, dark mode support, glassmorphism, dynamic animations).
 7. Must use Alpine.js for logic.
+8. The Development Tools sidebar must only be displayed in the UI when the environment variable `MWIS_ENV` is set to `'development'`. If set to `'production'` (or any other value), it should be hidden.
 
 **Edge cases**
 - Agent Runtime is down or inaccessible: The chat should display a clear connection error.
@@ -52,6 +53,7 @@ Then the output of the local `query_date.py` is displayed in the dialog
 
 **API contracts**
 - `GET /` (Frontend Server): Serves `index.html`.
+- `GET /api/config` (Frontend Server): Returns `{"mwis_env": "development" | "production"}`.
 - `POST /api/chat` (Frontend Server): Accepts JSON `{ "inputs": { "input": "..." } }`, calls `ReasoningEngine.query()`, returns agent response.
 - `GET /api/query_region?q={location}` (Frontend Server): Executes `query_region.py` via subprocess and returns JSON output.
 - `GET /api/query_date?q={date}` (Frontend Server): Executes `query_date.py` via subprocess and returns JSON output.
