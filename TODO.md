@@ -1,8 +1,6 @@
 # MWIS Agent TODO
 
 ## In Progress
- * Move onto agent skills:
-   - Node for identifying fuzzy location and passing it to skill/script
    - Focus on specific variable
    - Comparision
 
