@@ -16,6 +16,7 @@
  * Tidy up local GEMINI.md so it plays nicely with global GEMINI.md
  * Fix depreciation warning that occurs during `make cloud-deploy`
  * `make cloud-deploy` updates the deploy timestamp (possibly by calling helper script)
+ * `curl -X POST` as automatic deployment check of live agent
 
 ### Agent
 

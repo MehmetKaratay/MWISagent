@@ -22,10 +22,12 @@ from app.agent_nodes import (
     check_local,
     check_loop_limit,
     check_physics,
+    check_refresh,
     check_security,
     clarify_date,
     clarify_location,
     clarify_too_many_locations,
+    force_refresh,
     historic_lookup,
     local_knowledge,
     out_of_scope_msg,
@@ -43,7 +45,9 @@ from app.agent_state import WorkflowState
 
 edges = [
     Edge(from_node=START, to_node=set_raw_query),
-    Edge(from_node=set_raw_query, to_node=parse_input),
+    Edge(from_node=set_raw_query, to_node=check_refresh, route="refresh"),
+    Edge(from_node=set_raw_query, to_node=force_refresh, route="refresh_forced"),
+    Edge(from_node=set_raw_query, to_node=parse_input, route="default"),
     Edge(from_node=parse_input, to_node=check_security),
     Edge(from_node=check_security, to_node=security_refusal, route="malicious"),
     Edge(from_node=check_security, to_node=check_ambiguity, route="safe"),

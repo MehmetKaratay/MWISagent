@@ -300,16 +300,18 @@ def check_forecast_issued(
     db_path: str | None = None,
     use_live_forecast: bool = False,
     current_time: datetime.datetime | None = None,
+    force_update: bool = False,
 ) -> dict[str, Any]:
     """Deterministically check if the forecast has been newly issued and update cache."""
     db_path, current_time = _initialize_db_and_time(db_path, current_time)
-    eligible, status = _is_update_eligible(db_path, current_time)
-    if not eligible:
-        return {
-            "status": status,
-            "message": "Update skipped due to schedule or previous runs.",
-            "timestamp": current_time.isoformat(),
-        }
+    if not force_update:
+        eligible, status = _is_update_eligible(db_path, current_time)
+        if not eligible:
+            return {
+                "status": status,
+                "message": "Update skipped due to schedule or previous runs.",
+                "timestamp": current_time.isoformat(),
+            }
     if use_live_forecast:
         env = "production"
     else:
