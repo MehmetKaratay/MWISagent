@@ -22,12 +22,10 @@ from app.agent_nodes import (
     check_local,
     check_loop_limit,
     check_physics,
-    check_refresh,
     check_security,
     clarify_date,
     clarify_location,
     clarify_too_many_locations,
-    force_refresh,
     historic_lookup,
     local_knowledge,
     out_of_scope_msg,
@@ -35,13 +33,13 @@ from app.agent_nodes import (
     process_follow_up,
     resolve_and_fetch,
     security_refusal,
-    set_raw_query,
     synthesis,
     validate_coverage,
     weather_impact,
     weather_physics,
 )
 from app.agent_state import WorkflowState
+from app.maintenance_nodes import check_refresh, force_refresh, set_raw_query
 
 edges = [
     Edge(from_node=START, to_node=set_raw_query),

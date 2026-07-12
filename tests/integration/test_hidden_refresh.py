@@ -44,7 +44,7 @@ class TestHiddenRefresh(unittest.TestCase):
         if "HIDDEN_REFRESH_COMMAND" in os.environ:
             del os.environ["HIDDEN_REFRESH_COMMAND"]
 
-    @patch("app.agent_nodes.check_forecast_issued")
+    @patch("app.maintenance_nodes.check_forecast_issued")
     def test_hidden_refresh_command_not_eligible(self, mock_check):
         """Test that hidden command triggers prompt when refresh is not needed."""
         # Mocking check_forecast_issued to return skipped status (not eligible)
@@ -125,7 +125,7 @@ class TestHiddenRefresh(unittest.TestCase):
         )
         self.assertFalse(session.state.get("awaiting_refresh_force"))
 
-    @patch("app.agent_nodes.check_forecast_issued")
+    @patch("app.maintenance_nodes.check_forecast_issued")
     def test_hidden_refresh_command_eligible(self, mock_check):
         """Test that hidden command refreshes immediately when eligible."""
         mock_check.return_value = {

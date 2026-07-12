@@ -12,28 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import sys
 from typing import Any
 
-# Ensure we can import check_forecast_issued
-APP_DIR = os.path.dirname(os.path.abspath(__file__))
-CHECKER_SCRIPTS_DIR = os.path.join(
-    APP_DIR, "skills", "mwis-website", "check_forecast_issued", "scripts"
-)
-if CHECKER_SCRIPTS_DIR not in sys.path:
-    sys.path.insert(0, CHECKER_SCRIPTS_DIR)
+from google.adk.agents import LlmAgent
+from google.adk.agents.context import Context
+from google.adk.events.event import Event
+from google.adk.events.request_input import RequestInput
+from google.adk.models import Gemini
+from google.adk.workflow import node
+from google.genai import types
 
-from check_forecast import check_forecast_issued  # noqa: E402
-from google.adk.agents import LlmAgent  # noqa: E402
-from google.adk.agents.context import Context  # noqa: E402
-from google.adk.events.event import Event  # noqa: E402
-from google.adk.events.request_input import RequestInput  # noqa: E402
-from google.adk.models import Gemini  # noqa: E402
-from google.adk.workflow import node  # noqa: E402
-from google.genai import types  # noqa: E402
-
-from app.agent_logic import (  # noqa: E402
+from app.agent_logic import (
     _check_ambiguity_logic,
     _check_impact_logic,
     _check_local_logic,
@@ -43,7 +32,7 @@ from app.agent_logic import (  # noqa: E402
     _resolve_and_fetch_logic,
     _validate_coverage_logic,
 )
-from app.agent_state import ParseOutput  # noqa: E402
+from app.agent_state import ParseOutput
 
 parse_input = LlmAgent(
     name="parse_input",
@@ -297,77 +286,3 @@ def check_loop_limit(ctx: Context, node_input: Any) -> Event:
     Node wrapper to ensure infinite routing loops are prevented.
     """
     return _check_loop_limit_logic(ctx, node_input)
-
-
-@node
-def set_raw_query(ctx: Context, node_input: Any) -> Event:
-    """
-    Initial node to capture the raw user query string into state from the START edge.
-    Wraps the input in <user_input> tags to protect against prompt injection.
-    """
-    content = ""
-    if hasattr(node_input, "parts") and node_input.parts:
-        content = node_input.parts[0].text
-
-    isolated_input = f"<user_input>{content}</user_input>"
-    new_content = types.Content(
-        role="user", parts=[types.Part.from_text(text=isolated_input)]
-    )
-
-    import os
-
-    hidden_cmd = os.environ.get("HIDDEN_REFRESH_COMMAND")
-
-    if ctx.state.get("awaiting_refresh_force") and content.strip().lower() == "force":
-        return Event(
-            output=new_content,
-            route="refresh_forced",
-            state={"raw_query": content, "awaiting_refresh_force": False},
-        )
-
-    if hidden_cmd and content.strip() == hidden_cmd.strip():
-        return Event(
-            output=new_content,
-            route="refresh",
-            state={"raw_query": content},
-        )
-
-    return Event(
-        output=new_content,
-        route="default",
-        state={"raw_query": content},
-    )
-
-
-@node
-def check_refresh(ctx: Context, node_input: Any) -> Event:
-    """Node to run standard eligibility refresh check."""
-    res = check_forecast_issued()
-
-    if res.get("status") == "updated":
-        msg = "Database refreshed successfully."
-        return Event(
-            content=types.Content(role="model", parts=[types.Part.from_text(text=msg)]),
-            output=msg,
-            state={"awaiting_refresh_force": False},
-        )
-    else:
-        msg = "Database refresh is not required at this time because the forecast is already up-to-date. Reply with 'force' to proceed anyway."
-        return Event(
-            content=types.Content(role="model", parts=[types.Part.from_text(text=msg)]),
-            output=msg,
-            state={"awaiting_refresh_force": True},
-        )
-
-
-@node
-def force_refresh(ctx: Context, node_input: Any) -> Event:
-    """Node to atomically force a database refresh."""
-    check_forecast_issued(force_update=True)
-
-    msg = "Database refresh successfully forced!"
-    return Event(
-        content=types.Content(role="model", parts=[types.Part.from_text(text=msg)]),
-        output=msg,
-        state={"awaiting_refresh_force": False},
-    )
