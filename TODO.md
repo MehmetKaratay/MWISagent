@@ -2,7 +2,10 @@
 
 ## In Progress
    - Focus on specific variable
-     - Clarify_detail note in clarify_nodes.py
+     - Specific variable detail is not first yet, despite attempt.
+     - Clarify_detail node in clarify_nodes.py for better sementics?
+     - Clarify detail for "Monday and Tuesday" only rtns forecast for "Monday"
+     - "Full forecast" only returns summary, not the full foreast as before.
    - Comparision
 
 ## Next time
@@ -11,6 +14,13 @@
 
 
 ## Future
+ * Some frontend memory, so agent remebers context of "Cairngorm" forcast when asking for extra details.
+ * Query region:
+   - Multi-word names, eg "Black Cuillin" returns "Script failed".
+   - Check with and with final "s" or, perhaps, strip final "s" before checking.
+ * Import hills from UK Hills DB and cross-ref to MWIS regions. (https://www.hill-bagging.co.uk/dobih/)
+   - Parse DB to match to MWIS regions
+   - Attribute correctly on ##Data Cretids or ##Attributions README.md and on front end: "This project uses filtered data from the Database of British and Irish Hills (https://www.hill-bagging.co.uk/), licensed under CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)" Possible below agent interface too.
 
 ### Tiding
  * `fetch_specific_forecast` uses `../mocks/` instead of `tests/resources/`.
@@ -50,6 +60,9 @@
 
 ### Low priority
  * Spec files for update-boundaries.py (sp?)
+ * Query region:
+   - "Amsterdam" should return "out of scope" instead of "script fails".
+ * Query date: "next weekend" at a weekend should return "Doutlook" instead of "D0".
 
 ## Far future
  * Add Met Office Weather Warnings. See DEV-NOTES.md
