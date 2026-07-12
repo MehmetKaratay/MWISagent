@@ -34,6 +34,7 @@ Provides interactive mountain weather forecast synthesis, resolving missing inpu
    * Run `local_knowledge` if `needs_local_knowledge` is set (triggered by questions on specific micro-locations).
 6. **Synthesis:** Synthesizes final output in plain text. If specific date codes (like `D0`, `D1`, or `Doutlook`) are resolved and present in the state under `resolved_date_codes`, the synthesized text must only contain the forecast for those specific days or outlook, omitting any other days or general outlook. If the list is empty (e.g., when the user requests "full forecast" or specifies no date restrictions), no filtering will occur and the complete forecast payload (all 3 days and the outlook) will be returned.
 7. **Follow-Up Loop:** Prompts the user with follow-up options ("higher or lower?", "specific part of the region?") using `RequestInput` and loops back to execute the corresponding nodes.
+8. **Cache Refresh Commands:** When triggering a check refresh or force refresh, the nodes must read the `USE_LIVE_FORECAST` environment variable to determine if updates are live or mock.
 
 **Edge cases & expected behavior**
 * *No Location:* Suspend and yield `RequestInput` offering a comparison of up to 5 regions or a specific location.
