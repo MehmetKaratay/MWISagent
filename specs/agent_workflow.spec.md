@@ -24,7 +24,7 @@ Provides interactive mountain weather forecast synthesis, resolving missing inpu
 * As an ADK user, I want to request a comparison of up to 5 explicit forecasts I choose.
 
 **Requirements**
-1. **Inputs:** Accepts free-text user query. The agent must parse and extract any relative dates (e.g. 'today', 'tomorrow', 'Saturday') or absolute dates (e.g. '11/07/2026', '11th July') in the user input.
+1. **Inputs:** Accepts free-text user query. The agent must parse and extract any relative dates (e.g. 'today', 'tomorrow', 'Saturday') or absolute dates (e.g. '11/07/2026', '11th July') in the user input. Additionally, the agent must parse and extract any potential geographical locations, including specific mountain peaks/hills (e.g. "Ben Nevis", "Snowdon", "Scafell Pike"), valleys, towns, country names (e.g. "Scotland"), regions, or national parks mentioned in the query.
 2. **Ambiguity Handling:** Suspends execution using `RequestInput` if location or date is completely missing or ambiguous, prompting the user for clarification.
 3. **Data Fetching:** Programmatically invokes the `mwis-website` scripts to parse forecast HTML and inject D-codes. It must support fetching up to 5 regions concurrently.
 4. **Caching Layer:** The backend caching layer is implemented via the `check_forecast_issued` skill and the `sqlite3` database to store the 10 MWIS forecasts. The front end will have no memory layer.
