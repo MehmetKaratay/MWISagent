@@ -1,7 +1,12 @@
 # MWIS Agent TODO
 
 ## In Progress
-
+ * Docs for refactoring the fetch live MWIS
+ * Check it works!
+ * Move onto agent skills:
+   - Node for identifying fuzzy location and passing it to skill/script
+   - Focus on specific variable
+   - Comparision
 
 ## Next time
 

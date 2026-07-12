@@ -299,6 +299,14 @@ def _run_forecast_ingestion(
     return _update_all_regions_cache(db_path, env, london_dt.date(), current_time)
 
 
+def _resolve_env_name(use_live_forecast: bool) -> str:
+    """Resolve env name based on use_live_forecast configuration."""
+    if use_live_forecast:
+        return "production"
+    env = os.getenv("MWIS_ENV", "development")
+    return "development" if env == "production" else env
+
+
 def check_forecast_issued(
     db_path: str | None = None,
     use_live_forecast: bool = False,
@@ -315,12 +323,7 @@ def check_forecast_issued(
                 "message": "Update skipped due to schedule or previous runs.",
                 "timestamp": current_time.isoformat(),
             }
-    if use_live_forecast:
-        env = "production"
-    else:
-        env = os.getenv("MWIS_ENV", "development")
-        if env == "production":
-            env = "development"
+    env = _resolve_env_name(use_live_forecast)
     return _run_forecast_ingestion(
         db_path, env, current_time, force_update=force_update
     )

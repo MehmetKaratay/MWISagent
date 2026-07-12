@@ -44,6 +44,7 @@ All notable changes to this project will be documented in this file.
 - **2026-07-07 05:17**: Fixed `TypeError` in `query_region.py` when outputting nearest regions in JSON format for out-of-bounds locations (e.g. London).
 
 ### Changed
+- **2026-07-12 15:01**: Refactored `check_forecast_issued` inside `check_forecast.py` by extracting a new `_resolve_env_name` helper function to keep the function body strictly under the 15-line limit.
 - **2026-07-12 11:10**: Modularized the maintenance database refresh nodes by extracting them from `app/agent_nodes.py` into a new `app/maintenance_nodes.py` and `app/maintenance_logic.py`, keeping modules under 300 lines and functions under 15 lines.
 - **2026-07-11 19:44**: Refactored `_resolve_and_fetch_logic` in `app/agent_logic.py` by extracting a new `_get_filtered_forecasts` helper function, keeping all orchestration functions under the 15-line limit.
 - **2026-07-11 19:28**: Relocated the forecast payload filtering logic to a modular `filter_forecast.py` script inside the `serve_forecast_to_user` skill directory, dynamically importing and executing it in `app/agent_logic.py`.
