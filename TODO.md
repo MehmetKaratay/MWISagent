@@ -4,7 +4,6 @@
 
 
 ## Next time
- * Deployed version should use live forecasts, but maintain the Dev Tools §
 
 
 ## Future

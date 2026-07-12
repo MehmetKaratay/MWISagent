@@ -100,8 +100,12 @@ Then the workflow parses "Ben Nevis" with no date code restrictions, and the out
 **Mermaid Graph Topology**
 ```mermaid
 graph TD
-    START([START]) --> set_raw_query[set_raw_query: Isolates query in XML tags]
-    set_raw_query --> parse_input[parse_input: LLM extracts locations/date/flags & detects attacks]
+    START([START]) --> set_raw_query[set_raw_query: Isolates query in XML tags & routes commands]
+    set_raw_query -- refresh --> check_refresh[check_refresh: Checks cache update status]
+    set_raw_query -- refresh_forced --> force_refresh[force_refresh: Atomically forces database update]
+    set_raw_query -- default --> parse_input[parse_input: LLM extracts locations/date/flags & detects attacks]
+    check_refresh --> END([END])
+    force_refresh --> END
     parse_input --> check_security{Is input malicious?}
 
     %% Security route
@@ -169,6 +173,7 @@ graph TD
       needs_impact: bool = False
       needs_local_knowledge: bool = False
       is_malicious: bool = False
+      awaiting_refresh_force: bool = False
       loop_count: int = 0
   ```
 * `ParseOutput` must correctly specify `default=None` and `default=False` across all fields, and include `is_malicious: bool = False`.
