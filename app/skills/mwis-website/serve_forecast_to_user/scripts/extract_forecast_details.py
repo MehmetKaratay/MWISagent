@@ -12,92 +12,78 @@ import os
 from typing import Any
 
 
-def _load_mappings() -> dict[str, list[str]]:
-    """Load category mappings from CSV file.
-
-    Returns:
-        dict[str, list[str]]: Mapped category names to list of forecast keys.
-    """
+def _get_csv_path() -> str:
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     csv_path = os.path.abspath(
-        os.path.join(
-            base_dir,
-            "references",
-            "category_mappings.csv",
-        )
+        os.path.join(base_dir, "references", "category_mappings.csv")
     )
     if not csv_path.startswith(os.path.abspath(base_dir)):
         raise ValueError("Security Traversal Blocked")
+    return csv_path
 
-    mappings = {}
+
+def _load_mappings() -> dict[str, list[str]]:
+    csv_path = _get_csv_path()
     if not os.path.exists(csv_path):
-        return mappings
-
+        return {}
     with open(csv_path, encoding="utf-8") as f:  # nosemgrep: detect-path-traversal
         reader = csv.DictReader(f)
-        for row in reader:
-            cat = row.get("category", "").strip()
-            fields = [field.strip() for field in row.get("fields", "").split(",")]
-            mappings[cat] = fields
-    return mappings
+        return {
+            row.get("category", "").strip(): [
+                field.strip() for field in row.get("fields", "").split(",")
+            ]
+            for row in reader
+            if row.get("category")
+        }
 
 
-def extract_forecast_details(
-    forecasts: dict[str, Any], categories: list[str]
-) -> dict[str, Any]:
-    """Filters forecast payload to keep only fields matching the requested categories.
-
-    Args:
-        forecasts (dict[str, Any]): The complete forecasts dictionary.
-        categories (list[str]): List of query categories.
-
-    Returns:
-        dict[str, Any]: The filtered forecasts dictionary.
-    """
-    if "full" in categories:
-        return forecasts
-
-    mappings = _load_mappings()
-
-    # Determine allowed fields
-    allowed_fields = {"date", "forecast_index", "last_updated", "Dcode"}
+def _get_allowed_fields(
+    categories: list[str], mappings: dict[str, list[str]]
+) -> set[str]:
+    allowed = {"date", "forecast_index", "last_updated", "Dcode"}
     if not categories:
-        # Default to headlines only
-        headline_fields = mappings.get("cloud", [])  # fallback if mappings failed
-        if mappings:
-            headline_fields = [
+        allowed.update(
+            [
                 "uk_summary",
                 "region_headline",
                 "wind_headline",
                 "precip_headline",
                 "cloud_headline",
             ]
-        allowed_fields.update(headline_fields)
+        )
     else:
         for cat in categories:
             if cat in mappings:
-                allowed_fields.update(mappings[cat])
+                allowed.update(mappings[cat])
+    return allowed
 
-    filtered = {}
-    for region, f_data in forecasts.items():
-        if not isinstance(f_data, dict):
-            filtered[region] = f_data
-            continue
 
-        f_copy = {k: v for k, v in f_data.items() if k not in ["days", "outlook"]}
-        if "days" in f_data:
-            new_days = []
-            for day in f_data["days"]:
-                new_day = {k: v for k, v in day.items() if k in allowed_fields}
-                new_days.append(new_day)
-            f_copy["days"] = new_days
+def _filter_region_forecast(
+    f_data: dict[str, Any], allowed_fields: set[str], has_categories: bool
+) -> dict[str, Any]:
+    f_copy = {k: v for k, v in f_data.items() if k not in ["days", "outlook"]}
+    if "days" in f_data:
+        f_copy["days"] = [
+            {k: v for k, v in d.items() if k in allowed_fields} for d in f_data["days"]
+        ]
+    if "outlook" in f_data and ("outlook" in allowed_fields or not has_categories):
+        f_copy["outlook"] = f_data["outlook"]
+    return f_copy
 
-        if "outlook" in f_data:
-            # Only keep outlook if outlook matches requested categories/fields or general summary
-            # outlook is represented by the key 'outlook'
-            if "outlook" in allowed_fields or not categories:
-                f_copy["outlook"] = f_data["outlook"]
 
-        filtered[region] = f_copy
-
-    return filtered
+def extract_forecast_details(
+    forecasts: dict[str, Any], categories: list[str]
+) -> dict[str, Any]:
+    """Filters forecast payload to keep only fields matching the requested categories."""
+    if "full" in categories:
+        return forecasts
+    mappings = _load_mappings()
+    allowed = _get_allowed_fields(categories, mappings)
+    return {
+        reg: (
+            _filter_region_forecast(fd, allowed, bool(categories))
+            if isinstance(fd, dict)
+            else fd
+        )
+        for reg, fd in forecasts.items()
+    }
