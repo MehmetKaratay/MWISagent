@@ -45,6 +45,7 @@ def test_curl_today_forecast_no_outlook():
         stderr=subprocess.PIPE,
         env={
             "MWIS_ENV": "development",
+            "USE_LIVE_FORECAST": "false",
             "INTEGRATION_TEST": "TRUE",
             "PATH": os.environ.get("PATH", ""),
         },

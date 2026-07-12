@@ -82,6 +82,12 @@ def query_date(q: str = Query(..., description="The date to query")):
         ) from e
 
 
+@app.get("/api/config")
+def get_config():
+    """Returns frontend configuration and environment info."""
+    return {"mwis_env": os.environ.get("MWIS_ENV", "production")}
+
+
 def _get_agent_runtime_url() -> str:
     """Return the remote Agent Runtime URL or local fallback URL."""
     agent_id = os.environ.get("AGENT_RUNTIME_ID")

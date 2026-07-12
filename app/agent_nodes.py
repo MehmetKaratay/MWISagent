@@ -286,21 +286,3 @@ def check_loop_limit(ctx: Context, node_input: Any) -> Event:
     Node wrapper to ensure infinite routing loops are prevented.
     """
     return _check_loop_limit_logic(ctx, node_input)
-
-
-@node
-def set_raw_query(ctx: Context, node_input: Any) -> Event:
-    """
-    Initial node to capture the raw user query string into state from the START edge.
-    Wraps the input in <user_input> tags to protect against prompt injection.
-    """
-    content = ""
-    if hasattr(node_input, "parts") and node_input.parts:
-        content = node_input.parts[0].text
-
-    isolated_input = f"<user_input>{content}</user_input>"
-    new_content = types.Content(
-        role="user", parts=[types.Part.from_text(text=isolated_input)]
-    )
-
-    return Event(output=new_content, state={"raw_query": content})

@@ -1,10 +1,14 @@
 # MWIS Agent TODO
 
 ## In Progress
-
+ * Docs for refactoring the fetch live MWIS
+ * Check it works!
+ * Move onto agent skills:
+   - Node for identifying fuzzy location and passing it to skill/script
+   - Focus on specific variable
+   - Comparision
 
 ## Next time
- * Deployed version should use live forecasts, but maintain the Dev Tools §
 
 
 ## Future
@@ -17,6 +21,7 @@
  * Tidy up local GEMINI.md so it plays nicely with global GEMINI.md
  * Fix depreciation warning that occurs during `make cloud-deploy`
  * `make cloud-deploy` updates the deploy timestamp (possibly by calling helper script)
+ * `curl -X POST` as automatic deployment check of live agent
 
 ### Agent
 

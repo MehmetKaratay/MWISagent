@@ -60,6 +60,6 @@ def get_forecast(
         return forecast
 
     # Cache miss: run update check to fetch and cache all regions
-    env = os.getenv("MWIS_ENV", "production")
-    check_forecast_issued(db_path=db_path, env=env)
+    use_live_forecast = os.getenv("USE_LIVE_FORECAST", "false").lower() == "true"
+    check_forecast_issued(db_path=db_path, use_live_forecast=use_live_forecast)
     return db_get_forecast(region_code, db_path)

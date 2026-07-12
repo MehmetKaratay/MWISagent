@@ -33,17 +33,19 @@ from app.agent_nodes import (
     process_follow_up,
     resolve_and_fetch,
     security_refusal,
-    set_raw_query,
     synthesis,
     validate_coverage,
     weather_impact,
     weather_physics,
 )
 from app.agent_state import WorkflowState
+from app.maintenance_nodes import check_refresh, force_refresh, set_raw_query
 
 edges = [
     Edge(from_node=START, to_node=set_raw_query),
-    Edge(from_node=set_raw_query, to_node=parse_input),
+    Edge(from_node=set_raw_query, to_node=check_refresh, route="refresh"),
+    Edge(from_node=set_raw_query, to_node=force_refresh, route="refresh_forced"),
+    Edge(from_node=set_raw_query, to_node=parse_input, route="default"),
     Edge(from_node=parse_input, to_node=check_security),
     Edge(from_node=check_security, to_node=security_refusal, route="malicious"),
     Edge(from_node=check_security, to_node=check_ambiguity, route="safe"),

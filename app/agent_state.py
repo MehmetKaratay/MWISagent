@@ -45,6 +45,7 @@ class WorkflowState(BaseModel):
     needs_impact: bool = False
     needs_local_knowledge: bool = False
     is_malicious: bool = False
+    awaiting_refresh_force: bool = False
     loop_count: int = 0
 
 

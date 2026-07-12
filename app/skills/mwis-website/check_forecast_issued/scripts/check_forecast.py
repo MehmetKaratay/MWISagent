@@ -286,28 +286,44 @@ def _is_update_eligible(
 
 
 def _run_forecast_ingestion(
-    db_path: str, env: str, current_time: datetime.datetime
+    db_path: str, env: str, current_time: datetime.datetime, force_update: bool = False
 ) -> dict[str, Any]:
     """Perform check for new forecast availability and commit to cache."""
     london_dt = current_time.astimezone(ZoneInfo("Europe/London"))
-    is_new, err_res = _is_new_forecast_available(env, london_dt.date(), current_time)
-    if not is_new:
-        return err_res
+    if not force_update:
+        is_new, err_res = _is_new_forecast_available(
+            env, london_dt.date(), current_time
+        )
+        if not is_new:
+            return err_res
     return _update_all_regions_cache(db_path, env, london_dt.date(), current_time)
+
+
+def _resolve_env_name(use_live_forecast: bool) -> str:
+    """Resolve env name based on use_live_forecast configuration."""
+    if use_live_forecast:
+        return "production"
+    env = os.getenv("MWIS_ENV", "development")
+    return "development" if env == "production" else env
 
 
 def check_forecast_issued(
     db_path: str | None = None,
-    env: str = "production",
+    use_live_forecast: bool = False,
     current_time: datetime.datetime | None = None,
+    force_update: bool = False,
 ) -> dict[str, Any]:
     """Deterministically check if the forecast has been newly issued and update cache."""
     db_path, current_time = _initialize_db_and_time(db_path, current_time)
-    eligible, status = _is_update_eligible(db_path, current_time)
-    if not eligible:
-        return {
-            "status": status,
-            "message": "Update skipped due to schedule or previous runs.",
-            "timestamp": current_time.isoformat(),
-        }
-    return _run_forecast_ingestion(db_path, env, current_time)
+    if not force_update:
+        eligible, status = _is_update_eligible(db_path, current_time)
+        if not eligible:
+            return {
+                "status": status,
+                "message": "Update skipped due to schedule or previous runs.",
+                "timestamp": current_time.isoformat(),
+            }
+    env = _resolve_env_name(use_live_forecast)
+    return _run_forecast_ingestion(
+        db_path, env, current_time, force_update=force_update
+    )
