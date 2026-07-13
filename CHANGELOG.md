@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- **2026-07-13 14:23**: Added `tests/conftest.py` to automatically load `.env` variables for running pytest.
+- **2026-07-13 14:23**: Added `test_agent_restricts_forecast_to_tomorrow` integration test to verify forecast filtering for "tomorrow" queries.
 - **2026-07-13 12:58**: Implemented turn-based contextual state memory (retaining locations, dates, and categories when not explicitly stated in follow-ups), relative date shifts (parsing "following day" bounds via `resolve_shift.py`), and state resets (wiping memory on "reset" or "clear").
 - **2026-07-12 17:18**: Prioritized user-requested weather categories first in `synthesis` node response by adding explicit ordering instructions to the Gemini flash prompt.
 - **2026-07-12 16:23**: Implemented key-based forecast details pruning in `serve_forecast_to_user` skill using CSV-configured query categories.
@@ -33,6 +35,7 @@ All notable changes to this project will be documented in this file.
 - **2026-07-13 10:27**: Renamed the daily forecast `temp` field to `temp_headline` to align its naming convention with other weather headline fields (`wind_headline`, `precip_headline`, `cloud_headline`).
 
 ### Fixed
+- **2026-07-13 14:23**: Fixed forecast follow-up routing issue by ensuring follow-up queries route through `parse_input` to update locations/dates properly, and added graceful `goodbye_msg` termination node.
 - **2026-07-13 11:30**: Fixed issue where "full" forecast requests returned a filtered summary by bypassing field pruning entirely in `extract_forecast_details.py` if `"full"` or `"all"` is specified.
 - **2026-07-13 13:36**: Fixed context memory leak where switching location without explicit reset keywords cleared active date/category context parameters.
 - **2026-07-13 10:07**: Fixed non-deterministic ordering of fields in the filtered forecast payload by sorting day forecast keys deterministically, prioritizing date, last_updated, and user-requested categories first.

@@ -87,3 +87,43 @@ def test_agent_restricts_forecast_to_day() -> None:
     state = session.state
     assert "resolved_date_codes" in state
     assert "D0" in state["resolved_date_codes"]
+
+
+def test_agent_restricts_forecast_to_tomorrow() -> None:
+    """
+    Test that the agent restricts the synthesized response to only tomorrow (D1) when tomorrow is requested.
+    """
+    session_service = InMemorySessionService()
+    session = session_service.create_session_sync(user_id="test_user", app_name="test")
+    runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
+
+    message = types.Content(
+        role="user", parts=[types.Part.from_text(text="Ben Nevis cloud tomorrow")]
+    )
+
+    events = list(
+        runner.run(
+            new_message=message,
+            user_id="test_user",
+            session_id=session.id,
+            run_config=RunConfig(streaming_mode=StreamingMode.SSE),
+        )
+    )
+    assert len(events) > 0
+
+    session = session_service.get_session_sync(
+        user_id="test_user", session_id=session.id, app_name="test"
+    )
+    state = session.state
+    assert "resolved_date_codes" in state
+    assert state["resolved_date_codes"] == ["D1"]
+
+    # Assert that forecast_data contains only one day (Day 1)
+    assert "forecast_data" in state
+    forecast_data = state["forecast_data"]
+    for data in forecast_data.values():
+        if "days" in data:
+            assert (
+                len(data["days"]) == 1
+            ), f"Expected 1 day in forecast, got {len(data['days'])}: {data['days']}"
+            assert data["days"][0]["Dcode"] == "D1"

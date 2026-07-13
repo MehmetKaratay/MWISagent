@@ -23,6 +23,7 @@ from app.agent_nodes import (
     check_loop_limit,
     check_physics,
     check_security,
+    goodbye_msg,
     historic_lookup,
     local_knowledge,
     out_of_scope_msg,
@@ -83,7 +84,8 @@ edges = [
     Edge(from_node=synthesis, to_node=ask_follow_up),
     Edge(from_node=ask_follow_up, to_node=process_follow_up),
     Edge(from_node=process_follow_up, to_node=check_loop_limit),
-    Edge(from_node=check_loop_limit, to_node=resolve_and_fetch, route="yes"),
+    Edge(from_node=check_loop_limit, to_node=parse_input, route="yes"),
+    Edge(from_node=check_loop_limit, to_node=goodbye_msg, route="no"),
 ]
 
 root_agent = Workflow(

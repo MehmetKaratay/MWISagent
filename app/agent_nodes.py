@@ -246,14 +246,32 @@ def process_follow_up(ctx: Context, node_input: Any) -> Event:
     """
     Node to process the user's follow-up request and increment the loop counter.
     """
-    reply = str(node_input).strip().lower()
+    raw_reply = str(node_input).strip()
+    reply = raw_reply.lower()
     if reply in ["no", "none", "no thanks", "exit", "quit", "stop"]:
         new_count = 999
     else:
         new_count = ctx.state.get("loop_count", 0) + 1
 
+    isolated_input = f"<user_input>{raw_reply}</user_input>"
+    new_content = types.Content(
+        role="user", parts=[types.Part.from_text(text=isolated_input)]
+    )
+
     return Event(
-        output=reply, state={"loop_count": new_count, "raw_query": str(node_input)}
+        output=new_content, state={"loop_count": new_count, "raw_query": raw_reply}
+    )
+
+
+@node
+def goodbye_msg(ctx: Context, node_input: Any) -> Event:
+    """
+    Terminal node when user is finished.
+    """
+    msg = "Goodbye! Stay safe in the mountains."
+    return Event(
+        content=types.Content(role="model", parts=[types.Part.from_text(text=msg)]),
+        output=msg,
     )
 
 
