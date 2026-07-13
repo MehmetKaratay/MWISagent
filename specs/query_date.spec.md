@@ -35,7 +35,10 @@ dependencies:
   - Resolve the coverage code for each date.
   - Return a JSON array of all unique coverage codes, ordered chronologically by the dates they represent.
 - **Format**: All outputs to stdout are formatted as a JSON array of strings (e.g., `["D1", "D2"]`).
-- **Warning Suppression**: Because validation tests run under strict warnings-as-errors flags (`-W error`), any internal deprecation warnings raised by `parsedatetime` must be caught and ignored locally (e.g. using `warnings.catch_warnings()`) to prevent exceptions from interrupting date resolution.
+- **Relative Date Shifts**: For conversational follow-up turns, relative date shifts are resolved using the `resolve_shift` helper:
+  - **Forwards**: `next day`, `following day`, `day after`, `tomorrow`.
+  - **Backwards**: `day before`, `previous day`, `yesterday`.
+  - Boundaries are automatically clipped between `D0` and `D3`.
 
 ## Examples
 
