@@ -108,10 +108,10 @@ The script `build_hills_db.py` compiles geographical records from the Database o
 * **Output Database**: `skills-mwis-website/identify_forecast_area/cache/uk_hills.db`
 
 #### Build Behavior:
-1. **Source Data Download**: If the large source database `DoBIH_v18_4.csv` is missing from `resources/`, the script automatically fetches the ZIP archive from the official downloads page over HTTPS, extracts the CSV, and cleans up the ZIP file.
+1. **Source Data Download / Lookup**: If the `--csv-path` is not provided, the script first searches the `resources/` directory for any file matching the pattern `DoBIH*.csv`. If a match is found, it utilizes that file directly instead of downloading a fresh copy. If no match is found, the script automatically fetches the ZIP archive from the official downloads page over HTTPS, extracts it as `DoBIH_v18_4.csv`, and cleans up the ZIP file.
 2. **Region Calculation**: For each hill record, the script maps its latitude and longitude to MWIS forecast regions using `RegionFinder`. If no region matches, it labels the row as `'notMWIS'`.
 3. **Database Insertion**: Saves the structured fields (`name`, `county`, `country`, `height`, `mwis_region`) into the database using bulk transactions, creating case-insensitive indexes on `name` for ultra-fast lookups.
-4. **Cleanup**: Automatically deletes the downloaded ZIP and CSV files if they were dynamically retrieved by the script during build-time.
+4. **Cleanup**: Automatically deletes the downloaded ZIP and CSV files if they were dynamically retrieved by the script during build-time (i.e. not pre-existing).
 
 ### Running the Builder
 
@@ -120,4 +120,13 @@ To rebuild or initialize the database cache manually:
 python3 app/skills/mwis-website/identify_forecast_area/scripts/build_hills_db.py
 ```
 
-*Note: During production deployments, this script runs automatically inside the Docker build pipeline to bake the fully compiled SQLite database directly into the container image.*
+You can optionally override the database or CSV path using the following command-line flags:
+* `--db-path <path>`: Specify a custom path for the SQLite database output.
+* `--csv-path <path>`: Specify a custom path to the source DoBIH CSV file.
+
+For example, to run the script with a custom output location and using a pre-existing local file:
+```bash
+python3 app/skills/mwis-website/identify_forecast_area/scripts/build_hills_db.py --db-path /tmp/custom_hills.db --csv-path /path/to/my_dobih.csv
+```
+
+*Note: During production deployments, this script runs automatically inside the Docker build pipeline to bake the fully compiled SQLite database directly into the container image using the default cache paths.*
