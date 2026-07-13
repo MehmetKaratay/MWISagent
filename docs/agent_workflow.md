@@ -143,4 +143,4 @@ Relative date expressions in follow-up queries (e.g., "next day", "following day
 - Shifting from an invalid date or `Doutlook` defaults to `D0`.
 
 ### State Reset ("New Query")
-If a query contains a state reset intent (e.g., matching keywords like "reset", "clear", "new query", or "restart"), the agent clears all memory keys (setting `locations = []`, `date = None`, `extracted_categories = []`, and `resolved_date_codes = []`) to start fresh.
+If a query explicitly contains a state reset intent (matching keywords like "reset", "clear", "restart", or "new search"), the agent sets `is_new_query = True` and clears all memory keys (setting `locations = []`, `date = None`, `extracted_categories = []`, and `resolved_date_codes = []`) to start fresh. Simply changing the queried location or query topic without these words is treated as a continuation and does not reset the context parameters.

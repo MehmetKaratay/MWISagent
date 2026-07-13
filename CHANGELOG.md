@@ -34,6 +34,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - **2026-07-13 11:30**: Fixed issue where "full" forecast requests returned a filtered summary by bypassing field pruning entirely in `extract_forecast_details.py` if `"full"` or `"all"` is specified.
+- **2026-07-13 13:36**: Fixed context memory leak where switching location without explicit reset keywords cleared active date/category context parameters.
 - **2026-07-13 10:07**: Fixed non-deterministic ordering of fields in the filtered forecast payload by sorting day forecast keys deterministically, prioritizing date, last_updated, and user-requested categories first.
 - **2026-07-12 12:08**: Fixed database cache update nodes `check_refresh` and `force_refresh` to correctly evaluate and pass the `USE_LIVE_FORECAST` environment variable to `check_forecast_issued`, ensuring live updates query the real MWIS website when requested.
 

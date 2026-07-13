@@ -89,3 +89,52 @@ def test_context_memory_retention() -> None:
     assert "BB" in session.state.get("region_codes", [])
     assert "D1" in session.state.get("resolved_date_codes", [])
     assert "cloud" not in session.state.get("extracted_categories", [])
+
+
+def test_location_switch_retains_context() -> None:
+    """Verify that shifting to a new location preserves date and category context if not explicitly reset."""
+    session_service = InMemorySessionService()
+    session = session_service.create_session_sync(user_id="test_user", app_name="test")
+    runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
+
+    # Turn 1: Ben Nevis Cloud tomorrow
+    msg1 = types.Content(
+        role="user", parts=[types.Part.from_text(text="Ben Nevis Cloud tomorrow")]
+    )
+    events1 = list(
+        runner.run(
+            new_message=msg1,
+            user_id="test_user",
+            session_id=session.id,
+            run_config=RunConfig(streaming_mode=StreamingMode.SSE),
+        )
+    )
+    assert len(events1) > 0
+
+    session = session_service.get_session_sync(
+        user_id="test_user", session_id=session.id, app_name="test"
+    )
+    assert "WH" in session.state.get("region_codes", [])
+    assert "D1" in session.state.get("resolved_date_codes", [])
+    assert "cloud" in session.state.get("extracted_categories", [])
+
+    # Turn 2: And for Cairngorm?
+    msg2 = types.Content(
+        role="user", parts=[types.Part.from_text(text="And for Cairngorm?")]
+    )
+    events2 = list(
+        runner.run(
+            new_message=msg2,
+            user_id="test_user",
+            session_id=session.id,
+            run_config=RunConfig(streaming_mode=StreamingMode.SSE),
+        )
+    )
+    assert len(events2) > 0
+
+    session = session_service.get_session_sync(
+        user_id="test_user", session_id=session.id, app_name="test"
+    )
+    assert "EH" in session.state.get("region_codes", [])
+    assert "D1" in session.state.get("resolved_date_codes", [])
+    assert "cloud" in session.state.get("extracted_categories", [])
