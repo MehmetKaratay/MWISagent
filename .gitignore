@@ -209,5 +209,5 @@ tools/a2a-inspector/
 credentials*.json
 
 # Runtime Caches
-app/cache/
+cache/
 DoBIH*csv
