@@ -49,7 +49,7 @@ class TestParseForecast(unittest.TestCase):
             self.assertIsNotNone(day["cloud_detail"])
             self.assertIsNotNone(day["chance_cloud_free"])
             self.assertIsNotNone(day["sun_clarity"])
-            self.assertIsNotNone(day["temp"])
+            self.assertIsNotNone(day["temp_headline"])
             self.assertIsNotNone(day["freezing_level"])
         self.assertIsNotNone(data["outlook"])
 
