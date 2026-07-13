@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
 - TDD unit tests for the OAuth middleware.
 
 ### Changed
+- **2026-07-13 10:44**: Refactored `extract_forecast_details.py` to split `_filter_region_forecast` into smaller helper functions (`_build_day_dict`, `_add_requested_fields`, `_add_headlines_and_metadata`) to satisfy the 15-line function limit.
 - **2026-07-13 10:27**: Renamed the daily forecast `temp` field to `temp_headline` to align its naming convention with other weather headline fields (`wind_headline`, `precip_headline`, `cloud_headline`).
 
 ### Fixed
