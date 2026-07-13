@@ -27,6 +27,9 @@ All notable changes to this project will be documented in this file.
 - Implemented strict CORS policy enforcing exact origin matching and forbidding wildcards (`*`) via the `ALLOW_ORIGINS` environment variable.
 - TDD unit tests for the OAuth middleware.
 
+### Changed
+- **2026-07-13 10:27**: Renamed the daily forecast `temp` field to `temp_headline` to align its naming convention with other weather headline fields (`wind_headline`, `precip_headline`, `cloud_headline`).
+
 ### Fixed
 - **2026-07-13 10:07**: Fixed non-deterministic ordering of fields in the filtered forecast payload by sorting day forecast keys deterministically, prioritizing date, last_updated, and user-requested categories first.
 - **2026-07-12 12:08**: Fixed database cache update nodes `check_refresh` and `force_refresh` to correctly evaluate and pass the `USE_LIVE_FORECAST` environment variable to `check_forecast_issued`, ensuring live updates query the real MWIS website when requested.

@@ -29,7 +29,7 @@ HEADING_MAPPING = {
     "cloud on the hills?": "cloud_headline",
     "chance of cloud free": "chance_cloud_free",
     "sunshine and air clarity?": "sun_clarity",
-    "how cold?": "temp",
+    "how cold?": "temp_headline",
     "freezing level": "freezing_level",
 }
 
@@ -118,7 +118,7 @@ def _parse_day_forecast(day_div: Any, idx: int) -> dict[str, Any]:
         "cloud_detail": "",
         "chance_cloud_free": "",
         "sun_clarity": "",
-        "temp": "",
+        "temp_headline": "",
         "freezing_level": "",
     }
     for row in day_div.find_all("div", class_="row"):
@@ -175,7 +175,7 @@ def _parse_day_forecast(day_div: Any, idx: int) -> dict[str, Any]:
         elif "sunshine and air clarity?" in heading:
             fields["sun_clarity"] = " ".join(content_col.get_text().split()).strip()
         elif "how cold?" in heading:
-            fields["temp"] = " ".join(content_col.get_text().split()).strip()
+            fields["temp_headline"] = " ".join(content_col.get_text().split()).strip()
         elif "freezing level" in heading:
             fields["freezing_level"] = " ".join(content_col.get_text().split()).strip()
 

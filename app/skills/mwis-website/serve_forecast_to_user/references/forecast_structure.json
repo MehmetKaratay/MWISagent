@@ -15,7 +15,7 @@
       "cloud_detail": "Bases start 700-1000m, lowest western hills but also some early breaks (though high Cairngorm plateau likely stays shrouded). Cloud fills in from the west from midday onward, bases to 500-600m near and west of Strathspey with lower ragged patches.",
       "chance_cloud_free": "30% at dawn, lowering to 10% afternoon",
       "sun_clarity": "Very good visibility out of cloud; sunshine occasionally.",
-      "temp": "9C at 900m reference height.",
+      "temp_headline": "9C at 900m reference height.",
       "freezing_level": "Above summits.",
       "Dcode": "D0"
     },
@@ -33,7 +33,7 @@
       "cloud_detail": "Low cloud banks clearing the summits by mid-morning to leave summits mostly clear.",
       "chance_cloud_free": "80%",
       "sun_clarity": "Excellent visibility.",
-      "temp": "11C at 900m reference height.",
+      "temp_headline": "11C at 900m reference height.",
       "freezing_level": "Above summits.",
       "Dcode": "D1"
     },
@@ -51,7 +51,7 @@
       "cloud_detail": "Summits continuously shrouded in low cloud, bases lowering to 400m in rain.",
       "chance_cloud_free": "Less than 10%",
       "sun_clarity": "Poor in rain.",
-      "temp": "8C at 900m reference height.",
+      "temp_headline": "8C at 900m reference height.",
       "freezing_level": "Above summits.",
       "Dcode": "D2"
     }

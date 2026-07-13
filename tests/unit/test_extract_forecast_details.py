@@ -30,7 +30,7 @@ def test_extract_forecast_details_cloud():
                     "cloud_detail": "Bases 700-1000m.",
                     "chance_cloud_free": "30%",
                     "sun_clarity": "Sunshine occasionally.",
-                    "temp": "9C.",
+                    "temp_headline": "9C.",
                     "freezing_level": "Above summits.",
                     "Dcode": "D0",
                 }
@@ -57,7 +57,7 @@ def test_extract_forecast_details_cloud():
     # Other fields pruned
     assert "wind_headline" not in day
     assert "precip_detail" not in day
-    assert "temp" not in day
+    assert "temp_headline" not in day
 
 
 def test_extract_forecast_details_default_headlines():
@@ -81,7 +81,7 @@ def test_extract_forecast_details_default_headlines():
                     "cloud_detail": "Bases 700-1000m.",
                     "chance_cloud_free": "30%",
                     "sun_clarity": "Sunshine occasionally.",
-                    "temp": "9C.",
+                    "temp_headline": "9C.",
                     "freezing_level": "Above summits.",
                     "Dcode": "D0",
                 }
@@ -103,7 +103,7 @@ def test_extract_forecast_details_default_headlines():
     assert "precip_detail" not in day
     assert "cloud_detail" not in day
     assert "chance_cloud_free" not in day
-    assert "temp" not in day
+    assert "temp_headline" not in day
 
     # Outlook preserved by default for general summaries
     assert "outlook" in filtered["WH"]
@@ -130,7 +130,7 @@ def test_extract_forecast_details_full():
                     "cloud_detail": "Bases 700-1000m.",
                     "chance_cloud_free": "30%",
                     "sun_clarity": "Sunshine occasionally.",
-                    "temp": "9C.",
+                    "temp_headline": "9C.",
                     "freezing_level": "Above summits.",
                     "Dcode": "D0",
                 }
@@ -164,7 +164,7 @@ def test_extract_forecast_details_ordering():
                     "cloud_detail": "Bases 700-1000m.",
                     "chance_cloud_free": "30%",
                     "sun_clarity": "Sunshine occasionally.",
-                    "temp": "9C.",
+                    "temp_headline": "9C.",
                     "freezing_level": "Above summits.",
                     "Dcode": "D0",
                 }
