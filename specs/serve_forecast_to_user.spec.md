@@ -64,6 +64,6 @@ This spec details the behavior and interface for filtering retrieved forecasts J
   5. `"region_headline"` (only if `forecast_index == 0`)
   6. Remaining default/headline fields (matching the pattern `*_headline` in the region's day forecast structure) in the output.
 - **CSV Configuration:** Stored in `references/category_mappings.csv` mapping categories to forecast fields.
-  - If a category is `'full'`, all fields are returned.
+  - If categories list contains `'full'` or `'all'`, no filtering/pruning of weather fields is performed (all fields are returned).
   - If the categories list is empty (default), only headline-only fields are returned (`uk_summary`, `region_headline`, `wind_headline`, `precip_headline`, `cloud_headline`).
   - Otherwise, only returns mapped fields for matching categories (always preserving basic metadata: `date`, `forecast_index`, `last_updated`, `Dcode`).
