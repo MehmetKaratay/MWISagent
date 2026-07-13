@@ -20,7 +20,7 @@ python3 query_region.py <query_arguments> [--json]
 
 The query arguments can be:
 1. **Place / Mountain Name**: E.g., `"Ben Nevis"`, `"Keswick"`.
-   - **Resolution Flow**: Place name queries are resolved first by matching against `munros.csv` (case-insensitively). If unmatched, the script checks `local-names.csv` (case-insensitively). If still unmatched, the script makes an external network call to OpenStreetMap Nominatim API.
+   - **Resolution Flow**: Place name queries are resolved first by querying the local SQLite database cache (`uk_hills.db`). The script checks custom overrides in the `local_names` table first, followed by the `hills` table. If the hill is found in `hills` but is not inside any MWIS region, its coordinates are retrieved offline to calculate the nearest MWIS region. If the place name is not found in the database at all, the script falls back to querying the OpenStreetMap Nominatim API.
 2. **Coordinates**: Two float values representing latitude and longitude:
    ```bash
    python3 query_region.py 53.0685 -4.0763
