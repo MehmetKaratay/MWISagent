@@ -55,6 +55,14 @@ This spec details the behavior and interface for filtering retrieved forecasts J
   - `forecasts`: The dictionary containing resolved forecast data.
   - `categories`: List of query categories extracted from the user query.
 - **Returns:** A copy of the `forecasts` dictionary with days and outlook filtered to only contain fields matching the requested categories.
+- **Key Ordering & Priority Requirements:**
+  The output forecast JSON payload must have its fields sorted in the following order:
+  1. `date`
+  2. `last_updated`
+  3. User-requested weather details/categories (in the order they map to categories)
+  4. `"uk_summary"` (only if `forecast_index == 0`)
+  5. `"region_headline"` (only if `forecast_index == 0`)
+  6. Remaining default/headline fields (matching the pattern `*_headline` in the region's day forecast structure) in the output.
 - **CSV Configuration:** Stored in `references/category_mappings.csv` mapping categories to forecast fields.
   - If a category is `'full'`, all fields are returned.
   - If the categories list is empty (default), only headline-only fields are returned (`uk_summary`, `region_headline`, `wind_headline`, `precip_headline`, `cloud_headline`).

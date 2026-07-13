@@ -3,6 +3,7 @@
 ## In Progress
    - Focus on specific variable
      - Specific variable detail is not first yet, despite attempt.
+     - Specific variable should have full information (ie detail as well)
      - Clarify_detail node in clarify_nodes.py for better sementics?
      - Clarify detail for "Monday and Tuesday" only rtns forecast for "Monday"
      - "Full forecast" only returns summary, not the full foreast as before.
