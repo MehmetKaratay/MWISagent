@@ -25,6 +25,8 @@ The tool must accept input arguments in the following formats:
 - **Coordinates**: Two float numbers representing `latitude` and `longitude`.
 - **Ordnance Survey Grid Reference**: A string representing an OS grid reference (e.g. `"NJ 009 020"`, `"NJ0099202017"`).
 - **Location Name**: A string representing a mountain or place name (e.g. `"Ben Nevis"`, `"Keswick"`).
+  - Multi-word location queries passed as separate arguments (e.g. `["West", "Highlands"]`) must be joined with a space (e.g. `"West Highlands"`) before resolution.
+  - Queries containing reset prefixes (e.g. `"reset Brecon Beacons"`, `"clear Snowdonia"`) must strip the `"reset "` or `"clear "` prefix before querying regions.
 - **JSON Flag**: An optional `--json` argument to request structured JSON output instead of human-readable text.
 
 ---

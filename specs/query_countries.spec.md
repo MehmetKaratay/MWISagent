@@ -21,6 +21,7 @@ status: Approved
 **Edge cases**
 - **Unrecognized country name**: Silently ignore unmatched strings or return an empty list.
 - **Duplicate country names**: Deduplicate the list to avoid duplicate region codes counting towards the 5-region limit.
+- **Reset keyword filtering**: Strip any leading `"reset "` prefix from target location names before mapping to region codes.
 
 **Acceptance criteria**
 ```yaml
