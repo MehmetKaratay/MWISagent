@@ -56,8 +56,9 @@ graph TD
     ask_follow_up --> process_follow_up[process_follow_up: Updates state & loop count]
     process_follow_up --> check_loop_limit{loop_count < 5?}
 
-    check_loop_limit -- Yes --> resolve_and_fetch
-    check_loop_limit -- No --> END
+    check_loop_limit -- Yes --> parse_input
+    check_loop_limit -- No --> goodbye_msg[goodbye_msg: Graceful termination message]
+    goodbye_msg --> END
 ```
 
 ---
