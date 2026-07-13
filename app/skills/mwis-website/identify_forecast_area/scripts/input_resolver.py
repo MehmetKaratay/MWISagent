@@ -18,6 +18,7 @@ from geo_math import Point
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+RESET_PREFIX = "reset "
 
 # Grid reference constants
 GRID_ALPHABET = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
@@ -83,7 +84,7 @@ class InputResolver:
             row = cursor.fetchone()
             if row:
                 conn.close()
-                region, lat, lon = row[0], row[1], row[2]
+                region, lat, lon = row
                 if region != "notMWIS":
                     return None, region
                 else:
@@ -153,8 +154,8 @@ class InputResolver:
     def _resolve_single_arg(arg: str) -> tuple[Point | None, str | None]:
         """Resolves a single argument to either a Point or a region code."""
         cleaned = arg.strip()
-        if cleaned.lower().startswith("reset "):
-            cleaned = cleaned[6:].strip()
+        if cleaned.lower().startswith(RESET_PREFIX):
+            cleaned = cleaned[len(RESET_PREFIX) :].strip()
         grid_pt = InputResolver.parse_grid_reference(cleaned)
         if grid_pt:
             return grid_pt, None

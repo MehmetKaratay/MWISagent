@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- **2026-07-13 18:52**: Refactored `input_resolver.py` to resolve G25 clean-code catalog violations by extracting magic number offset `6` to the constant `RESET_PREFIX`, and unpacking database row tuples directly instead of using index accessors.
 - **2026-07-13 18:38**: Added offline coordinates lookup using `uk_hills.db` cache database. Mapped `latitude` and `longitude` fields to `hills` table during database generation.
 - **2026-07-13 18:38**: Updated `InputResolver` in `query_region.py` to query `uk_hills.db` first, returning matching region codes or Point coordinates for offline distance calculation, removing the CSV fallbacks.
 - **2026-07-13 17:20**: Added CLI argparse entrypoint supporting `--db-path` and `--csv-path` overrides, and implemented dynamic globbing for `DoBIH*.csv` files to prevent unnecessary downloads.
