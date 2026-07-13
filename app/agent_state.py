@@ -39,6 +39,7 @@ class WorkflowState(BaseModel):
     locations: list[str] = Field(default_factory=list)
     date: str | None = None
     resolved_date_codes: list[str] = Field(default_factory=list)
+    extracted_categories: list[str] = Field(default_factory=list)
     region_codes: list[str] = Field(default_factory=list)
     forecast_data: dict[str, Any] | None = None
     needs_physics: bool = False
@@ -62,6 +63,10 @@ class ParseOutput(BaseModel):
     date: str | None = Field(
         default=None,
         description="The relative or absolute date queried, e.g. 'today', 'tomorrow', 'Saturday', '11/07/2026', '11th July'",
+    )
+    extracted_categories: list[str] = Field(
+        default_factory=list,
+        description="The query categories extracted (e.g. 'cloud', 'wind', 'wet', 'cold', 'sun', 'full')",
     )
     is_ambiguous: bool = Field(
         default=False, description="True if location or date is too vague to resolve"

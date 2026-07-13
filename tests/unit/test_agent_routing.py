@@ -71,3 +71,12 @@ def test_resolve_and_fetch_date_resolution():
     state_updates = event.model_dump()["actions"]["state_delta"]
     assert "resolved_date_codes" in state_updates
     assert "D0" in state_updates["resolved_date_codes"]
+
+
+def test_location_rules_prompt_extraction():
+    """Verify that location names like peaks are cleanly matched to region codes."""
+    from app.agent_logic import _match_regions
+
+    regions, limit_err = _match_regions(["Ben Nevis"])
+    assert not limit_err
+    assert "WH" in regions

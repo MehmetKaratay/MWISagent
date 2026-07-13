@@ -1,17 +1,27 @@
 # MWIS Agent TODO
 
 ## In Progress
- * Docs for refactoring the fetch live MWIS
- * Check it works!
- * Move onto agent skills:
-   - Node for identifying fuzzy location and passing it to skill/script
    - Focus on specific variable
+     - Specific variable detail is not first yet, despite attempt.
+     - Specific variable should have full information (ie detail as well)
+     - Clarify_detail node in clarify_nodes.py for better sementics?
+     - Clarify detail for "Monday and Tuesday" only rtns forecast for "Monday"
+     - "Full forecast" only returns summary, not the full foreast as before.
    - Comparision
 
 ## Next time
+   - Comparision
+   - Remove "Do you have any follow-up questions? (e.g. higher/lower elevation, specific part of the region, or 'no' to finish"
 
 
 ## Future
+ * Some frontend memory, so agent remebers context of "Cairngorm" forcast when asking for extra details.
+ * Query region:
+   - Multi-word names, eg "Black Cuillin" returns "Script failed".
+   - Check with and with final "s" or, perhaps, strip final "s" before checking.
+ * Import hills from UK Hills DB and cross-ref to MWIS regions. (https://www.hill-bagging.co.uk/dobih/)
+   - Parse DB to match to MWIS regions
+   - Attribute correctly on ##Data Cretids or ##Attributions README.md and on front end: "This project uses filtered data from the Database of British and Irish Hills (https://www.hill-bagging.co.uk/), licensed under CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/)" Possible below agent interface too.
 
 ### Tiding
  * `fetch_specific_forecast` uses `../mocks/` instead of `tests/resources/`.
@@ -51,6 +61,9 @@
 
 ### Low priority
  * Spec files for update-boundaries.py (sp?)
+ * Query region:
+   - "Amsterdam" should return "out of scope" instead of "script fails".
+ * Query date: "next weekend" at a weekend should return "Doutlook" instead of "D0".
 
 ## Far future
  * Add Met Office Weather Warnings. See DEV-NOTES.md

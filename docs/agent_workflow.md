@@ -66,7 +66,7 @@ graph TD
 
 ### Node 1: `parse_input`
 * **Type:** `LlmAgent` (model: `gemini-2.5-flash`)
-* **Behavior:** Extracts `locations` and `date` parameters, and evaluates whether the query requires `needs_physics`, `needs_impact`, or `needs_local_knowledge` annotations. The `date` parameter extraction rules strictly require parsing relative day descriptions (e.g. "today", "tomorrow", "Saturday", "this weekend") and absolute formats (e.g. "11/07/2026", "11th July").
+* **Behavior:** Extracts `locations`, `date`, and `extracted_categories` parameters, and evaluates whether the query requires `needs_physics`, `needs_impact`, or `needs_local_knowledge` annotations. The `date` parameter extraction rules strictly require parsing relative day descriptions (e.g. "today", "tomorrow", "Saturday", "this weekend") and absolute formats (e.g. "11/07/2026", "11th July"). The `locations` parameter extraction rules require identifying and extracting any geographical place name, mountain/hill (e.g., Ben Nevis, Snowdon, Scafell Pike), valley, town, region, country, or national park name. The `extracted_categories` parameter extracts query intent categories (e.g. `cloud`, `wind`, `wet`, `cold`, `sun`, `full`).
 
 ### Node 2: `clarify_location`
 * **Type:** `RequestInput` (HITL interruption)
@@ -88,6 +88,7 @@ graph TD
   * If the resolved region count > 5, routes to `clarify_too_many_locations`.
   * Fetches the corresponding forecasts sequentially from the local caching layer.
   * Programmatically filters the retrieved forecast JSON payload to retain only the days or outlook matching `resolved_date_codes` (if populated) by dynamically importing and executing `filter_forecast_payload` from the `serve_forecast_to_user` skill module.
+  * Programmatically prunes forecast JSON keys to retain only fields matching `extracted_categories` by dynamically importing and executing `extract_forecast_details` from the `serve_forecast_to_user` skill module.
   * Scans forecast values: if wind speed is >40mph or temperature is <-5°C in any forecast, sets `needs_impact = True`.
 
 ### Node 4: `validate_coverage`
@@ -112,7 +113,7 @@ graph TD
 
 ### Node 10: `synthesis`
 * **Type:** `LlmAgent` (model: `gemini-2.5-flash`)
-* **Behavior:** Reads the pre-filtered forecast payload context and annotations to generate a clean, plain-text response answering the query. Because the payload was filtered programmatically, the LLM only has access to the requested days' forecasts.
+* **Behavior:** Reads the pre-filtered forecast payload context and annotations to generate a clean, plain-text response answering the query. Because the payload was filtered programmatically, the LLM only has access to the requested days' forecasts. If specific categories (elements) were requested, they are described first in the response.
 
 ### Node 11: `ask_follow_up`
 * **Type:** `RequestInput`

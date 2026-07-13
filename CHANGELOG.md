@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- **2026-07-12 17:18**: Prioritized user-requested weather categories first in `synthesis` node response by adding explicit ordering instructions to the Gemini flash prompt.
+- **2026-07-12 16:23**: Implemented key-based forecast details pruning in `serve_forecast_to_user` skill using CSV-configured query categories.
+- **2026-07-12 15:28**: Enhanced prompt location extraction rules in `parse_input` to reliably identify mountains, regions, countries, national parks, and other geographical entities in user queries.
 - **2026-07-12 10:45**: Added hidden query command configured via environment variable, to route query and trigger check or forced update, requesting confirmation if already up-to-date.
 - **2026-07-12 10:18**: Added `USE_LIVE_FORECAST` environment variable to explicitly control whether the cache is populated from live fetches or local mock files.
 - **2026-07-12 10:18**: Added `/api/config` GET endpoint to the frontend server to expose the backend `MWIS_ENV` setting.
@@ -24,8 +27,14 @@ All notable changes to this project will be documented in this file.
 - Implemented strict CORS policy enforcing exact origin matching and forbidding wildcards (`*`) via the `ALLOW_ORIGINS` environment variable.
 - TDD unit tests for the OAuth middleware.
 
+### Changed
+- **2026-07-13 10:44**: Refactored `extract_forecast_details.py` to split `_filter_region_forecast` into smaller helper functions (`_build_day_dict`, `_add_requested_fields`, `_add_headlines_and_metadata`) to satisfy the 15-line function limit.
+- **2026-07-13 10:27**: Renamed the daily forecast `temp` field to `temp_headline` to align its naming convention with other weather headline fields (`wind_headline`, `precip_headline`, `cloud_headline`).
+
 ### Fixed
+- **2026-07-13 10:07**: Fixed non-deterministic ordering of fields in the filtered forecast payload by sorting day forecast keys deterministically, prioritizing date, last_updated, and user-requested categories first.
 - **2026-07-12 12:08**: Fixed database cache update nodes `check_refresh` and `force_refresh` to correctly evaluate and pass the `USE_LIVE_FORECAST` environment variable to `check_forecast_issued`, ensuring live updates query the real MWIS website when requested.
+
 - **2026-07-12 12:08**: Fixed all MWIS region URLs in `mwis-regions.csv` to match the newly reorganized path structures on the live MWIS website (e.g. `cairngorms-np-and-monadhliath`, `southeastern-highlands`, Eryri, etc.) and updated the URL schema regex validation rules in `query_utils.py` to support `www.` prefixed URLs.
 - **2026-07-12 12:08**: Fixed `check_forecast_issued` to bypass the `_is_new_forecast_available` target date freshness check when `force_update=True`, allowing manual forced updates to correctly fetch and cache whatever forecast is currently live on the site.
 - **2026-07-11 16:38**: Fixed missing direction key in `find_regions_by_location` API nearest regions serialization.
@@ -44,6 +53,7 @@ All notable changes to this project will be documented in this file.
 - **2026-07-07 05:17**: Fixed `TypeError` in `query_region.py` when outputting nearest regions in JSON format for out-of-bounds locations (e.g. London).
 
 ### Changed
+- **2026-07-12 17:06**: Refactored `extract_forecast_details.py`, `agent_nodes.py`, and `agent_logic.py` into smaller functions under 15 lines of logic, and split off new helper modules `clarify_nodes.py` and `forecast_loader.py` to keep all files under 300 lines.
 - **2026-07-12 15:01**: Refactored `check_forecast_issued` inside `check_forecast.py` by extracting a new `_resolve_env_name` helper function to keep the function body strictly under the 15-line limit.
 - **2026-07-12 11:10**: Modularized the maintenance database refresh nodes by extracting them from `app/agent_nodes.py` into a new `app/maintenance_nodes.py` and `app/maintenance_logic.py`, keeping modules under 300 lines and functions under 15 lines.
 - **2026-07-11 19:44**: Refactored `_resolve_and_fetch_logic` in `app/agent_logic.py` by extracting a new `_get_filtered_forecasts` helper function, keeping all orchestration functions under the 15-line limit.

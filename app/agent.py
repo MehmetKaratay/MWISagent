@@ -23,9 +23,6 @@ from app.agent_nodes import (
     check_loop_limit,
     check_physics,
     check_security,
-    clarify_date,
-    clarify_location,
-    clarify_too_many_locations,
     historic_lookup,
     local_knowledge,
     out_of_scope_msg,
@@ -39,6 +36,11 @@ from app.agent_nodes import (
     weather_physics,
 )
 from app.agent_state import WorkflowState
+from app.clarify_nodes import (
+    clarify_date,
+    clarify_location,
+    clarify_too_many_locations,
+)
 from app.maintenance_nodes import check_refresh, force_refresh, set_raw_query
 
 edges = [

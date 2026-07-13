@@ -46,7 +46,7 @@ dependencies:
     - `cloud_detail`: Extracted from the second `<p>` tag of the `Cloud on the hills?` heading row.
     - `chance_cloud_free`: Extracted from `Chance of cloud free Munros?` heading row.
     - `sun_clarity`: Extracted from `Sunshine and air clarity?` heading row.
-    - `temp`: Extracted from `How Cold?` heading row.
+    - `temp_headline`: Extracted from `How Cold?` heading row.
     - `freezing_level`: Extracted from `Freezing Level` heading row.
   - Extracts the text under the `Planning Outlook` heading (usually the element inside `<div class="forecast-area--planning-outlook">`).
 - **Defensive Design**:
@@ -72,7 +72,7 @@ dependencies:
       "cloud_detail": "...",
       "chance_cloud_free": "...",
       "sun_clarity": "...",
-      "temp": "...",
+      "temp_headline": "...",
       "freezing_level": "...",
       "Dcode": "D0"
     },
