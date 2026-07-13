@@ -304,3 +304,41 @@ def test_cleanup_preserves_preexisting_files(tmp_path, monkeypatch):
     # Download was not called, so CSV was pre-existing and must not be deleted
     assert download_called is False
     assert mock_csv_path.exists()
+
+
+def test_cli_main_entrypoint(tmp_path, monkeypatch):
+    """Verify that build_hills_db.py can be run as a CLI script with arguments."""
+    import runpy
+
+    db_path = tmp_path / "cli_test_hills.db"
+    mock_csv_path = tmp_path / "cli_test_dobih.csv"
+
+    # Pre-create the CSV file
+    mock_csv_path.write_text(
+        "Number,Name,Metres,Country,Latitude,Longitude\n1,Ben Nevis,1344.5,S,56.7969,-5.0036\n"
+    )
+
+    # Mock sys.argv
+    test_args = [
+        "build_hills_db.py",
+        "--db-path",
+        str(db_path),
+        "--csv-path",
+        str(mock_csv_path),
+    ]
+    monkeypatch.setattr(sys, "argv", test_args)
+
+    # Run the script's __main__ code
+    script_path = scripts_dir / "build_hills_db.py"
+    runpy.run_path(str(script_path), run_name="__main__")
+
+    # Verify the database was created and populated
+    assert db_path.exists()
+    conn = sqlite3.connect(str(db_path))
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, mwis_region FROM hills")
+    rows = cursor.fetchall()
+    conn.close()
+
+    assert len(rows) == 1
+    assert rows[0] == ("Ben Nevis", "WH")

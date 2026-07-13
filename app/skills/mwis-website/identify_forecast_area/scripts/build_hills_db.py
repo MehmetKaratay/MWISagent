@@ -4,6 +4,7 @@
 # You may obtain a copy of the License at https://creativecommons.org/licenses/by/4.0/
 
 import csv
+import glob
 import os
 import shutil
 import sqlite3
@@ -16,7 +17,12 @@ from geo_math import Point
 from query_region import RegionFinder
 
 # Default paths relative to resource directory
-DEFAULT_DOBIH_PATH = os.path.join(RESOURCES_DIR, "DoBIH_v18_4.csv")
+existing_dobih = glob.glob(os.path.join(RESOURCES_DIR, "DoBIH*.csv"))
+DEFAULT_DOBIH_PATH = (
+    existing_dobih[0]
+    if existing_dobih
+    else os.path.join(RESOURCES_DIR, "DoBIH_v18_4.csv")
+)
 DEFAULT_LOCAL_NAMES_PATH = LOCAL_NAMES_PATH
 DOBIH_DOWNLOAD_URL = "https://www.hill-bagging.co.uk/dobih-downloads/hillcsv.zip"
 
@@ -207,3 +213,35 @@ class HillsDatabaseBuilder:
             # Clean up only if downloaded by this script execution
             if downloaded and os.path.exists(self.dobih_csv_path):
                 os.remove(self.dobih_csv_path)
+
+
+if __name__ == "__main__":
+    import argparse
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    default_db = os.path.normpath(
+        os.path.join(script_dir, "..", "cache", "uk_hills.db")
+    )
+
+    parser = argparse.ArgumentParser(
+        description="Build SQLite database cache for hills and local names."
+    )
+    parser.add_argument(
+        "--db-path",
+        default=default_db,
+        help="Path to the target SQLite database file.",
+    )
+    parser.add_argument(
+        "--csv-path",
+        default=DEFAULT_DOBIH_PATH,
+        help="Path to the source DoBIH CSV database.",
+    )
+
+    args = parser.parse_args()
+
+    builder = HillsDatabaseBuilder(
+        db_path=args.db_path,
+        dobih_csv_path=args.csv_path,
+    )
+    builder.create_tables()
+    builder.populate_data()

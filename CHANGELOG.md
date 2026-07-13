@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- **2026-07-13 17:20**: Added CLI argparse entrypoint supporting `--db-path` and `--csv-path` overrides, and implemented dynamic globbing for `DoBIH*.csv` files to prevent unnecessary downloads.
+- **2026-07-13 17:20**: Added unit test `test_cli_main_entrypoint` validating argument parsing and execution flow.
 - **2026-07-13 16:00**: Implemented TDD-tested SQLite database generation script `build_hills_db.py` to create and populate the `uk_hills.db` database cache under `app/skills/mwis-website/identify_forecast_area/cache/`.
 - **2026-07-13 16:00**: Added dedicated unit test file `tests/unit/test_build_hills_db.py` with 6 TDD test cases verifying schema correctness, deterministic region assignment, local names parsing, and temporary download/cleanup logic.
 - **2026-07-13 16:00**: Integrated the SQLite database builder script into the Docker build process in the `Dockerfile` to bake the database into deployed containers.
