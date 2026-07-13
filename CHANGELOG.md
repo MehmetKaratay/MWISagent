@@ -36,6 +36,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 - **2026-07-13 14:23**: Fixed forecast follow-up routing issue by ensuring follow-up queries route through `parse_input` to update locations/dates properly, and added graceful `goodbye_msg` termination node.
+- **2026-07-13 13:54**: Fixed context memory date wiping bug on follow-up queries (e.g. "And for Cairngorm?") by enforcing strict keyword validation ("reset", "clear", etc.) for the `is_new_query` flag in `_check_ambiguity_logic`, and updated `parse_input` prompt with explicit few-shot examples.
 - **2026-07-13 11:30**: Fixed issue where "full" forecast requests returned a filtered summary by bypassing field pruning entirely in `extract_forecast_details.py` if `"full"` or `"all"` is specified.
 - **2026-07-13 13:36**: Fixed context memory leak where switching location without explicit reset keywords cleared active date/category context parameters.
 - **2026-07-13 10:07**: Fixed non-deterministic ordering of fields in the filtered forecast payload by sorting day forecast keys deterministically, prioritizing date, last_updated, and user-requested categories first.

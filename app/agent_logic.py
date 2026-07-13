@@ -72,8 +72,16 @@ def _check_ambiguity_logic(ctx: Context, node_input: dict[str, Any]) -> Event:
         if hasattr(parsed, "model_dump"):
             parsed = parsed.model_dump()
 
+    # Enforce strict keyword validation for is_new_query
+    is_new = parsed.get("is_new_query", False)
+    if is_new:
+        raw_query = ctx.state.get("raw_query", "").lower()
+        reset_keywords = ["reset", "clear", "restart", "new search"]
+        if not any(kw in raw_query for kw in reset_keywords):
+            is_new = False
+
     # Reset/clear memory if is_new_query is flagged
-    if parsed.get("is_new_query", False):
+    if is_new:
         ctx.state["locations"] = []
         ctx.state["date"] = None
         ctx.state["resolved_date_codes"] = []

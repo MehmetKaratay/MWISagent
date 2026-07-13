@@ -127,3 +127,73 @@ def test_agent_restricts_forecast_to_tomorrow() -> None:
                 len(data["days"]) == 1
             ), f"Expected 1 day in forecast, got {len(data['days'])}: {data['days']}"
             assert data["days"][0]["Dcode"] == "D1"
+
+
+def test_followup_location_change_retains_date_and_responds() -> None:
+    """
+    Test that a follow-up query changing only the location retains the date from the previous query
+    and successfully returns a synthesized response rather than asking for clarification.
+    """
+    session_service = InMemorySessionService()
+    session = session_service.create_session_sync(user_id="test_user", app_name="test")
+    runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
+
+    # Turn 1
+    msg1 = types.Content(
+        role="user", parts=[types.Part.from_text(text="Ben Nevis cloud tomorrow")]
+    )
+    list(
+        runner.run(
+            new_message=msg1,
+            user_id="test_user",
+            session_id=session.id,
+            run_config=RunConfig(streaming_mode=StreamingMode.SSE),
+        )
+    )
+
+    # Turn 2: Reply to the follow-up request
+    msg2 = types.Content(
+        role="user",
+        parts=[
+            types.Part(
+                function_response=types.FunctionResponse(
+                    name="ask_follow_up",
+                    id="follow_up_0",
+                    response={"result": "And for Cairngorm?"},
+                )
+            )
+        ],
+    )
+    events2 = list(
+        runner.run(
+            new_message=msg2,
+            user_id="test_user",
+            session_id=session.id,
+            run_config=RunConfig(streaming_mode=StreamingMode.SSE),
+        )
+    )
+
+    session = session_service.get_session_sync(
+        user_id="test_user", session_id=session.id, app_name="test"
+    )
+    state = session.state
+
+    assert "EH" in state.get("region_codes", [])
+    assert state.get("resolved_date_codes") == ["D1"]
+
+    # Verify that the response is NOT a clarification question about the date
+    # i.e., it should have synthesized a response
+    has_synthesis_output = False
+    full_text = ""
+    for event in events2:
+        if event.node_name == "synthesis" and event.content:
+            has_synthesis_output = True
+        if event.content and event.content.parts:
+            for part in event.content.parts:
+                if part.text:
+                    full_text += part.text
+
+    assert (
+        "specific date" not in full_text.lower()
+    ), "Agent erroneously asked for date clarification"
+    assert has_synthesis_output, "Agent did not reach synthesis node"

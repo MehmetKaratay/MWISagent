@@ -63,6 +63,26 @@ def test_check_ambiguity_valid():
     assert event.model_dump()["actions"]["route"] == "no"
 
 
+def test_check_ambiguity_is_new_query_strict_validation():
+    """Test that a follow-up query flagged as is_new_query without reset keywords does NOT wipe the retained date."""
+    # Simulate turn 1 setting the date
+    ctx = MockContext(
+        state={
+            "locations": ["Ben Nevis"],
+            "date": "D1",
+            "raw_query": "and for cairngorm?",
+        }
+    )
+
+    # Turn 2: Follow-up location but LLM incorrectly flags is_new_query=True
+    node_input = {"locations": ["Cairngorm"], "date": None, "is_new_query": True}
+    event = _check_ambiguity_logic(ctx, node_input)
+
+    # State should NOT have been wiped because "reset" keywords aren't in raw_query
+    assert event.model_dump()["actions"]["route"] == "no"
+    assert ctx.state["date"] == "D1"
+
+
 def test_resolve_and_fetch_date_resolution():
     """Test that _resolve_and_fetch_logic correctly resolves date to MWIS codes."""
     from app.agent_logic import _resolve_and_fetch_logic
