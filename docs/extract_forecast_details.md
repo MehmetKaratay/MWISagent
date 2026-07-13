@@ -30,7 +30,7 @@ Mappings are configured via `category_mappings.csv`:
 | `wet`    | `uk_summary`, `region_headline`, `precip_headline`, `precip_detail` | rain, wet, snow, shower, drizzle, precipitation, sleet |
 | `cold`   | `uk_summary`, `region_headline`, `temp_headline`, `freezing_level` | cold, temperature, freezing, chill, frost, warm, heat |
 | `sun`    | `uk_summary`, `region_headline`, `sun_clarity` | sun, sunny, sunshine |
-| `full`   | All fields | full, everything, complete, detailed |
+| `full` / `all` | All fields | full, all, everything, complete, detailed |
 
 ## Pruning Rules
 
