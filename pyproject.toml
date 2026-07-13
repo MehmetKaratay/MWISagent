@@ -86,7 +86,7 @@ deprecated = "ignore"
 
 [tool.codespell]
 ignore-words-list = "rouge"
-skip = "./locust_env/*,uv.lock,.venv,./frontend,**/package-lock.json"
+skip = "./locust_env/*,uv.lock,.venv,venv,cache,./frontend,**/package-lock.json,**/resources/*"
 
 
 [build-system]

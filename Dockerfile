@@ -25,6 +25,9 @@ COPY ./frontend ./frontend
 
 RUN uv sync --frozen
 
+# Build SQLite database cache for hills and local names
+RUN uv run python app/skills/mwis-website/identify_forecast_area/scripts/build_hills_db.py
+
 ARG COMMIT_SHA=""
 ENV COMMIT_SHA=${COMMIT_SHA}
 

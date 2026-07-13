@@ -82,7 +82,7 @@ graph TD
 * **Behavior:** Suspends workflow execution and prompts the user to select up to 5 explicit regions if they ask to compare more than 5.
 
 ### Node 3: `resolve_and_fetch`
-* **Type:** `FunctionNode` (determinstic Python code)
+* **Type:** `FunctionNode` (deterministic Python code)
 * **Behavior:**
   * Resolves `locations` (up to 5 regions max) using `query_country.py` and `query_region.py`. If a location cannot be resolved, it is mapped to `"Unknown"`.
   * Resolves user-specified `date` query into `resolved_date_codes` using the `identify_outing_date` skill.
