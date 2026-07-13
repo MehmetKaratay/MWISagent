@@ -25,6 +25,8 @@ Stores individual hill records parsed from the DoBIH database:
   * `county` (TEXT): County/counties of the hill.
   * `country` (TEXT): Single-letter country code ('S' for Scotland, 'E' for England, 'W' for Wales).
   * `height` (REAL): Height of the hill in meters.
+  * `latitude` (REAL): Latitude coordinate of the hill.
+  * `longitude` (REAL): Longitude coordinate of the hill.
   * `mwis_region` (TEXT): Calculated MWIS region code (e.g., `'WH'`, `'SD'`) or `'notMWIS'`.
 * **Indexes**: A case-insensitive index on the `name` column: `CREATE INDEX idx_hills_name ON hills(name COLLATE NOCASE)`.
 

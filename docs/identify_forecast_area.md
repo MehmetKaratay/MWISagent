@@ -130,3 +130,25 @@ python3 app/skills/mwis-website/identify_forecast_area/scripts/build_hills_db.py
 ```
 
 *Note: During production deployments, this script runs automatically inside the Docker build pipeline to bake the fully compiled SQLite database directly into the container image using the default cache paths.*
+
+### Browsing the SQLite Database Cache
+
+You can browse the SQLite database file (`uk_hills.db`) easily using either a Graphical User Interface (GUI) or the Command Line Interface (CLI):
+
+#### Method A: Graphical User Interface (DB Browser for SQLite)
+* Install DB Browser for SQLite on Linux:
+  ```bash
+  sudo apt install sqlitebrowser
+  ```
+* Start the application and open `app/skills/mwis-website/identify_forecast_area/cache/uk_hills.db`. You can visually filter, browse rows, and run custom SQL scripts directly.
+
+#### Method B: Command Line Interface (CLI)
+* Open the database using the local `sqlite3` CLI tool:
+  ```bash
+  sqlite3 app/skills/mwis-website/identify_forecast_area/cache/uk_hills.db
+  ```
+* Common commands within the SQLite interactive terminal:
+  * Show tables: `.tables`
+  * Show columns and schema: `.schema hills`
+  * Run queries: `SELECT * FROM hills LIMIT 5;`
+  * Quit the terminal: `.exit`

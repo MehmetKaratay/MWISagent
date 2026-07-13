@@ -12,9 +12,7 @@ metadata:
     - .agents/skills/mwis-website/identify_forecast_area/scripts/config_loader.py
     - .agents/skills/mwis-website/identify_forecast_area/scripts/input_resolver.py
   config_file: .agents/skills/mwis-website/identify_forecast_area/assets/query_config.json
-  boundaries_file: .agents/skills/mwis-website/identify_forecast_area/assets/mwis-region-boundaries.json
-  munros_file: .agents/skills/mwis-website/identify_forecast_area/resources/munros.csv
-  local_names_file: .agents/skills/mwis-website/identify_forecast_area/resources/local-names.csv
+  database_file: app/skills/mwis-website/identify_forecast_area/cache/uk_hills.db
 ```
 
 ---
@@ -63,9 +61,11 @@ scope_rules:
      - Use `pyproj` to transform the BNG coordinates to WGS84 latitude and longitude (EPSG:4326).
   3. If not an OS Grid Reference, perform the Name Lookup Flow.
 - **Name Lookup Flow**:
-  1. Check for a case-insensitive match in `munros.csv`. If found, resolve to its designated `RegionCode` immediately.
-  2. If not found in `munros.csv`, check for a case-insensitive match in `local-names.csv`. If found, resolve to its designated `RegionCode` immediately.
-  3. If not found in `local-names.csv`, query `https://nominatim.openstreetmap.org/search` over HTTPS to resolve the name to coordinates.
+  1. Check for a case-insensitive match in the `local_names` table of the SQLite database cache `uk_hills.db`. If found, resolve to its designated `RegionCode` immediately.
+  2. If not found in the `local_names` table, check for a case-insensitive match in the `hills` table of `uk_hills.db`.
+     - If found and the resolved `mwis_region` is not `'notMWIS'`, resolve to its designated region code immediately.
+     - If found and the resolved `mwis_region` is `'notMWIS'`, extract its WGS84 `latitude` and `longitude` coordinates and proceed directly to calculate the nearest MWIS region.
+  3. If not found in the database, query `https://nominatim.openstreetmap.org/search` over HTTPS to resolve the name to coordinates.
 - **Out-of-Area Near Boundary Calculation**:
   - If a coordinate is within Great Britain but does not fall inside any MWIS region polygon:
     - Calculate the shortest great-circle (Haversine) distance from the coordinate to the boundary line segments of each of the 10 MWIS polygons.
