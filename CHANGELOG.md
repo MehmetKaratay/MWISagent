@@ -28,7 +28,9 @@ All notable changes to this project will be documented in this file.
 - TDD unit tests for the OAuth middleware.
 
 ### Fixed
+- **2026-07-13 10:07**: Fixed non-deterministic ordering of fields in the filtered forecast payload by sorting day forecast keys deterministically, prioritizing date, last_updated, and user-requested categories first.
 - **2026-07-12 12:08**: Fixed database cache update nodes `check_refresh` and `force_refresh` to correctly evaluate and pass the `USE_LIVE_FORECAST` environment variable to `check_forecast_issued`, ensuring live updates query the real MWIS website when requested.
+
 - **2026-07-12 12:08**: Fixed all MWIS region URLs in `mwis-regions.csv` to match the newly reorganized path structures on the live MWIS website (e.g. `cairngorms-np-and-monadhliath`, `southeastern-highlands`, Eryri, etc.) and updated the URL schema regex validation rules in `query_utils.py` to support `www.` prefixed URLs.
 - **2026-07-12 12:08**: Fixed `check_forecast_issued` to bypass the `_is_new_forecast_available` target date freshness check when `force_update=True`, allowing manual forced updates to correctly fetch and cache whatever forecast is currently live on the site.
 - **2026-07-11 16:38**: Fixed missing direction key in `find_regions_by_location` API nearest regions serialization.

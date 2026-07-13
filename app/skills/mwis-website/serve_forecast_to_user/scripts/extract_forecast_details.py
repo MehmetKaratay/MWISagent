@@ -59,14 +59,73 @@ def _get_allowed_fields(
 
 
 def _filter_region_forecast(
-    f_data: dict[str, Any], allowed_fields: set[str], has_categories: bool
+    f_data: dict[str, Any],
+    allowed_fields: set[str],
+    categories: list[str],
+    mappings: dict[str, list[str]],
 ) -> dict[str, Any]:
     f_copy = {k: v for k, v in f_data.items() if k not in ["days", "outlook"]}
     if "days" in f_data:
-        f_copy["days"] = [
-            {k: v for k, v in d.items() if k in allowed_fields} for d in f_data["days"]
-        ]
-    if "outlook" in f_data and ("outlook" in allowed_fields or not has_categories):
+        filtered_days = []
+        for d in f_data["days"]:
+            day_dict = {}
+            # Basic metadata (date, last_updated) if allowed
+            if "date" in allowed_fields and "date" in d:
+                day_dict["date"] = d["date"]
+            if "last_updated" in allowed_fields and "last_updated" in d:
+                day_dict["last_updated"] = d["last_updated"]
+
+            # User-requested categories details fields in order of category list
+            requested_fields = []
+            for cat in categories:
+                if cat in mappings:
+                    requested_fields.extend(mappings[cat])
+
+            # Preserve insertion order for requested fields (excluding uk_summary and region_headline to place them later)
+            for r_field in requested_fields:
+                if r_field in ["uk_summary", "region_headline"]:
+                    continue
+                if (
+                    r_field in allowed_fields
+                    and r_field in d
+                    and r_field not in day_dict
+                ):
+                    day_dict[r_field] = d[r_field]
+
+            # uk_summary and region_headline only if index is 0
+            is_index_zero = d.get("forecast_index") == 0
+            if is_index_zero:
+                if (
+                    "uk_summary" in allowed_fields
+                    and "uk_summary" in d
+                    and "uk_summary" not in day_dict
+                ):
+                    day_dict["uk_summary"] = d["uk_summary"]
+                if (
+                    "region_headline" in allowed_fields
+                    and "region_headline" in d
+                    and "region_headline" not in day_dict
+                ):
+                    day_dict["region_headline"] = d["region_headline"]
+
+            # Remaining headline fields matching *_headline pattern
+            for k, v in d.items():
+                if (
+                    k.endswith("_headline")
+                    and k in allowed_fields
+                    and k not in day_dict
+                ):
+                    day_dict[k] = v
+
+            # Put any remaining allowed fields (e.g. forecast_index, Dcode) at the end
+            for k, v in d.items():
+                if k in allowed_fields and k not in day_dict:
+                    day_dict[k] = v
+
+            filtered_days.append(day_dict)
+        f_copy["days"] = filtered_days
+
+    if "outlook" in f_data and ("outlook" in allowed_fields or not categories):
         f_copy["outlook"] = f_data["outlook"]
     return f_copy
 
@@ -81,7 +140,7 @@ def extract_forecast_details(
     allowed = _get_allowed_fields(categories, mappings)
     return {
         reg: (
-            _filter_region_forecast(fd, allowed, bool(categories))
+            _filter_region_forecast(fd, allowed, categories, mappings)
             if isinstance(fd, dict)
             else fd
         )

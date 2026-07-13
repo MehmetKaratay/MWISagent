@@ -141,3 +141,54 @@ def test_extract_forecast_details_full():
 
     filtered = extract_fn(mock_data, ["full"])
     assert filtered == mock_data
+
+
+def test_extract_forecast_details_ordering():
+    """Verify that the keys in day forecast dictionaries are deterministically sorted."""
+    extract_fn = load_extract_details()
+    mock_data = {
+        "WH": {
+            "region": "West Highlands",
+            "days": [
+                {
+                    "forecast_index": 0,
+                    "date": "Sunday 5th July 2026",
+                    "last_updated": "Sat 4th Jul 26 at 4:17PM",
+                    "uk_summary": "Rain sets in.",
+                    "region_headline": "Drizzly tops.",
+                    "wind_headline": "Southwesterly 20 to 30mph.",
+                    "wind_effect": "Strenuous walking.",
+                    "precip_headline": "Rain sets in.",
+                    "precip_detail": "Rain sets in persistently.",
+                    "cloud_headline": "Becoming extensive.",
+                    "cloud_detail": "Bases 700-1000m.",
+                    "chance_cloud_free": "30%",
+                    "sun_clarity": "Sunshine occasionally.",
+                    "temp": "9C.",
+                    "freezing_level": "Above summits.",
+                    "Dcode": "D0",
+                }
+            ],
+            "outlook": {"Dcode": "Doutlook", "outlook": "Settled weather."},
+        }
+    }
+
+    # Case: User asked for ["cloud"]
+    filtered = extract_fn(mock_data, ["cloud"])
+    day_keys = list(filtered["WH"]["days"][0].keys())
+
+    # We expect: date, last_updated, cloud_headline, cloud_detail, chance_cloud_free (in mapping order),
+    # then uk_summary, region_headline (only if index is 0), then remaining matching *_headline (wind_headline, precip_headline),
+    # then other allowed fields (forecast_index, Dcode)
+    expected_order = [
+        "date",
+        "last_updated",
+        "cloud_headline",
+        "cloud_detail",
+        "chance_cloud_free",
+        "uk_summary",
+        "region_headline",
+        "forecast_index",
+        "Dcode",
+    ]
+    assert day_keys == expected_order
