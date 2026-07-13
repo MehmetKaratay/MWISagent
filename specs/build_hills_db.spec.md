@@ -37,21 +37,31 @@ Stores custom place name overrides and mountain range shorthand keywords:
 
 ---
 
-## 2. Build and Population Flow (`build_hills_db.py`)
+2. **Build and Population Flow (`build_hills_db.py`)**
 
-The script `build_hills_db.py` must run deterministically to set up the database:
+The script `build_hills_db.py` must run deterministically, supporting CLI parameters to configure paths:
 
+### 2.1 CLI Interface and Defaults
+* The script uses `argparse` to parse parameters:
+  * `--db-path` (TEXT): Target SQLite database file path. Defaults to `app/skills/mwis-website/identify_forecast_area/cache/uk_hills.db`.
+  * `--csv-path` (TEXT): Path to the source DoBIH CSV database. Defaults dynamically using globbing (see below).
+* **Dynamic Glob Matching for CSV**:
+  * If the `--csv-path` parameter is omitted, the script checks the `resources/` directory for any file matching the pattern `DoBIH*.csv` (using `glob.glob`).
+  * If a matching CSV file exists, the script uses it as the default CSV source path.
+  * If no matching file exists, the script defaults to `app/skills/mwis-website/identify_forecast_area/resources/DoBIH_v18_4.csv`.
+
+### 2.2 Execution Steps
 1. **Download source data if missing**:
-   * Check if `app/skills/mwis-website/identify_forecast_area/resources/DoBIH_v18_4.csv` exists.
-   * If it does not exist, download `https://www.hill-bagging.co.uk/dobih-downloads/hillcsv.zip` using HTTPS, extract `DoBIH_v18_4.csv` into the `resources/` folder, and delete the downloaded ZIP file.
+   * Check if the resolved CSV path (default or overridden) exists.
+   * If it does not exist, download `https://www.hill-bagging.co.uk/dobih-downloads/hillcsv.zip` using HTTPS, extract the CSV from the ZIP archive, write/rename it to the resolved CSV path, and delete the downloaded ZIP file.
 2. **Database setup**:
-   * Create target directory `cache/` if it does not exist.
-   * Create `uk_hills.db` (re-create/overwrite if it already exists).
+   * Create the target directory containing the resolved database path if it does not exist.
+   * Create the database at the resolved path (re-create/overwrite if it already exists).
 3. **Table population**:
-   * Populate the `hills` table by parsing `DoBIH_v18_4.csv`. Resolve coordinates (`Latitude` and `Longitude`) for each row into MWIS regions using the existing boundaries configuration and `RegionFinder`. If a coordinate doesn't lie within any MWIS region, store `'notMWIS'`.
+   * Populate the `hills` table by parsing the resolved CSV file. Resolve coordinates (`Latitude` and `Longitude`) for each row into MWIS regions using the existing boundaries configuration and `RegionFinder`. If a coordinate doesn't lie within any MWIS region, store `'notMWIS'`.
    * Populate the `local_names` table using `resources/local-names.csv`.
 4. **Cleanup**:
-   * If the source ZIP/CSV was downloaded dynamically by the script during execution, delete both the ZIP and the CSV file to free up container space.
+   * If the CSV was downloaded dynamically by the script during execution, delete the CSV file to free up container space. If it was already present, preserve it.
 
 ---
 
