@@ -90,7 +90,11 @@ Then the agent retains the location "West Highlands" and category "cloud", and r
 
 Given a multi-turn conversation where Turn 1 is "Is it cloudy in West Highlands today?" and Turn 2 is "reset Snowdonia tomorrow"
 When Turn 2 execution starts
-Then the agent flags a new query context, clears the previous memory, and resolves the location Snowdonia and date tomorrow (D1).
+Then the agent flags a new query context (is_new_query=True) because of the explicit "reset" keyword, clears the previous memory, and resolves the location Snowdonia and date tomorrow (D1).
+
+Given a multi-turn conversation where Turn 1 is "Ben Nevis Cloud tomorrow" and Turn 2 is "And for Cairngorm?"
+When Turn 2 execution starts
+Then the agent does not flag a new query context (is_new_query=False) because there are no explicit reset keywords, retains the date "tomorrow" (D1) and category "cloud" from context, and only updates the location to Cairngorms.
 ```
 
 ---
