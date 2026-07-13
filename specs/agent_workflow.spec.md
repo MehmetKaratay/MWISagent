@@ -75,6 +75,22 @@ Then the workflow parses "Ben Nevis" and date code "Doutlook", and the output fo
 Given a query "What is the full weather forecast on Ben Nevis?"
 When execution starts
 Then the workflow parses "Ben Nevis" with no date code restrictions, and the output forecast payload contains all 3 days and the outlook.
+
+Given a multi-turn conversation where Turn 1 is "How cold is it in West Highlands today?" and Turn 2 is "Is it raining?"
+When Turn 2 execution starts
+Then the agent retains the location "West Highlands" and date "today" (D0) from context, and switches the category to "wet" to prioritize precipitation details.
+
+Given a multi-turn conversation where Turn 1 is "Is it cloudy in West Highlands today?" and Turn 2 is "what about Brecon Beacons?"
+When Turn 2 execution starts
+Then the agent retains the date "today" (D0) and the category "cloud" from context, and updates the location to "Brecon Beacons".
+
+Given a multi-turn conversation where Turn 1 is "Is it cloudy in West Highlands today?" and Turn 2 is "what about the following day?"
+When Turn 2 execution starts
+Then the agent retains the location "West Highlands" and category "cloud", and resolves "following day" by shifting the date from D0 to D1.
+
+Given a multi-turn conversation where Turn 1 is "Is it cloudy in West Highlands today?" and Turn 2 is "reset Snowdonia tomorrow"
+When Turn 2 execution starts
+Then the agent flags a new query context, clears the previous memory, and resolves the location Snowdonia and date tomorrow (D1).
 ```
 
 ---
@@ -177,7 +193,7 @@ graph TD
       awaiting_refresh_force: bool = False
       loop_count: int = 0
   ```
-* `ParseOutput` must correctly specify `default=None` and `default=False` across all fields, and include `is_malicious: bool = False`.
+* `ParseOutput` must correctly specify `default=None` and `default=False` across all fields, and include `is_malicious: bool = False` and `is_new_query: bool = False`.
 
 **Testing strategy**
 * Eval dataset under `mwis-agent/tests/` evaluating location/date extraction and synthesis accuracy.
