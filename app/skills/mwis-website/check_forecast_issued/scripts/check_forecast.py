@@ -299,12 +299,14 @@ def _run_forecast_ingestion(
     return _update_all_regions_cache(db_path, env, london_dt.date(), current_time)
 
 
-def _resolve_env_name(use_live_forecast: bool) -> str:
+def _resolve_env_name(use_live_forecast: bool, env: str | None = None) -> str:
     """Resolve env name based on use_live_forecast configuration."""
     if use_live_forecast:
         return "production"
-    env = os.getenv("MWIS_ENV", "development")
-    return "development" if env == "production" else env
+    if env:
+        return env
+    env_var = os.getenv("MWIS_ENV", "development")
+    return "development" if env_var == "production" else env_var
 
 
 def check_forecast_issued(
@@ -312,6 +314,7 @@ def check_forecast_issued(
     use_live_forecast: bool = False,
     current_time: datetime.datetime | None = None,
     force_update: bool = False,
+    env: str | None = None,
 ) -> dict[str, Any]:
     """Deterministically check if the forecast has been newly issued and update cache."""
     db_path, current_time = _initialize_db_and_time(db_path, current_time)
@@ -323,7 +326,7 @@ def check_forecast_issued(
                 "message": "Update skipped due to schedule or previous runs.",
                 "timestamp": current_time.isoformat(),
             }
-    env = _resolve_env_name(use_live_forecast)
+    env_name = _resolve_env_name(use_live_forecast, env)
     return _run_forecast_ingestion(
-        db_path, env, current_time, force_update=force_update
+        db_path, env_name, current_time, force_update=force_update
     )

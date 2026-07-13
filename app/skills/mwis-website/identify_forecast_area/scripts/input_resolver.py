@@ -75,11 +75,10 @@ class InputResolver:
             with open(LOCAL_NAMES_PATH) as f:
                 for line in f:
                     parts = line.strip().split(",")
-                    if (
-                        len(parts) >= 2
-                        and parts[0].strip().lower() == name.strip().lower()
-                    ):
-                        return parts[1].strip()
+                    if len(parts) >= 2:
+                        csv_name = parts[0].strip().replace('"', "").lower()
+                        if csv_name == name.strip().lower():
+                            return parts[1].strip()
         except Exception:
             pass
         return None
@@ -143,16 +142,19 @@ class InputResolver:
     @staticmethod
     def _resolve_single_arg(arg: str) -> tuple[Point | None, str | None]:
         """Resolves a single argument to either a Point or a region code."""
-        grid_pt = InputResolver.parse_grid_reference(arg)
+        cleaned = arg.strip()
+        if cleaned.lower().startswith("reset "):
+            cleaned = cleaned[6:].strip()
+        grid_pt = InputResolver.parse_grid_reference(cleaned)
         if grid_pt:
             return grid_pt, None
-        m_code = InputResolver.search_munros(arg)
+        m_code = InputResolver.search_munros(cleaned)
         if m_code:
             return None, m_code
-        local_code = InputResolver.search_local_names(arg)
+        local_code = InputResolver.search_local_names(cleaned)
         if local_code:
             return None, local_code
-        coords = InputResolver.query_nominatim(arg)
+        coords = InputResolver.query_nominatim(cleaned)
         if coords:
             return coords, None
         return None, None
@@ -166,5 +168,7 @@ class InputResolver:
             try:
                 return Point(float(args[0]), float(args[1])), None
             except ValueError:
-                pass
+                # If they are not floats, join them as a single multi-word query (e.g. ['West', 'Highlands'] -> 'West Highlands')
+                joined_name = " ".join(args)
+                return InputResolver._resolve_single_arg(joined_name)
         return None, None
