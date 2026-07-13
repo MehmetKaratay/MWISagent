@@ -28,7 +28,7 @@ Mappings are configured via `category_mappings.csv`:
 | `cloud`  | `uk_summary`, `region_headline`, `cloud_headline`, `cloud_detail`, `chance_cloud_free` | cloud, mist, fog, overcast, shrouded, clarity, visibility |
 | `wind`   | `uk_summary`, `region_headline`, `wind_headline`, `wind_effect` | wind, breezy, gale, gusts, blow, stormy |
 | `wet`    | `uk_summary`, `region_headline`, `precip_headline`, `precip_detail` | rain, wet, snow, shower, drizzle, precipitation, sleet |
-| `cold`   | `uk_summary`, `region_headline`, `temp`, `freezing_level` | cold, temperature, freezing, chill, frost, warm, heat |
+| `cold`   | `uk_summary`, `region_headline`, `temp_headline`, `freezing_level` | cold, temperature, freezing, chill, frost, warm, heat |
 | `sun`    | `uk_summary`, `region_headline`, `sun_clarity` | sun, sunny, sunshine |
 | `full`   | All fields | full, everything, complete, detailed |
 
