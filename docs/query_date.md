@@ -43,9 +43,10 @@ Codes definitions:
 | `today and tomorrow` | Any | `["D0", "D1"]` |
 | `06/07/2026` (when reference is 04/07/2026) | Any | `["D2"]` |
 
-## Environment Variables
+## Relative Date Shifts
 
-- `MWIS_REFERENCE_DATE`: Overrides the system date (format `YYYY-MM-DD`). Primarily used for testing.
-  ```bash
-  MWIS_REFERENCE_DATE="2026-07-04" python3 query_date.py "tomorrow"
-  ```
+For conversational follow-up turns, shifts are resolved relative to the previous active code rather than absolute system time:
+- Uses the `resolve_shift` helper.
+- **Forwards**: `next day`, `following day`, `day after`, `tomorrow`.
+- **Backwards**: `day before`, `previous day`, `yesterday`.
+- Automatically clips boundaries between `D0` and `D3`.

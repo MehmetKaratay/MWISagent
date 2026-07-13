@@ -122,3 +122,25 @@ graph TD
 ### Node 12: `process_follow_up`
 * **Type:** `FunctionNode`
 * **Behavior:** Increments `loop_count` (capped at 5) and parses follow-up parameters to determine routing flags for the next loop run.
+
+---
+
+## 3. Contextual Memory & State Retention Rules
+
+To support natural conversation flows, the workflow implements contextual state memory retention and resets across interaction turns:
+
+### Memory Retention
+If the user's follow-up query does not specify a location, date, or category details, the agent retains and merges the values from the previous conversation turn's state:
+- **Location Memory**: Retained from `ctx.state.get("locations")` if no locations are found in the new query.
+- **Category Details**: Retained from `ctx.state.get("extracted_categories")` if no categories are extracted.
+- **Date Memory**: Retained from `ctx.state.get("date")` if no new date/relative shift is specified.
+
+### Relative Date Shifting
+Relative date expressions in follow-up queries (e.g., "next day", "following day", "day after", "previous day", "day before") are resolved dynamically:
+- Shifting calculations are resolved relative to the current active date code (e.g. `D0` to `D3`).
+- Forward shifts advance the day index (`D0 -> D1`, `D1 -> D2`, `D2 -> D3`), clipping at the upper bound `D3`.
+- Backward shifts reduce the day index (`D3 -> D2`, `D2 -> D1`, `D1 -> D0`), clipping at the lower bound `D0`.
+- Shifting from an invalid date or `Doutlook` defaults to `D0`.
+
+### State Reset ("New Query")
+If a query contains a state reset intent (e.g., matching keywords like "reset", "clear", "new query", or "restart"), the agent clears all memory keys (setting `locations = []`, `date = None`, `extracted_categories = []`, and `resolved_date_codes = []`) to start fresh.

@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- **2026-07-13 12:58**: Implemented turn-based contextual state memory (retaining locations, dates, and categories when not explicitly stated in follow-ups), relative date shifts (parsing "following day" bounds via `resolve_shift.py`), and state resets (wiping memory on "reset" or "clear").
 - **2026-07-12 17:18**: Prioritized user-requested weather categories first in `synthesis` node response by adding explicit ordering instructions to the Gemini flash prompt.
 - **2026-07-12 16:23**: Implemented key-based forecast details pruning in `serve_forecast_to_user` skill using CSV-configured query categories.
 - **2026-07-12 15:28**: Enhanced prompt location extraction rules in `parse_input` to reliably identify mountains, regions, countries, national parks, and other geographical entities in user queries.
