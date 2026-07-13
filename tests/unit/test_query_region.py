@@ -159,3 +159,43 @@ def test_query_region_nearest_serialization_includes_direction():
     assert "nearest" in res
     assert len(res["nearest"]) > 0
     assert "direction" in res["nearest"][0]
+
+
+def test_query_region_database_lookups():
+    """Verify that Hills resolved from the SQLite database cache yield correct locations.
+    Specifically, a hill inside MWIS area (e.g. Ben Nevis) should be resolved immediately,
+    and a hill outside MWIS area (e.g. a 'notMWIS' hill) should resolve coordinates offline
+    and trigger the nearest MWIS area calculation.
+    """
+    sys.path.insert(
+        0,
+        str(
+            Path(__file__).resolve().parent.parent.parent
+            / "app"
+            / "skills"
+            / "mwis-website"
+            / "identify_forecast_area"
+            / "scripts"
+        ),
+    )
+    import query_region
+
+    # 1. Ben Nevis (WH region)
+    res_ben = query_region.find_regions_by_location(["Ben Nevis"])
+    assert res_ben["in_scope"] is True
+    assert res_ben["in_area"] is True
+    assert "WH" in res_ben["regions"]
+
+    # 2. Snowdon - Yr Wyddfa (SD region)
+    res_snowdon = query_region.find_regions_by_location(["Snowdon - Yr Wyddfa"])
+    assert res_snowdon["in_scope"] is True
+    assert res_snowdon["in_area"] is True
+    assert "SD" in res_snowdon["regions"]
+
+    # 3. Leith Hill (notMWIS, Surrey, England)
+    res_leith = query_region.find_regions_by_location(["Leith Hill"])
+    assert res_leith["in_scope"] is True
+    assert res_leith["in_area"] is False
+    assert res_leith["error"] == "NOT_IN_AREA"
+    assert "nearest" in res_leith
+    assert len(res_leith["nearest"]) > 0

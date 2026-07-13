@@ -44,6 +44,8 @@ def test_database_schema_creation(tmp_path):
     assert "county" in hills_cols
     assert "country" in hills_cols
     assert "height" in hills_cols
+    assert "latitude" in hills_cols
+    assert "longitude" in hills_cols
     assert "mwis_region" in hills_cols
 
     # Check local_names table
@@ -162,17 +164,25 @@ def test_database_population(tmp_path):
     cursor = conn.cursor()
 
     cursor.execute(
-        "SELECT name, county, country, height, mwis_region FROM hills ORDER BY height DESC"
+        "SELECT name, county, country, height, latitude, longitude, mwis_region FROM hills ORDER BY height DESC"
     )
     hills = cursor.fetchall()
     assert len(hills) == 3
 
     # Ben Nevis
-    assert hills[0] == ("Ben Nevis", "Highland", "S", 1344.5, "WH")
+    assert hills[0] == ("Ben Nevis", "Highland", "S", 1344.5, 56.7969, -5.0036, "WH")
     # Snowdon
-    assert hills[1] == ("Snowdon", "Gwynedd", "W", 1085.0, "SD")
+    assert hills[1] == ("Snowdon", "Gwynedd", "W", 1085.0, 53.0685, -4.0763, "SD")
     # London
-    assert hills[2] == ("London Hill", "Greater London", "E", 100.0, "notMWIS")
+    assert hills[2] == (
+        "London Hill",
+        "Greater London",
+        "E",
+        100.0,
+        51.5074,
+        -0.1278,
+        "notMWIS",
+    )
 
     # Assert values in local_names table
     cursor.execute("SELECT name, mwis_region FROM local_names ORDER BY name")

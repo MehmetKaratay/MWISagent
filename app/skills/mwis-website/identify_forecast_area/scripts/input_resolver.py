@@ -8,11 +8,12 @@
 
 import json
 import os
+import sqlite3
 import urllib.parse
 import urllib.request
 from typing import Any
 
-from config_loader import LOCAL_NAMES_PATH, MUNROS_PATH
+from config_loader import DB_PATH
 from geo_math import Point
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
@@ -49,39 +50,48 @@ class InputResolver:
             return None
 
     @staticmethod
-    def search_munros(name: str) -> str | None:
-        """Searches the munros.csv file for a matching region ID."""
-        if not os.path.exists(MUNROS_PATH):
-            return None
-        try:
-            with open(MUNROS_PATH) as f:
-                for line in f:
-                    parts = line.strip().split(",")
-                    if (
-                        len(parts) >= 3
-                        and parts[1].strip().lower() == name.strip().lower()
-                    ):
-                        return parts[2].strip()
-        except Exception:
-            pass
-        return None
+    def search_db(name: str) -> tuple[Point | None, str | None]:
+        """Searches the SQLite database cache (local_names and hills tables) for a matching region ID or coordinates.
 
-    @staticmethod
-    def search_local_names(name: str) -> str | None:
-        """Searches the local-names.csv file for a matching region ID."""
-        if not os.path.exists(LOCAL_NAMES_PATH):
-            return None
+        Args:
+            name: Place or hill name to look up.
+
+        Returns:
+            Tuple of (Point coordinate, region code). One of them will be populated, or both None.
+        """
+        if not os.path.exists(DB_PATH):
+            return None, None
         try:
-            with open(LOCAL_NAMES_PATH) as f:
-                for line in f:
-                    parts = line.strip().split(",")
-                    if len(parts) >= 2:
-                        csv_name = parts[0].strip().replace('"', "").lower()
-                        if csv_name == name.strip().lower():
-                            return parts[1].strip()
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+
+            # 1. Search local_names table first
+            cursor.execute(
+                "SELECT mwis_region FROM local_names WHERE name = ? COLLATE NOCASE",
+                (name,),
+            )
+            row = cursor.fetchone()
+            if row:
+                conn.close()
+                return None, row[0]
+
+            # 2. Search hills table next
+            cursor.execute(
+                "SELECT mwis_region, latitude, longitude FROM hills WHERE name = ? COLLATE NOCASE",
+                (name,),
+            )
+            row = cursor.fetchone()
+            if row:
+                conn.close()
+                region, lat, lon = row[0], row[1], row[2]
+                if region != "notMWIS":
+                    return None, region
+                else:
+                    return Point(lat, lon), None
+            conn.close()
         except Exception:
             pass
-        return None
+        return None, None
 
     @staticmethod
     def query_nominatim(name: str) -> Point | None:
@@ -148,12 +158,9 @@ class InputResolver:
         grid_pt = InputResolver.parse_grid_reference(cleaned)
         if grid_pt:
             return grid_pt, None
-        m_code = InputResolver.search_munros(cleaned)
-        if m_code:
-            return None, m_code
-        local_code = InputResolver.search_local_names(cleaned)
-        if local_code:
-            return None, local_code
+        pt, region_code = InputResolver.search_db(cleaned)
+        if pt or region_code:
+            return pt, region_code
         coords = InputResolver.query_nominatim(cleaned)
         if coords:
             return coords, None

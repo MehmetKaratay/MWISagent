@@ -53,6 +53,10 @@ class HillsDatabaseBuilder:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
+        # Drop tables first to ensure clean schema rebuild
+        cursor.execute("DROP TABLE IF EXISTS hills")
+        cursor.execute("DROP TABLE IF EXISTS local_names")
+
         # Create hills table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS hills (
@@ -60,6 +64,8 @@ class HillsDatabaseBuilder:
                 county TEXT,
                 country TEXT,
                 height REAL,
+                latitude REAL,
+                longitude REAL,
                 mwis_region TEXT
             )
         """)
@@ -171,18 +177,26 @@ class HillsDatabaseBuilder:
                             height = float(row["Metres"])
                         except (ValueError, KeyError):
                             height = 0.0
+                        try:
+                            lat = float(row.get("Latitude", 0.0))
+                            lon = float(row.get("Longitude", 0.0))
+                        except (ValueError, TypeError):
+                            lat = 0.0
+                            lon = 0.0
                         hills_to_insert.append(
                             (
                                 row.get("Name", ""),
                                 row.get("County", ""),
                                 row.get("Country", ""),
                                 height,
+                                lat,
+                                lon,
                                 mwis_region,
                             )
                         )
 
                 cursor.executemany(
-                    "INSERT INTO hills (name, county, country, height, mwis_region) VALUES (?, ?, ?, ?, ?)",
+                    "INSERT INTO hills (name, county, country, height, latitude, longitude, mwis_region) VALUES (?, ?, ?, ?, ?, ?, ?)",
                     hills_to_insert,
                 )
 

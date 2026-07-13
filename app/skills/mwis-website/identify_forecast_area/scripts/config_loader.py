@@ -20,6 +20,7 @@ CONFIG_PATH = os.path.join(ASSETS_DIR, "query_config.json")
 BOUNDARIES_PATH = os.path.join(ASSETS_DIR, "mwis-region-boundaries.json")
 MUNROS_PATH = os.path.join(RESOURCES_DIR, "munros.csv")
 LOCAL_NAMES_PATH = os.path.join(RESOURCES_DIR, "local-names.csv")
+DB_PATH = os.path.join(SCRIPT_DIR, "..", "cache", "uk_hills.db")
 
 DEFAULT_OVERLAP_TOLERANCE_PCT = 15.0
 

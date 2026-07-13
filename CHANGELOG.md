@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- **2026-07-13 18:38**: Added offline coordinates lookup using `uk_hills.db` cache database. Mapped `latitude` and `longitude` fields to `hills` table during database generation.
+- **2026-07-13 18:38**: Updated `InputResolver` in `query_region.py` to query `uk_hills.db` first, returning matching region codes or Point coordinates for offline distance calculation, removing the CSV fallbacks.
 - **2026-07-13 17:20**: Added CLI argparse entrypoint supporting `--db-path` and `--csv-path` overrides, and implemented dynamic globbing for `DoBIH*.csv` files to prevent unnecessary downloads.
 - **2026-07-13 17:20**: Added unit test `test_cli_main_entrypoint` validating argument parsing and execution flow.
 - **2026-07-13 16:00**: Implemented TDD-tested SQLite database generation script `build_hills_db.py` to create and populate the `uk_hills.db` database cache under `app/skills/mwis-website/identify_forecast_area/cache/`.
