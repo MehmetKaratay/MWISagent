@@ -36,3 +36,14 @@ Mappings are configured via `category_mappings.csv`:
 
 - **Metadata Preservation**: Basic metadata (`date`, `forecast_index`, `last_updated`, `Dcode`) is always preserved in every day's dictionary.
 - **Default (Headlines Only)**: If the categories list is empty, the utility retains only headline-only fields: `uk_summary`, `region_headline`, `wind_headline`, `precip_headline`, and `cloud_headline`.
+
+### Key Ordering Rules
+
+Day forecast output dictionary keys are deterministically sorted to prioritize user requested values:
+1. `date`
+2. `last_updated`
+3. User-requested fields (in order of category list)
+4. `uk_summary` (only if index is 0)
+5. `region_headline` (only if index is 0)
+6. Remaining default/headline fields (matching pattern `*_headline`)
+7. Remaining allowed metadata (e.g. `forecast_index`, `Dcode`)
