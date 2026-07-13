@@ -147,7 +147,7 @@ def extract_forecast_details(
     forecasts: dict[str, Any], categories: list[str]
 ) -> dict[str, Any]:
     """Filters forecast payload to keep only fields matching the requested categories."""
-    if "full" in categories:
+    if "full" in categories or "all" in categories:
         return forecasts
     mappings = _load_mappings()
     allowed = _get_allowed_fields(categories, mappings)

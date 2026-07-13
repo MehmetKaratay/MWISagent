@@ -139,8 +139,11 @@ def test_extract_forecast_details_full():
         }
     }
 
-    filtered = extract_fn(mock_data, ["full"])
-    assert filtered == mock_data
+    filtered_full = extract_fn(mock_data, ["full"])
+    assert filtered_full == mock_data
+
+    filtered_all = extract_fn(mock_data, ["all"])
+    assert filtered_all == mock_data
 
 
 def test_extract_forecast_details_ordering():
