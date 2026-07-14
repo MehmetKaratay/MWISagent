@@ -75,3 +75,13 @@ The agent currently fetches and interprets the static forecast text. Future vers
 - **Local Knowledge**: Integrating specific geographical knowledge of mountain areas to add localized value to the forecast.
 - **Proactive Caching**: Transitioning from a lazy-loaded cache to a scheduled background task (e.g., Cloud Scheduler) to keep forecasts warm.
 - **Frontend Enhancements**: Adding hover-over tooltips for forecast items and a dedicated summary panel for the raw forecast discussion.
+
+## 6. Running scripts locally
+Use the command:
+```bash
+uv run python <path to python script>
+```
+For example:
+```bash
+uv run python app/skills/mwis-website/identify_forecast_area/scripts/build_hills_db.py
+```
