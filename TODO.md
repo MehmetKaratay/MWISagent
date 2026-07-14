@@ -12,9 +12,9 @@
  * Remembering state during chat
 
 ## Next time
-   - Comparision
-   - Remove "Do you have any follow-up questions? (e.g. higher/lower elevation, specific part of the region, or 'no' to finish"
-
+ * Comparision
+ * Remove "Do you have any follow-up questions? (e.g. higher/lower elevation, specific part of the region, or 'no' to finish"
+ * How to deal with multiple matches: list them to user with MWIS name, placename (height m), county, country
 
 ## Future
  * Some frontend memory, so agent remebers context of "Cairngorm" forcast when asking for extra details.
